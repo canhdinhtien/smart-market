@@ -3,7 +3,7 @@ const controller = require('../controllers/user.controller.js');
 
 const router = express.Router();
 
-router.post('/register', controller.registerUser);
+router.post('/', controller.registerUser);
 router.post('/login', controller.loginUser);
 router.post('/logout', controller.logoutUser);
 router.post('/refresh-token', controller.refreshToken);
@@ -12,6 +12,6 @@ router.get('/:userId', controller.getUser);
 router.delete('/:userId', controller.deleteUser);
 router.post('/verify-email', controller.verifyEmail);
 router.post('/change-password', controller.changeUserPassword);
-router.put('/:userId', controller.editUser);
+router.put('/', controller.editUser);
 
 module.exports = router;
