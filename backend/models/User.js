@@ -1,7 +1,9 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database'); // adjust path to your sequelize instance
 
-class User extends Model {}
+class User extends Model {
+  
+}
 
 User.init({
   id: {
