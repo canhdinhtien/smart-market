@@ -52,12 +52,25 @@ const sendVerificationCode = async () => {
   // Implementation for sendVerificationCode
 };
 
-const getUser = async () => {
+const getUser = async (userId) => {
   // Implementation for getUser
+  const user = await User.findByPk(userId, {
+    attributes: { exclude: ['password_hash'] },
+  });
+
+  if (!user) throw new Error('User not found');
+
+  return user;
 };
 
-const deleteUser = async () => {
+const deleteUser = async (userId) => {
   // Implementation for deleteUser
+  const user = await User.findByPk(userId);
+
+  if (!user) throw new Error('User not found');
+
+  await user.destroy();
+  return { message: 'User deleted successfully' };
 };
 
 const verifyEmail = async () => {
