@@ -1,30 +1,28 @@
-const shoppinglistService = require('../services/shoppinglist.service');
-
-const createShoppingList = async (req, res, next) => {
+const createShoppingList = async () => {
   // Implementation for createShoppingList
 };
 
-const updateShoppingList = async (req, res, next) => {
+const updateShoppingList = async () => {
   // Implementation for updateShoppingList
 };
 
-const deleteShoppingList = async (req, res, next) => {
+const deleteShoppingList = async () => {
   // Implementation for deleteShoppingList
 };
 
-const createTasks = async (req, res, next) => {
+const createTasks = async () => {
   // Implementation for createTasks
 };
 
-const getListOfTasks = async (req, res, next) => {
+const getListOfTasks = async () => {
   // Implementation for getListOfTasks
 };
 
-const deleteTask = async (req, res, next) => {
+const deleteTask = async () => {
   // Implementation for deleteTask
 };
 
-const updateTask = async (req, res, next) => {
+const updateTask = async () => {
   // Implementation for updateTask
 };
 

@@ -1,26 +1,24 @@
-const foodService = require('../services/food.service');
-
-const createFood = async (req, res, next) => {
+const createFood = async () => {
   // Implementation for createFood
 };
 
-const updateFood = async (req, res, next) => {
+const updateFood = async () => {
   // Implementation for updateFood
 };
 
-const deleteFood = async (req, res, next) => {
+const deleteFood = async () => {
   // Implementation for deleteFood
 };
 
-const getAllFoodsInGroup = async (req, res, next) => {
+const getAllFoodsInGroup = async () => {
   // Implementation for getAllFoodsInGroup
 };
 
-const getUnits = async (req, res, next) => {
+const getUnits = async () => {
   // Implementation for getUnits
 };
 
-const getCategories = async (req, res, next) => {
+const getCategories = async () => {
   // Implementation for getCategories
 };
 

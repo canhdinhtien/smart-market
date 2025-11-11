@@ -1,3 +1,5 @@
+const groupService = require('../services/group.service');
+
 const createGroup = async (req, res, next) => {
   // Implementation for createGroup
 };

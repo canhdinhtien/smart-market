@@ -1,17 +1,85 @@
+const userService = require('../services/user.service');
+
 const registerUser = async (req, res, next) => {
-  // Implementation for registerUser
+  try {
+    const { email, password, name } = req.body;
+    const user = await userService.registerUser({ email, password, name });
+    res.status(201).json({
+      message: 'User registered successfully!',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const loginUser = async (req, res, next) => {
-  // Implementation for loginUser
+  try {
+    const { identifier, password } = req.body;
+    const { user, accessToken, refreshToken } = await userService.loginUser({
+      identifier,
+      password,
+    });
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+    });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      message: 'Login successful!',
+      curUser: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const logoutUser = async (req, res, next) => {
-  // Implementation for logoutUser
+  try {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.status(200).json({ message: 'Logout successful!' });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const refreshToken = async (req, res, next) => {
-  // Implementation for refreshToken
+  try {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) {
+      return res.status(401).json({ message: 'Refresh token not found' });
+    }
+
+    const newAccessToken = await userService.refreshToken(refreshToken);
+
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+    });
+
+    res.status(200).json({ message: 'Access token refreshed successfully' });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const sendVerificationCode = async (req, res, next) => {

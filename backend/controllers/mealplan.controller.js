@@ -1,3 +1,5 @@
+const mealplanService = require('../services/mealplan.service');
+
 const createMealPlan = async (req, res, next) => {
   // Implementation for createMealPlan
 };
