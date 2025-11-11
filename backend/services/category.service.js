@@ -1,18 +1,16 @@
-const categoryService = require('../services/category.service');
-
-const createCategory = async (req, res, next) => {
+const createCategory = async () => {
   // Implementation for createCategory
 };
 
-const getAllCategories = async (req, res, next) => {
+const getAllCategories = async () => {
   // Implementation for getAllCategories
 };
 
-const editCategoryByName = async (req, res, next) => {
+const editCategoryByName = async () => {
   // Implementation for editCategoryByName
 };
 
-const deleteCategoryByName = async (req, res, next) => {
+const deleteCategoryByName = async () => {
   // Implementation for deleteCategoryByName
 };
 

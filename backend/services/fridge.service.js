@@ -1,22 +1,20 @@
-const fridgeService = require('../services/fridge.service');
-
-const createFridgeItem = async (req, res, next) => {
+const createFridgeItem = async () => {
   // Implementation for createFridgeItem
 };
 
-const updateFridgeItem = async (req, res, next) => {
+const updateFridgeItem = async () => {
   // Implementation for updateFridgeItem
 };
 
-const deleteFridgeItem = async (req, res, next) => {
+const deleteFridgeItem = async () => {
   // Implementation for deleteFridgeItem
 };
 
-const getAllFridgeItems = async (req, res, next) => {
+const getAllFridgeItems = async () => {
   // Implementation for getAllFridgeItems
 };
 
-const getSpecificFridgeItem = async (req, res, next) => {
+const getSpecificFridgeItem = async () => {
   // Implementation for getSpecificFridgeItem
 };
 

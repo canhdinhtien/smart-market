@@ -1,3 +1,5 @@
+const recipeService = require('../services/recipe.service');
+
 const createRecipe = async (req, res, next) => {
   // Implementation for createRecipe
 };
