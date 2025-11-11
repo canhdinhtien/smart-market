@@ -87,12 +87,31 @@ const sendVerificationCode = async (req, res, next) => {
 };
 
 const getUser = async (req, res, next) => {
-  // Implementation for getUser
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized: User ID missing' });
+    }
+
+    const user = await userService.getUser(req.user.id);
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
 };
 
 const deleteUser = async (req, res, next) => {
-  // Implementation for deleteUser
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized: User ID missing' });
+    }
+    
+    const result = await userService.deleteUser(req.user.id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
 };
+
 
 const verifyEmail = async (req, res, next) => {
   // Implementation for verifyEmail
