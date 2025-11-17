@@ -83,7 +83,19 @@ const refreshToken = async (req, res, next) => {
 };
 
 const sendVerificationCode = async (req, res, next) => {
-  // Implementation for sendVerificationCode
+  try {
+    const { email } = req.body;
+    if (!email ) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+    const result = await userService.sendVerificationCode(email);
+    res.status(200).json(result);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    next(error);
+  }
 };
 
 const getUser = async (req, res, next) => {
@@ -99,6 +111,7 @@ const getUser = async (req, res, next) => {
   }
 };
 
+// TODO rewrite this
 const deleteUser = async (req, res, next) => {
   try {
     if (!req.user || !req.user.id) {
@@ -118,7 +131,15 @@ const verifyEmail = async (req, res, next) => {
 };
 
 const changeUserPassword = async (req, res, next) => {
-  // Implementation for changeUserPassword
+  const { oldPassword, newPassword } = req.body;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+  try {
+    userService.changeUserPassword(decoded.id, oldPassword, newPassword);
+  res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 const editUser = async (req, res, next) => {
