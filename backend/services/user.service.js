@@ -4,7 +4,10 @@ const bcrypt = require('bcryptjs');
 const { nanoid } = require('nanoid');
 const { Op } = require('sequelize');
 const User = require('../models/User');
-const Jwt = require('../utils/jwt');
+const Jwt = require('../utils/jwtUtils');
+const redisClient = require('../config/redis');
+const { generateVerificationCode } = require('../utils/codeUtils');
+const { sendVerificationEmail } = require('../utils/emailUtils');
 
 // TODO refactor
 
@@ -43,17 +46,35 @@ const loginUser = async ({ identifier, password }) => {
 };
 
 const refreshToken = async (refreshToken) => {
-  const decoded = Jwt.verifyToken(refreshToken);
+  const decoded = Jwt.verifyRefreshToken(refreshToken);
   const accessToken = Jwt.generateAccessToken(decoded.id);
   return accessToken;
 };
 
-const sendVerificationCode = async () => {
-  // Implementation for sendVerificationCode
+const sendVerificationCode = async (email) => {
+  const existingUser = await User.findOne({ where: { email } });
+  if (existingUser && existingUser.is_verified) {
+    const error = new Error('This email is already associated with a verified account.');
+    error.statusCode = 409;
+    throw error;
+  }
+
+  const code = generateVerificationCode();
+  await redisClient.set(email, code, {
+    EX: 15 * 60, // 15 minutes
+  });
+
+  sendVerificationEmail(code, email);
+
+  const verificationToken = Jwt.generateEmailVerificationToken(email);
+
+  return {
+    message: 'Verification code sent successfully.',
+    verificationToken,
+  };
 };
 
 const getUser = async (userId) => {
-  // Implementation for getUser
   const user = await User.findByPk(userId, {
     attributes: { exclude: ['password_hash'] },
   });
@@ -64,7 +85,6 @@ const getUser = async (userId) => {
 };
 
 const deleteUser = async (userId) => {
-  // Implementation for deleteUser
   const user = await User.findByPk(userId);
 
   if (!user) throw new Error('User not found');
@@ -74,11 +94,19 @@ const deleteUser = async (userId) => {
 };
 
 const verifyEmail = async () => {
-  // Implementation for verifyEmail
+  
 };
 
-const changeUserPassword = async () => {
-  // Implementation for changeUserPassword
+const changeUserPassword = async (userId, oldPassword, newPassword) => {
+  const user = await User.findByPk(userId);
+
+  if (!user) throw new Error('User not found');
+
+  if (user.checkPassword(oldPassword)) {
+    user.updatePassword(newPassword);
+  } else {
+    throw new Error("Invalid password");
+  }
 };
 
 const editUser = async () => {

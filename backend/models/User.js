@@ -1,8 +1,17 @@
 const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/database'); 
+const sequelize = require('../config/database');
+const { hashValue, compareValues } = require('../utils/passwordUtils');
 
 class User extends Model {
-  
+  checkPassword(candidatePassword) {
+    return compareValues(candidatePassword, this.password_hash);
+  }
+
+  async updatePassword(newPassword) {
+    const hashedPassword = await hashValue(newPassword);
+    this.password_hash = hashedPassword;
+    await this.save();
+  }
 }
 
 User.init({
