@@ -9,113 +9,175 @@ const redisClient = require('../config/redis');
 const { generateVerificationCode } = require('../utils/codeUtils');
 const { sendVerificationEmail } = require('../utils/emailUtils');
 
-// TODO refactor
-
 dotenv.config();
 const saltRounds = 10;
 
 const registerUser = async ({ email, password, name }) => {
-  const existingUser = await User.findOne({ where: { email } });
-  if (existingUser) throw new Error('User already exists');
+  try {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) throw new Error('User already exists');
 
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const user = await User.create({
-    email,
-    password_hash: hashedPassword,
-    name,
-    username: nanoid(10),
-  });
-  return user;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const user = await User.create({
+      email,
+      password_hash: hashedPassword,
+      name,
+      username: nanoid(10),
+    });
+    return user;
+  } catch (err) {
+    throw new Error(err.message || 'Failed to register user');
+  }
 };
 
 const loginUser = async ({ identifier, password }) => {
-  const user = await User.findOne({
-    where: {
-      [Op.or]: [{ email: identifier }, { username: identifier }],
-    },
-  });
-  if (!user) throw new Error('User not found!');
+  try {
+    const user = await User.findOne({
+      where: {
+        [Op.or]: [{ email: identifier }, { username: identifier }],
+      },
+    });
+    if (!user) throw new Error('User not found!');
 
-  const isMatch = await bcrypt.compare(password, user.password_hash);
-  if (!isMatch) throw new Error('Invalid credentials!');
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) throw new Error('Invalid credentials!');
 
-  const accessToken = Jwt.generateAccessToken(user.id);
-  const refreshToken = Jwt.generateRefreshToken(user.id);
+    const accessToken = Jwt.generateAccessToken(user.id);
+    const refreshToken = Jwt.generateRefreshToken(user.id);
 
-  return { user, accessToken, refreshToken };
+    return { user, accessToken, refreshToken };
+  } catch (err) {
+    throw new Error(err.message || 'Failed to login');
+  }
 };
 
 const refreshToken = async (refreshToken) => {
-  const decoded = Jwt.verifyRefreshToken(refreshToken);
-  const accessToken = Jwt.generateAccessToken(decoded.id);
-  return accessToken;
+  try {
+    const decoded = Jwt.verifyRefreshToken(refreshToken);
+    const accessToken = Jwt.generateAccessToken(decoded.id);
+    return accessToken;
+  } catch (err) {
+    throw new Error(err.message || 'Failed to refresh token');
+  }
 };
 
 const sendVerificationCode = async (email) => {
-  const existingUser = await User.findOne({ where: { email } });
-  if (existingUser && existingUser.is_verified) {
-    const error = new Error('This email is already associated with a verified account.');
-    error.statusCode = 409;
-    throw error;
+  try {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser && existingUser.is_verified) {
+      const error = new Error('This email is already associated with a verified account.');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    const code = generateVerificationCode();
+    await redisClient.set(email, code, {
+      EX: 15 * 60, // 15 minutes
+    });
+
+    sendVerificationEmail(code, email);
+
+    const verificationToken = Jwt.generateEmailVerificationToken(email);
+
+    return {
+      message: 'Verification code sent successfully.',
+      verificationToken,
+    };
+  } catch (err) {
+    throw new Error(err.message || 'Failed to send verification code');
   }
-
-  const code = generateVerificationCode();
-  await redisClient.set(email, code, {
-    EX: 15 * 60, // 15 minutes
-  });
-
-  sendVerificationEmail(code, email);
-
-  const verificationToken = Jwt.generateEmailVerificationToken(email);
-
-  return {
-    message: 'Verification code sent successfully.',
-    verificationToken,
-  };
 };
 
 const getUser = async (userId) => {
-  const user = await User.findByPk(userId, {
-    attributes: { exclude: ['password_hash'] },
-  });
+  try {
+    const user = await User.findByPk(userId, {
+      attributes: { exclude: ['password_hash'] },
+    });
 
-  if (!user) throw new Error('User not found');
+    if (!user) throw new Error('User not found');
 
-  return user;
-};
-
-const deleteUser = async (userId) => {
-  const user = await User.findByPk(userId);
-
-  if (!user) throw new Error('User not found');
-
-  await user.destroy();
-  return { message: 'User deleted successfully' };
-};
-
-const verifyEmail = async () => {
-  
-};
-
-const changeUserPassword = async (userId, oldPassword, newPassword) => {
-  const user = await User.findByPk(userId);
-
-  if (!user) throw new Error('User not found');
-
-  if (user.checkPassword(oldPassword)) {
-    user.updatePassword(newPassword);
-  } else {
-    throw new Error("Invalid password");
+    return user;
+  } catch (err) {
+    throw new Error(err.message || 'Failed to get user');
   }
 };
 
-const editUser = async () => {
-  // Implementation for editUser
+const deleteUser = async (userId) => {
+  try {
+    const user = await User.findByPk(userId);
+
+    if (!user) throw new Error('User not found');
+
+    await user.destroy();
+    return { message: 'User deleted successfully' };
+  } catch (err) {
+    throw new Error(err.message || 'Failed to delete user');
+  }
+};
+
+const verifyEmail = async (code, token) => {
+  try {
+    const decoded = Jwt.verifyEmailVerificationToken(token);
+    const email = decoded.email;
+
+    if (!email) throw new Error('Invalid token');
+
+    const storedCode = await redisClient.get(email);
+    if (!storedCode) throw new Error('Verification code expired or not found');
+
+    if (storedCode !== code) throw new Error('Invalid verification code');
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) throw new Error('User not found');
+
+    if (user.is_verified) {
+      return { message: 'Email is already verified' };
+    }
+
+    user.is_verified = true;
+    await user.save();
+    await redisClient.del(email);
+
+    return { message: 'Email verified successfully' };
+  } catch (err) {
+    throw new Error(err.message || 'Email verification failed');
+  }
+};
+
+const changeUserPassword = async (userId, oldPassword, newPassword) => {
+  try {
+    const user = await User.findByPk(userId);
+
+    if (!user) throw new Error('User not found');
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
+    if (!isMatch) throw new Error('Invalid password');
+
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    user.password_hash = hashedPassword;
+    await user.save();
+
+    return { message: 'Password changed successfully' };
+  } catch (err) {
+    throw new Error(err.message || 'Failed to change password');
+  }
+};
+
+const editUser = async (username, imageUrl) => {
+  try {
+    const user = await User.findOne({ username: username });
+    if (!user) throw new Error('User not found');
+
+    await user.update({ image_url: imageUrl });
+    return { message: 'User updated successfully', user };
+  } catch (err) {
+    throw new Error(err.message || 'Failed to edit user');
+  }
 };
 
 module.exports = {
   registerUser,
-  loginUser,
+  loginUser,    
   refreshToken,
   sendVerificationCode,
   getUser,

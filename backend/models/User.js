@@ -35,6 +35,7 @@ User.init({
   },
   name: {
     type: DataTypes.STRING(100),
+    unique: true,
     allowNull: false
   },
   username: {

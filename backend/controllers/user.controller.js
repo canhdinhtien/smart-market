@@ -85,7 +85,7 @@ const refreshToken = async (req, res, next) => {
 const sendVerificationCode = async (req, res, next) => {
   try {
     const { email } = req.body;
-    if (!email ) {
+    if (!email) {
       return res.status(400).json({ message: 'Email is required' });
     }
     const result = await userService.sendVerificationCode(email);
@@ -117,7 +117,7 @@ const deleteUser = async (req, res, next) => {
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: 'Unauthorized: User ID missing' });
     }
-    
+
     const result = await userService.deleteUser(req.user.id);
     res.status(200).json(result);
   } catch (error) {
@@ -127,23 +127,35 @@ const deleteUser = async (req, res, next) => {
 
 
 const verifyEmail = async (req, res, next) => {
-  // Implementation for verifyEmail
+  try {
+    const { code, token } = req.body;
+    verifyEmail(code, token);
+    res.status(200).json();
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 const changeUserPassword = async (req, res, next) => {
-  const { oldPassword, newPassword } = req.body;
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
   try {
+    const { oldPassword, newPassword } = req.body;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     userService.changeUserPassword(decoded.id, oldPassword, newPassword);
-  res.status(200).json(result);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 const editUser = async (req, res, next) => {
-  // Implementation for editUser
+  try {
+    const { username } = req.params;
+    const { imageUrl } = req.body;
+    const result = await userService.editUser(username, imageUrl);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
 };
 
 module.exports = {
