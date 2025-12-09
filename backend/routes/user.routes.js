@@ -1,6 +1,7 @@
 const express = require('express');
 const controller = require('../controllers/user.controller.js');
 const { verifyUser } = require('../middleware/auth.middleware.js');
+const upload = require('../middleware/upload.middleware.js');
 
 const router = express.Router();
 
@@ -13,6 +14,6 @@ router.get('/', verifyUser, controller.getUser);
 router.delete('/', verifyUser, controller.deleteUser);
 router.post('/verify-email', controller.verifyEmail);
 router.post('/change-password', verifyUser, controller.changeUserPassword);
-router.put('/', verifyUser, controller.editUser);
+router.put('/', verifyUser, upload.single('profile_pic'), controller.editUser);
 
 module.exports = router;

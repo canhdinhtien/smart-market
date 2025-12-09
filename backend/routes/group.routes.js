@@ -6,10 +6,10 @@ const router = express.Router();
 
 router.use(verifyUser);
 
+router.get('/', controller.getUserGroups);
 router.post('/', controller.createGroup);
-router.post('/add', controller.addMember);
-router.delete('/', controller.deleteMember);
-router.get('/', controller.getGroupMembers);
-router.get('/all', controller.getUserGroups);
+router.get('/:id/members', controller.getGroupMembers);
+router.post('/:id/members', controller.addMember);
+router.delete('/:id/members/:username', controller.deleteMember);
 
 module.exports = router;

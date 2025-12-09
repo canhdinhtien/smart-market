@@ -163,26 +163,45 @@ const changeUserPassword = async (userId, oldPassword, newPassword) => {
   }
 };
 
-const editUser = async (username, imageUrl) => {
+const updateUser = async (userId, data) => {
   try {
-    const user = await User.findOne({ username: username });
+    const user = await User.findByPk(userId);
     if (!user) throw new Error('User not found');
 
-    await user.update({ image_url: imageUrl });
+    // Email Uniqueness Check
+    if (data.email && data.email !== user.email) {
+      const emailExists = await User.findOne({ where: { email: data.email } });
+      if (emailExists) throw new Error('Email already exists');
+    }
+
+    // Username Uniqueness Check
+    if (data.username && data.username !== user.username) {
+      const usernameExists = await User.findOne({ where: { username: data.username } });
+      if (usernameExists) throw new Error('Username already exists');
+    }
+
+    const updateFields = {};
+    if (data.name) updateFields.name = data.name;
+    if (data.username) updateFields.username = data.username;
+    if (data.email) updateFields.email = data.email;
+    if (data.gender) updateFields.gender = data.gender;
+    if (data.imageUrl) updateFields.image_url = data.imageUrl;
+
+    await user.update(updateFields);
     return { message: 'User updated successfully', user };
   } catch (err) {
-    throw new Error(err.message || 'Failed to edit user');
+    throw new Error(err.message || 'Failed to update user');
   }
 };
 
 module.exports = {
   registerUser,
-  loginUser,    
+  loginUser,
   refreshToken,
   sendVerificationCode,
   getUser,
   deleteUser,
   verifyEmail,
   changeUserPassword,
-  editUser,
+  updateUser,
 };
