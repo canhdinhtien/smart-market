@@ -19,7 +19,11 @@ const createGroup = async (adminId, groupName) => {
  * @param {number} groupId
  * @param {string} username
  */
-const addMember = async (groupId, username) => {
+const addMember = async (groupId, username, requestingUserId) => {
+  const group = await Group.findByPk(groupId);
+  if (!group) throw new Error('Group not found');
+  if (group.admin_user_id !== requestingUserId) throw new Error('Only group admin can add members');
+
   const user = await User.findOne({ where: { username } });
   if (!user) throw new Error('User not found');
 
@@ -35,7 +39,11 @@ const addMember = async (groupId, username) => {
  * @param {number} groupId
  * @param {string} username
  */
-const deleteMember = async (groupId, username) => {
+const deleteMember = async (groupId, username, requestingUserId) => {
+  const group = await Group.findByPk(groupId);
+  if (!group) throw new Error('Group not found');
+  if (group.admin_user_id !== requestingUserId) throw new Error('Only group admin can remove members');
+
   const user = await User.findOne({ where: { username } });
   if (!user) throw new Error('User not found');
 
@@ -50,12 +58,18 @@ const deleteMember = async (groupId, username) => {
  * Get all members of a group
  * @param {number} groupId
  */
-const getGroupMembers = async (groupId) => {
+const getGroupMembers = async (groupId, requestingUserId) => {
   const group = await Group.findByPk(groupId, {
     include: { model: User, as: 'members', attributes: ['id', 'username', 'name', 'email'] }
   });
 
   if (!group) throw new Error('Group not found');
+
+  const isMember = await GroupMember.findOne({ where: { group_id: groupId, user_id: requestingUserId } });
+  if (group.admin_user_id !== requestingUserId && !isMember) {
+    throw new Error('Access denied: You must be a member or admin to view this group');
+  }
+
   return group.members;
 };
 
@@ -89,11 +103,18 @@ const getUserGroups = async (userId) => {
   return allGroups;
 };
 
+const getGroupById = async (groupId) => {
+  const group = await Group.findByPk(groupId);
+  return group;
+};
+
 
 module.exports = {
   createGroup,
   addMember,
   deleteMember,
   getGroupMembers,
-  getUserGroups
+  getUserGroups,
+  getGroupById,
+  isMember
 };

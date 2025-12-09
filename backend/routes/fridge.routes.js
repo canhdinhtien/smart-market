@@ -6,10 +6,10 @@ const router = express.Router();
 
 router.use(verifyUser);
 
-router.post('/', controller.createFridgeItem);
-router.put('/', controller.updateFridgeItem);
-router.delete('/', controller.deleteFridgeItem);
 router.get('/', controller.getAllFridgeItems);
-router.get('/:foodName', controller.getSpecificFridgeItem);
+router.get('/:id', controller.getFridgeItemById);
+router.post('/', controller.createFridgeItem);
+router.put('/:id', controller.updateFridgeItem);
+router.delete('/:id', controller.deleteFridgeItem);
 
 module.exports = router;

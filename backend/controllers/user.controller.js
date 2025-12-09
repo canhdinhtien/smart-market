@@ -149,12 +149,36 @@ const changeUserPassword = async (req, res, next) => {
 
 const editUser = async (req, res, next) => {
   try {
-    const { username } = req.params;
-    const { imageUrl } = req.body;
-    const result = await userService.editUser(username, imageUrl);
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized: User ID missing' });
+    }
+
+    const { name, username, gender, email } = req.body;
+    let { imageUrl } = req.body;
+
+    if (req.file) {
+      imageUrl = req.file.path;
+    }
+
+    const updateData = {
+      name,
+      username,
+      gender,
+      email,
+      imageUrl
+    };
+
+    // Remove undefined fields
+    Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
+
+    const result = await userService.updateUser(req.user.id, updateData);
     res.status(200).json(result);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    // If it's a validation error (like duplicate email), we might want 400 or 409
+    if (error.message.includes('already exists')) {
+      return res.status(409).json({ message: error.message });
+    }
+    res.status(400).json({ message: error.message });
   }
 };
 
