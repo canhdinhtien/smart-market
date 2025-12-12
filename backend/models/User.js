@@ -1,6 +1,6 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
-const { hashValue, compareValues } = require('../utils/passwordUtils');
+const { hashValue, compareValues } = require('../utils/hashUtils');
 
 class User extends Model {
   checkPassword(candidatePassword) {

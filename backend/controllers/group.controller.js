@@ -1,4 +1,4 @@
-const groupService = require('../services/groupService');
+const groupService = require('../services/group.service');
 
 /**
  * Create a new group

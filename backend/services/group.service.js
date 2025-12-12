@@ -116,5 +116,4 @@ module.exports = {
   getGroupMembers,
   getUserGroups,
   getGroupById,
-  isMember
 };

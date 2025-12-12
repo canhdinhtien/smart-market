@@ -1,3 +1,6 @@
+const cloudinary = require('../config/cloudinary');
+const multer = require('multer');
+
 class CloudinaryStreamStorage {
     constructor(options) {
         this.options = options || {};
