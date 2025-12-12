@@ -1,17 +1,54 @@
-const createUnit = async () => {
-  // Implementation for createUnit
+const Unit = require('../models/Unit');
+
+const createUnit = async (unitName) => {
+  const existingUnit = await Unit.findOne({ where: { name: unitName } });
+  if (existingUnit) {
+    const error = new Error('Unit already exists');
+    error.statusCode = 409;
+    throw error;
+  }
+
+  const newUnit = await Unit.create({ name: unitName });
+  return newUnit;
 };
 
 const getAllUnits = async () => {
-  // Implementation for getAllUnits
+  return await Unit.findAll();
 };
 
-const editUnitByName = async () => {
-  // Implementation for editUnitByName
+const editUnitByName = async (oldName, newName) => {
+  const nameExists = await Unit.findOne({ where: { name: newName } });
+  if (nameExists) {
+    const error = new Error('Unit with that new name already exists');
+    error.statusCode = 409;
+    throw error;
+  }
+
+  const [updatedRows] = await Unit.update(
+    { name: newName },
+    { where: { name: oldName } }
+  );
+
+  if (updatedRows === 0) {
+    const error = new Error('Unit not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const updatedUnit = await Unit.findOne({ where: { name: newName } });
+  return updatedUnit;
 };
 
-const deleteUnitByName = async () => {
-  // Implementation for deleteUnitByName
+const deleteUnitByName = async (unitName) => {
+  const deletedRows = await Unit.destroy({ where: { name: unitName } });
+
+  if (deletedRows === 0) {
+    const error = new Error('Unit not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return { message: 'Unit deleted successfully' };
 };
 
 module.exports = {
