@@ -12,15 +12,15 @@ const recipeRoutes = require('./recipe.routes');
 
 const router = express.Router();
 
-router.use('/user', userRoutes);
-router.use('/user/group', groupRoutes);
-router.use('/admin/category', categoryRoutes);
-router.use('/admin/unit', unitRoutes);
+router.use('/users', userRoutes);
+router.use('/users/group', groupRoutes);
+router.use('/admin/categories', categoryRoutes);
+router.use('/admin/units', unitRoutes);
 router.use('/logs', logRoutes);
 router.use('/food', foodRoutes);
 router.use('/fridge', fridgeRoutes);
 router.use('/shopping', shoppinglistRoutes);
-router.use('/meal', mealplanRoutes);
-router.use('/recipe', recipeRoutes);
+router.use('/meals', mealplanRoutes);
+router.use('/recipes', recipeRoutes);
 
 module.exports = router;

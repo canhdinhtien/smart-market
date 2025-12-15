@@ -8,12 +8,190 @@ const router = express.Router();
 
 router.use(verifyUser);
 
+/**
+ * @openapi
+ * tags:
+ *   name: Foods
+ *   description: Food items management
+ */
+
+/**
+ * @openapi
+ * /foods:
+ *   get:
+ *     summary: Get all foods in user's group
+ *     tags: [Foods]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: group_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Group ID to get foods from
+ *     responses:
+ *       200:
+ *         description: List of foods in the group
+ *       400:
+ *         description: Group ID is required
+ *       401:
+ *         description: Unauthorized
+ */
 router.get('/', controller.getAllFoodsInGroup);
+
+/**
+ * @openapi
+ * /foods/unit:
+ *   get:
+ *     summary: Get all available units
+ *     tags: [Foods]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of units
+ */
 router.get('/unit', controller.getUnits);
+
+/**
+ * @openapi
+ * /foods/category:
+ *   get:
+ *     summary: Get all available categories
+ *     tags: [Foods]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of categories
+ */
 router.get('/category', controller.getCategories);
+
+/**
+ * @openapi
+ * /foods/{id}:
+ *   get:
+ *     summary: Get a food item by ID
+ *     tags: [Foods]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Food ID
+ *     responses:
+ *       200:
+ *         description: Food item details
+ *       404:
+ *         description: Food not found
+ */
 router.get('/:id', controller.getFoodById);
+
+/**
+ * @openapi
+ * /foods:
+ *   post:
+ *     summary: Create a new food item
+ *     tags: [Foods]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - group_id
+ *             properties:
+ *               name:
+ *                 type: string
+ *               group_id:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               unit:
+ *                 type: string
+ *               quantity:
+ *                 type: number
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Food created successfully
+ *       400:
+ *         description: Invalid input
+ */
 router.post('/', upload.single('image'), controller.createFood);
+
+/**
+ * @openapi
+ * /foods/{id}:
+ *   put:
+ *     summary: Update a food item
+ *     tags: [Foods]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Food ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               unit:
+ *                 type: string
+ *               quantity:
+ *                 type: number
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Food updated successfully
+ *       404:
+ *         description: Food not found
+ */
 router.put('/:id', upload.single('image'), controller.updateFood);
+
+/**
+ * @openapi
+ * /foods/{id}:
+ *   delete:
+ *     summary: Delete a food item
+ *     tags: [Foods]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Food ID
+ *     responses:
+ *       200:
+ *         description: Food deleted successfully
+ *       404:
+ *         description: Food not found
+ */
 router.delete('/:id', controller.deleteFood);
 
 module.exports = router;
