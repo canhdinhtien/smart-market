@@ -56,7 +56,7 @@ const deleteRecipe = async (req, res, next) => {
  */
 const getRecipesByFoodId = async (req, res, next) => {
   try {
-    const { foodId } = req.params;
+    const { foodId } = req.query;
 
     if (!foodId) {
       const error = new Error('foodId is required');

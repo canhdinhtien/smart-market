@@ -129,8 +129,8 @@ const deleteUser = async (req, res, next) => {
 const verifyEmail = async (req, res, next) => {
   try {
     const { code, token } = req.body;
-    verifyEmail(code, token);
-    res.status(200).json();
+    const result = await userService.verifyEmail(code, token);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -139,8 +139,12 @@ const verifyEmail = async (req, res, next) => {
 const changeUserPassword = async (req, res, next) => {
   try {
     const { oldPassword, newPassword } = req.body;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    userService.changeUserPassword(decoded.id, oldPassword, newPassword);
+    
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized: User ID missing' });
+    }
+
+    const result = await userService.changeUserPassword(req.user.id, oldPassword, newPassword);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });

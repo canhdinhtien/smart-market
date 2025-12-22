@@ -49,22 +49,27 @@ router.post('/', controller.createRecipe);
 
 /**
  * @openapi
- * /recipes:
+ * /recipes/{id}:
  *   put:
  *     summary: Update a recipe
  *     tags: [Recipes]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Recipe ID
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - id
  *             properties:
- *               id:
+ *               name:
  *                 type: string
  *               instructions:
  *                 type: string
@@ -78,34 +83,30 @@ router.post('/', controller.createRecipe);
  *       404:
  *         description: Recipe not found
  */
-router.put('/', controller.updateRecipe);
+router.put('/:id', controller.updateRecipe);
 
 /**
  * @openapi
- * /recipes:
+ * /recipes/{id}:
  *   delete:
  *     summary: Delete a recipe
  *     tags: [Recipes]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - id
- *             properties:
- *               id:
- *                 type: string
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Recipe ID
  *     responses:
  *       200:
  *         description: Recipe deleted successfully
  *       404:
  *         description: Recipe not found
  */
-router.delete('/', controller.deleteRecipe);
+router.delete('/:id', controller.deleteRecipe);
 
 /**
  * @openapi

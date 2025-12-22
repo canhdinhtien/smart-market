@@ -74,6 +74,7 @@ const getAllFridgeItems = async (req, res, next) => {
   }
 };
 
+// TODO: This function is not currently exposed in routes
 const getFridgeItemsByFoodName = async (req, res, next) => {
   try {
     const { name, group_id } = req.query;

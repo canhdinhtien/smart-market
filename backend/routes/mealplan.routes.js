@@ -48,48 +48,48 @@ router.post('/', controller.createMealPlan);
 
 /**
  * @openapi
- * /mealplans:
+ * /mealplans/{id}:
  *   delete:
  *     summary: Delete a meal plan
  *     tags: [MealPlans]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - date
- *             properties:
- *               date:
- *                 type: string
- *                 format: date
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Meal plan ID
  *     responses:
  *       200:
  *         description: Meal plan deleted successfully
  *       404:
  *         description: Meal plan not found
  */
-router.delete('/', controller.deletePlan);
+router.delete('/:id', controller.deletePlan);
 
 /**
  * @openapi
- * /mealplans:
+ * /mealplans/{id}:
  *   put:
  *     summary: Update a meal plan
  *     tags: [MealPlans]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Meal plan ID
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - date
  *             properties:
  *               date:
  *                 type: string
@@ -104,30 +104,41 @@ router.delete('/', controller.deletePlan);
  *       404:
  *         description: Meal plan not found
  */
-router.put('/', controller.updateMealPlan);
+router.put('/:id', controller.updateMealPlan);
 
 /**
  * @openapi
- * /mealplans:
+ * /mealplans/{groupId}:
  *   get:
- *     summary: Get meal plan by date
+ *     summary: Get meal plan by date for a group
  *     tags: [MealPlans]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: query
- *         name: date
+ *       - in: path
+ *         name: groupId
  *         required: true
  *         schema:
  *           type: string
+ *         description: Group ID
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
  *           format: date
- *         description: Date to get meal plan for
+ *         description: Start date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date
  *     responses:
  *       200:
- *         description: Meal plan for the specified date
+ *         description: Meal plan for the specified date range
  *       404:
- *         description: No meal plan found for this date
+ *         description: No meal plan found
  */
-router.get('/', controller.getMealPlanByDate);
+router.get('/:groupId', controller.getMealPlanByDate);
 
 module.exports = router;
