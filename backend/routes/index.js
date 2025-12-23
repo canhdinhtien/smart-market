@@ -9,6 +9,7 @@ const fridgeRoutes = require('./fridge.routes');
 const shoppinglistRoutes = require('./shoppinglist.routes');
 const mealplanRoutes = require('./mealplan.routes');
 const recipeRoutes = require('./recipe.routes');
+const notificationRoutes = require('./notification.routes');
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use('/fridge', fridgeRoutes);
 router.use('/shopping', shoppinglistRoutes);
 router.use('/meals', mealplanRoutes);
 router.use('/recipes', recipeRoutes);
+router.use('/notifications', notificationRoutes);
 
 module.exports = router;

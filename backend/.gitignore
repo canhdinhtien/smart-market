@@ -95,3 +95,9 @@ out
 
 # TernJS port file
 .tern-port
+
+# 🔥 Firebase / Google Cloud secrets
+*firebase-adminsdk*.json
+*serviceAccount*.json
+google-services.json
+GoogleService-Info.plist

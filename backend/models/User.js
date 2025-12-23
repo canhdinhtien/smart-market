@@ -82,4 +82,12 @@ User.init({
   }
 });
 
+
+User.associate = (models) => {
+  User.hasMany(models.UserDevice, {
+    foreignKey: "user_id",
+    as: "devices",
+  });
+};
+
 module.exports = User;
