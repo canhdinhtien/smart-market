@@ -24,7 +24,11 @@ const registerUser = async ({ email, password, name }) => {
       name,
       username: nanoid(10),
     });
-    return user;
+
+    const userJson = user.toJSON();
+    delete userJson.password_hash;
+
+    return userJson;
   } catch (err) {
     throw new Error(err.message || 'Failed to register user');
   }
@@ -45,7 +49,10 @@ const loginUser = async ({ identifier, password }) => {
     const accessToken = Jwt.generateAccessToken(user.id);
     const refreshToken = Jwt.generateRefreshToken(user.id);
 
-    return { user, accessToken, refreshToken };
+    const userJson = user.toJSON();
+    delete userJson.password_hash;
+
+    return { user: userJson, accessToken, refreshToken };
   } catch (err) {
     throw new Error(err.message || 'Failed to login');
   }
@@ -96,7 +103,10 @@ const getUser = async (userId) => {
 
     if (!user) throw new Error('User not found');
 
-    return user;
+    const userJson = user.toJSON();
+    delete userJson.password_hash;
+
+    return userJson;
   } catch (err) {
     throw new Error(err.message || 'Failed to get user');
   }
@@ -188,7 +198,11 @@ const updateUser = async (userId, data) => {
     if (data.imageUrl) updateFields.image_url = data.imageUrl;
 
     await user.update(updateFields);
-    return { message: 'User updated successfully', user };
+
+    const userJson = user.toJSON();
+    delete userJson.password_hash;
+
+    return { message: 'User updated successfully', user: userJson };
   } catch (err) {
     throw new Error(err.message || 'Failed to update user');
   }
