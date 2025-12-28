@@ -1,5 +1,6 @@
 const { UserDevice } = require("../models");
-const { sendFCM } = require("../services/fcm.service.js");
+const { sendFCM } = require("../services/fcm.service.js"); // Keeping for registerDevice if needed, but sendToUser uses NotificationService
+const NotificationService = require("../services/notification.service");
 
 
 exports.registerDevice = async (req, res) => {
@@ -27,24 +28,13 @@ exports.registerDevice = async (req, res) => {
 
 
 exports.sendToUser = async (req, res) => {
-  const { user_id, title, body } = req.body;
+  const { user_id, title, body, data } = req.body;
 
-  const devices = await UserDevice.findAll({
-    where: {
-      user_id,
-      is_active: true,
-    },
-  });
-
-  await Promise.all(
-    devices.map(d =>
-      sendFCM({
-        token: d.fcm_token,
-        title,
-        body,
-      })
-    )
-  );
-
-  res.json({ message: "Notification sent" });
+  try {
+    await NotificationService.sendToUser(user_id, title, body, data);
+    res.json({ message: "Notification sent" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error sending notification" });
+  }
 };

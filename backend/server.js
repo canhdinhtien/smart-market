@@ -2,6 +2,7 @@ const app = require('./app.js');
 const dotenv = require('dotenv');
 dotenv.config();
 const sequelize = require('./config/database.js');
+const { initCronJobs } = require('./services/cron.service');
 
 const PORT = process.env.PORT || 5000;
 
@@ -9,6 +10,9 @@ async function startServer() {
   try {
     await sequelize.authenticate();
     console.log('Database connected successfully');
+
+    // Initialize scheduled tasks
+    initCronJobs();
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

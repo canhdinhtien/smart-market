@@ -1,6 +1,7 @@
 const Group = require('../models/Group');
 const GroupMember = require('../models/GroupMember');
 const User = require('../models/User');
+const NotificationService = require('./notification.service');
 
 /**
  * Create a new group
@@ -11,6 +12,12 @@ const createGroup = async (adminId, groupName) => {
   if (!groupName) throw new Error('Group name is required');
 
   const group = await Group.create({ name: groupName, admin_user_id: adminId });
+
+  const adminUser = await User.findByPk(adminId);
+  if (adminUser) {
+    await addMember(group.id, adminUser.username, adminId);
+  }
+
   return group;
 };
 
@@ -31,6 +38,15 @@ const addMember = async (groupId, username, requestingUserId) => {
   if (exists) throw new Error('User already in group');
 
   await GroupMember.create({ group_id: groupId, user_id: user.id });
+
+  // Notify the user
+  await NotificationService.sendToUser(
+    user.id,
+    'Added to Group',
+    `You have been added to the group "${group.name}"`,
+    { type: 'GROUP_ADD', groupId: group.id }
+  );
+
   return { message: 'Member added successfully' };
 };
 
@@ -51,6 +67,15 @@ const deleteMember = async (groupId, username, requestingUserId) => {
   if (!member) throw new Error('User not in group');
 
   await member.destroy();
+
+  // Notify the user (even though they are removed, they might still get the push if token is active)
+  await NotificationService.sendToUser(
+    user.id,
+    'Removed from Group',
+    `You have been removed from the group "${group.name}"`,
+    { type: 'GROUP_REMOVE', groupId: group.id }
+  );
+
   return { message: 'Member removed successfully' };
 };
 

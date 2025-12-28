@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Unit = require('../models/Unit');
 const Category = require('../models/Category');
 const groupService = require('./group.service');
+const NotificationService = require('./notification.service');
 
 const createShoppingList = async (data, requestingUserId) => {
   const { name, group_id } = data;
@@ -108,14 +109,27 @@ const createTasks = async (listId, tasksData, requestingUserId) => {
     throw error;
   }
 
+  let newTasks;
   // If tasksData is array
   if (Array.isArray(tasksData)) {
     const tasksWithListId = tasksData.map(task => ({ ...task, shopping_list_id: listId }));
-    return await ShoppingListTask.bulkCreate(tasksWithListId);
+    newTasks = await ShoppingListTask.bulkCreate(tasksWithListId);
+  } else {
+    // Single task
+    newTasks = await ShoppingListTask.create({ ...tasksData, shopping_list_id: listId });
   }
 
-  // Single task
-  return await ShoppingListTask.create({ ...tasksData, shopping_list_id: listId });
+  // Notify group members
+  const taskCount = Array.isArray(tasksData) ? tasksData.length : 1;
+  await NotificationService.sendToGroup(
+    list.group_id,
+    'New Shopping Task',
+    `${taskCount} new task(s) added to list "${list.name}"`,
+    { type: 'SHOPPING_LIST_UPDATE', listId: list.id, groupId: list.group_id },
+    requestingUserId
+  );
+
+  return newTasks;
 };
 
 const getListOfTasks = async (shoppingListId, requestingUserId) => {
@@ -188,6 +202,23 @@ const updateTask = async (taskId, data, requestingUserId) => {
   }
 
   await task.update(data);
+
+  // Notify if task is completed or important update
+  // For now, we notify on any update but we could filter
+  if (data.is_completed !== undefined) {
+    const status = data.is_completed ? 'completed' : 'uncompleted';
+    // We should probably fetch the Task name again or use existing if not updated
+    // But task object has old data before reload? 
+    // Wait, update modifies the instance in place in Sequelize? Yes usually.
+    await NotificationService.sendToGroup(
+      task.ShoppingList.group_id,
+      'Shopping Task Updated',
+      `Task "${task.name || 'Unknown'}" marked as ${status}`,
+      { type: 'SHOPPING_TASK_UPDATE', listId: task.shopping_list_id, groupId: task.ShoppingList.group_id },
+      requestingUserId
+    );
+  }
+
   return task;
 };
 
