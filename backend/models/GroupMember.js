@@ -1,13 +1,12 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User');
-const Group = require('./Group');
 
-class GroupMember extends Model {}
+
+class GroupMember extends Model { }
 
 GroupMember.init({
-  user_id: { type: DataTypes.INTEGER, primaryKey: true, references: { model: User, key: 'id' } },
-  group_id: { type: DataTypes.INTEGER, primaryKey: true, references: { model: Group, key: 'id' } },
+  user_id: { type: DataTypes.INTEGER, primaryKey: true, references: { model: 'users', key: 'id' } },
+  group_id: { type: DataTypes.INTEGER, primaryKey: true, references: { model: 'groups', key: 'id' } },
   joined_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 }, {
   sequelize,
@@ -16,7 +15,10 @@ GroupMember.init({
   timestamps: false
 });
 
-GroupMember.belongsTo(User, { foreignKey: 'user_id' });
-GroupMember.belongsTo(Group, { foreignKey: 'group_id' });
+GroupMember.associate = (models) => {
+  GroupMember.belongsTo(models.User, { foreignKey: 'user_id' });
+  GroupMember.belongsTo(models.Group, { foreignKey: 'group_id' });
+};
 
 module.exports = GroupMember;
+

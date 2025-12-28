@@ -1,10 +1,8 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
-const Category = require('./Category');
-const Unit = require('./Unit');
-const Group = require('./Group');
 
-class Food extends Model {}
+
+class Food extends Model { }
 
 Food.init({
   id: {
@@ -17,18 +15,18 @@ Food.init({
   category_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: Category, key: 'id' }
+    references: { model: 'categories', key: 'id' }
   },
   unit_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: Unit, key: 'id' }
+    references: { model: 'units', key: 'id' }
   },
   image_url: DataTypes.STRING,
   group_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: Group, key: 'id' }
+    references: { model: 'groups', key: 'id' }
   },
   created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   updated_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
@@ -42,9 +40,13 @@ Food.init({
   }
 });
 
-// Associations
-Food.belongsTo(Category, { foreignKey: 'category_id' });
-Food.belongsTo(Unit, { foreignKey: 'unit_id' });
-Food.belongsTo(Group, { foreignKey: 'group_id' });
+
+
+Food.associate = (models) => {
+  Food.belongsTo(models.Category, { foreignKey: 'category_id' });
+  Food.belongsTo(models.Unit, { foreignKey: 'unit_id' });
+  Food.belongsTo(models.Group, { foreignKey: 'group_id' });
+};
 
 module.exports = Food;
+

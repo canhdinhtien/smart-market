@@ -1,8 +1,8 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database'); // adjust path
-const User = require('./User.js'); // make sure path to User model is correct
 
-class Group extends Model {}
+
+class Group extends Model { }
 
 Group.init({
   id: {
@@ -19,7 +19,7 @@ Group.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: User,
+      model: 'users',
       key: 'id'
     },
     onDelete: 'CASCADE'
@@ -44,8 +44,17 @@ Group.init({
   }
 });
 
-// Optional: define association
-Group.belongsTo(User, { foreignKey: 'admin_user_id', as: 'admin' });
-User.hasMany(Group, { foreignKey: 'admin_user_id', as: 'adminGroups' });
+
+
+Group.associate = (models) => {
+  Group.belongsTo(models.User, { foreignKey: 'admin_user_id', as: 'admin' });
+  Group.belongsToMany(models.User, {
+    through: models.GroupMember,
+    as: 'members',
+    foreignKey: 'group_id',
+    otherKey: 'user_id'
+  });
+};
 
 module.exports = Group;
+

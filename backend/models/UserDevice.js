@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const User = require("./User");
+
 
 const UserDevice = sequelize.define("UserDevice", {
   id: {
@@ -13,7 +13,7 @@ const UserDevice = sequelize.define("UserDevice", {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: User,
+      model: 'users',
       key: "id",
     },
     onDelete: "CASCADE",
@@ -44,8 +44,9 @@ const UserDevice = sequelize.define("UserDevice", {
   timestamps: true,
 });
 
-
-User.hasMany(UserDevice, { foreignKey: "user_id" });
-UserDevice.belongsTo(User, { foreignKey: "user_id" });
+UserDevice.associate = (models) => {
+  UserDevice.belongsTo(models.User, { foreignKey: "user_id" });
+};
 
 module.exports = UserDevice;
+

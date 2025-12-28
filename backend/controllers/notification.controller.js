@@ -1,5 +1,4 @@
 const { UserDevice } = require("../models");
-const { sendFCM } = require("../services/fcm.service.js"); // Keeping for registerDevice if needed, but sendToUser uses NotificationService
 const NotificationService = require("../services/notification.service");
 
 

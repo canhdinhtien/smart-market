@@ -88,6 +88,10 @@ User.associate = (models) => {
     foreignKey: "user_id",
     as: "devices",
   });
+  User.hasMany(models.Group, {
+    foreignKey: 'admin_user_id',
+    as: 'adminGroups'
+  });
 };
 
 module.exports = User;

@@ -1,16 +1,14 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
-const Recipe = require('./Recipe');
-const Food = require('./Food');
-const Unit = require('./Unit');
 
-class RecipeIngredient extends Model {}
+
+class RecipeIngredient extends Model { }
 
 RecipeIngredient.init({
-  recipe_id: { type: DataTypes.INTEGER, primaryKey: true, references: { model: Recipe, key: 'id' } },
-  food_id: { type: DataTypes.INTEGER, primaryKey: true, references: { model: Food, key: 'id' } },
+  recipe_id: { type: DataTypes.INTEGER, primaryKey: true, references: { model: 'recipes', key: 'id' } },
+  food_id: { type: DataTypes.INTEGER, primaryKey: true, references: { model: 'foods', key: 'id' } },
   quantity: { type: DataTypes.NUMERIC, allowNull: false },
-  unit_id: { type: DataTypes.INTEGER, allowNull: false, references: { model: Unit, key: 'id' } }
+  unit_id: { type: DataTypes.INTEGER, allowNull: false, references: { model: 'units', key: 'id' } }
 }, {
   sequelize,
   modelName: 'RecipeIngredient',
@@ -18,8 +16,11 @@ RecipeIngredient.init({
   timestamps: false
 });
 
-RecipeIngredient.belongsTo(Recipe, { foreignKey: 'recipe_id' });
-RecipeIngredient.belongsTo(Food, { foreignKey: 'food_id' });
-RecipeIngredient.belongsTo(Unit, { foreignKey: 'unit_id' });
+RecipeIngredient.associate = (models) => {
+  RecipeIngredient.belongsTo(models.Recipe, { foreignKey: 'recipe_id' });
+  RecipeIngredient.belongsTo(models.Food, { foreignKey: 'food_id' });
+  RecipeIngredient.belongsTo(models.Unit, { foreignKey: 'unit_id' });
+};
+
 
 module.exports = RecipeIngredient;

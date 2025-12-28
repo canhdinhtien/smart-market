@@ -2,6 +2,7 @@ const app = require('./app.js');
 const dotenv = require('dotenv');
 dotenv.config();
 const sequelize = require('./config/database.js');
+require('./models'); // Initialize models and associations
 const { initCronJobs } = require('./services/cron.service');
 
 const PORT = process.env.PORT || 5000;
