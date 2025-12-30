@@ -20,7 +20,7 @@ function createVerificationEmail(code) {
 const sendVerificationEmail = async (code, email) => {
     try {
         const { data, error } = await resend.emails.send({
-            from: 'onboarding@resend.dev',
+            from: process.env.EMAIL,
             to: [email],
             subject: 'Email Verification',
             html: createVerificationEmail(code),

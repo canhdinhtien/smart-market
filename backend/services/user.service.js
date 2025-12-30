@@ -1,7 +1,6 @@
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { nanoid } = require('nanoid');
 const { Op } = require('sequelize');
 const User = require('../models/User');
 const Jwt = require('../utils/jwtUtils');
