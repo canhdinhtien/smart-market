@@ -26,6 +26,8 @@ const registerUser = async ({ email, password, name }) => {
 
     const userJson = user.toJSON();
     delete userJson.password_hash;
+    
+    sendVerificationCode(user.email);
 
     return userJson;
   } catch (err) {
