@@ -1,47 +1,40 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, 
-    auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD
-    },
-    family: 4, 
-    logger: true,
-    debug: true
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-function createVerificationEmail(code, email) {
-    return {
-        from: process.env.EMAIL,
-        to: email,
-        subject: 'Email Verification',
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-                <h2>Hello,</h2>
-                <p>Thank you for registering. Please use the following code to verify your email address:</p>
-                <div style="font-size: 1.5em; font-weight: bold; margin: 10px 0;">${code}</div>
-                <p>If you didn’t request this, you can ignore this email.</p>
-                <p>Thanks,<br/>Smart Market</p>
-            </div>
-        `
-    }
+function createVerificationEmail(code) {
+    return `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h2>Hello,</h2>
+            <p>Thank you for registering. Please use the following code to verify your email address:</p>
+            <div style="font-size: 1.5em; font-weight: bold; margin: 10px 0;">${code}</div>
+            <p>If you didn’t request this, you can ignore this email.</p>
+            <p>Thanks,<br/>Smart Market</p>
+        </div>
+    `;
 }
 
-function sendVerificationEmail(code, email) {
-    const option = createVerificationEmail(code, email);
-    transporter.sendMail(option, function (error, info) {
+const sendVerificationEmail = async (code, email) => {
+    try {
+        const { data, error } = await resend.emails.send({
+            from: process.env.EMAIL,
+            to: [email],
+            subject: 'Email Verification',
+            html: createVerificationEmail(code),
+        });
+
         if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info.response);
+            console.error('Error sending email:', error);
+            return;
         }
-    });
-}
+
+        console.log('Email sent successfully:', data);
+    } catch (err) {
+        console.error('Unexpected error sending email:', err);
+    }
+};
 
 module.exports = { sendVerificationEmail };
