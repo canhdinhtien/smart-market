@@ -16,13 +16,18 @@ const options = {
     ],
     components: {
       securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
+        cookieAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'accessToken',
         },
       },
     },
+    security: [
+      {
+        cookieAuth: [],
+      },
+    ],
   },
   apis: ['./routes/*.js'], // Path to your route files with JSDoc comments
 };

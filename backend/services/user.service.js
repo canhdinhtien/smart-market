@@ -1,5 +1,4 @@
 const dotenv = require('dotenv');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const User = require('../models/User');
@@ -25,10 +24,18 @@ const registerUser = async ({ email, password, name }) => {
 
     const userJson = user.toJSON();
     delete userJson.password_hash;
-    
-    sendVerificationCode(user.email);
 
-    return userJson;
+    const accessToken = Jwt.generateAccessToken(user.id);
+    const refreshToken = Jwt.generateRefreshToken(user.id);
+
+    try {
+      await sendVerificationCode(user.email);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Continue - do not fail registration
+    }
+
+    return { ...userJson, accessToken, refreshToken };
   } catch (err) {
     throw new Error(err.message || 'Failed to register user');
   }

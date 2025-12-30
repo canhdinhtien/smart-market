@@ -3,7 +3,20 @@ const userService = require('../services/user.service');
 const registerUser = async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
-    const user = await userService.registerUser({ email, password, name });
+    const { accessToken, refreshToken, ...user } = await userService.registerUser({ email, password, name });
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+    });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 60 * 60 * 1000,
+    });
+
     res.status(201).json({
       message: 'User registered successfully!',
       user: {
