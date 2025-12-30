@@ -101,10 +101,10 @@ router.get('/:id/members', controller.getGroupMembers);
  *           schema:
  *             type: object
  *             required:
- *               - username
+ *               - userId
  *             properties:
- *               username:
- *                 type: string
+ *               userId:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Member added successfully
@@ -115,7 +115,7 @@ router.post('/:id/members', controller.addMember);
 
 /**
  * @openapi
- * /groups/{id}/members/{username}:
+ * /groups/{id}/members/{userId}:
  *   delete:
  *     summary: Remove a member from a group
  *     tags: [Groups]
@@ -129,17 +129,17 @@ router.post('/:id/members', controller.addMember);
  *           type: string
  *         description: Group ID
  *       - in: path
- *         name: username
+ *         name: userId
  *         required: true
  *         schema:
  *           type: string
- *         description: Username to remove
+ *         description: User ID to remove
  *     responses:
  *       200:
  *         description: Member removed successfully
  *       404:
  *         description: Group or member not found
  */
-router.delete('/:id/members/:username', controller.deleteMember);
+router.delete('/:id/members/:userId', controller.deleteMember);
 
 module.exports = router;

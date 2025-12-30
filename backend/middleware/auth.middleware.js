@@ -11,6 +11,7 @@ async function verifyUser(req, res, next) {
         const decoded = Jwt.verifyAccessToken(token);
         const user = await User.findByPk(decoded.id);
         if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user.is_verified) return res.status(403).json({ message: 'User is not verified' });
         req.user = { id: user.id, email: user.email };
         next();
     } catch (error) {

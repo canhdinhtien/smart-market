@@ -34,7 +34,7 @@ const addMember = async (req, res, next) => {
   try {
     const adminId = req.user?.id;
     const groupId = req.params.id;
-    const { username } = req.body;
+    const { userId } = req.body;
 
     if (!adminId) {
       const error = new Error('Unauthorized: User ID missing');
@@ -48,8 +48,8 @@ const addMember = async (req, res, next) => {
       throw error;
     }
 
-    if (!username || username.trim() === '') {
-      const error = new Error('Username is required');
+    if (!userId) {
+      const error = new Error('User ID is required');
       error.statusCode = 400;
       throw error;
     }
@@ -67,7 +67,7 @@ const addMember = async (req, res, next) => {
       throw error;
     }
 
-    const result = await groupService.addMember(groupId, username);
+    const result = await groupService.addMember(groupId, userId);
     res.json(result);
   } catch (err) {
     next(err);
@@ -81,7 +81,7 @@ const deleteMember = async (req, res, next) => {
   try {
     const adminId = req.user?.id;
     const groupId = req.params.id;
-    const username = req.params.username;
+    const userId = req.params.userId;
 
     if (!adminId) {
       const error = new Error('Unauthorized: User ID missing');
@@ -95,13 +95,13 @@ const deleteMember = async (req, res, next) => {
       throw error;
     }
 
-    if (!username || username.trim() === '') {
-      const error = new Error('Username is required');
+    if (!userId || userId.trim() === '') {
+      const error = new Error('User ID is required');
       error.statusCode = 400;
       throw error;
     }
 
-    const result = await groupService.deleteMember(groupId, username, adminId);
+    const result = await groupService.deleteMember(groupId, userId, adminId);
     res.json(result);
   } catch (err) {
     next(err);

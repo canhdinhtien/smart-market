@@ -63,7 +63,7 @@ router.post('/', controller.registerUser);
  *             properties:
  *               identifier:
  *                 type: string
- *                 description: Email or username
+ *                 description: Email
  *               password:
  *                 type: string
  *     responses:
@@ -238,8 +238,6 @@ router.post('/change-password', verifyUser, controller.changeUserPassword);
  *             properties:
  *               name:
  *                 type: string
- *               username:
- *                 type: string
  *               gender:
  *                 type: string
  *               email:
@@ -254,7 +252,7 @@ router.post('/change-password', verifyUser, controller.changeUserPassword);
  *       401:
  *         description: Unauthorized
  *       409:
- *         description: Email or username already exists
+ *         description: Email already exists
  */
 router.put('/', verifyUser, upload.single('profile_pic'), controller.editUser);
 

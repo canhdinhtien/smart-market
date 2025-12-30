@@ -10,7 +10,6 @@ const registerUser = async (req, res, next) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        username: user.username,
       },
     });
   } catch (error) {
@@ -139,7 +138,7 @@ const verifyEmail = async (req, res, next) => {
 const changeUserPassword = async (req, res, next) => {
   try {
     const { oldPassword, newPassword } = req.body;
-    
+
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: 'Unauthorized: User ID missing' });
     }
@@ -157,7 +156,7 @@ const editUser = async (req, res, next) => {
       return res.status(401).json({ message: 'Unauthorized: User ID missing' });
     }
 
-    const { name, username, gender, email } = req.body;
+    const { name, gender, email } = req.body;
     let { imageUrl } = req.body;
 
     if (req.file) {
@@ -166,7 +165,6 @@ const editUser = async (req, res, next) => {
 
     const updateData = {
       name,
-      username,
       gender,
       email,
       imageUrl

@@ -15,23 +15,23 @@ const createGroup = async (adminId, groupName) => {
 
   const adminUser = await User.findByPk(adminId);
   if (adminUser) {
-    await addMember(group.id, adminUser.username, adminId);
+    await addMember(group.id, adminUser.id, adminId);
   }
 
   return group;
 };
 
 /**
- * Add a member to a group by username
+ * Add a member to a group by userId
  * @param {number} groupId
- * @param {string} username
+ * @param {number} targetUserId
  */
-const addMember = async (groupId, username, requestingUserId) => {
+const addMember = async (groupId, targetUserId, requestingUserId) => {
   const group = await Group.findByPk(groupId);
   if (!group) throw new Error('Group not found');
   if (group.admin_user_id !== requestingUserId) throw new Error('Only group admin can add members');
 
-  const user = await User.findOne({ where: { username } });
+  const user = await User.findByPk(targetUserId);
   if (!user) throw new Error('User not found');
 
   const exists = await GroupMember.findOne({ where: { group_id: groupId, user_id: user.id } });
@@ -51,16 +51,16 @@ const addMember = async (groupId, username, requestingUserId) => {
 };
 
 /**
- * Delete a member from a group by username
+ * Delete a member from a group by userId
  * @param {number} groupId
- * @param {string} username
+ * @param {string} targetUserId
  */
-const deleteMember = async (groupId, username, requestingUserId) => {
+const deleteMember = async (groupId, targetUserId, requestingUserId) => {
   const group = await Group.findByPk(groupId);
   if (!group) throw new Error('Group not found');
   if (group.admin_user_id !== requestingUserId) throw new Error('Only group admin can remove members');
 
-  const user = await User.findOne({ where: { username } });
+  const user = await User.findByPk(targetUserId);
   if (!user) throw new Error('User not found');
 
   const member = await GroupMember.findOne({ where: { group_id: groupId, user_id: user.id } });
@@ -85,7 +85,7 @@ const deleteMember = async (groupId, username, requestingUserId) => {
  */
 const getGroupMembers = async (groupId, requestingUserId) => {
   const group = await Group.findByPk(groupId, {
-    include: { model: User, as: 'members', attributes: ['id', 'username', 'name', 'email'] }
+    include: { model: User, as: 'members', attributes: ['id', 'name', 'email'] }
   });
 
   if (!group) throw new Error('Group not found');

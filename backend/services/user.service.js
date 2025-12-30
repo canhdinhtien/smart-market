@@ -22,7 +22,6 @@ const registerUser = async ({ email, password, name }) => {
       email,
       password_hash: hashedPassword,
       name,
-      username: nanoid(10),
     });
 
     const userJson = user.toJSON();
@@ -38,7 +37,7 @@ const loginUser = async ({ identifier, password }) => {
   try {
     const user = await User.findOne({
       where: {
-        [Op.or]: [{ email: identifier }, { username: identifier }],
+        [Op.or]: [{ email: identifier }],
       },
     });
     if (!user) throw new Error('User not found!');
@@ -184,15 +183,8 @@ const updateUser = async (userId, data) => {
       if (emailExists) throw new Error('Email already exists');
     }
 
-    // Username Uniqueness Check
-    if (data.username && data.username !== user.username) {
-      const usernameExists = await User.findOne({ where: { username: data.username } });
-      if (usernameExists) throw new Error('Username already exists');
-    }
-
     const updateFields = {};
     if (data.name) updateFields.name = data.name;
-    if (data.username) updateFields.username = data.username;
     if (data.email) updateFields.email = data.email;
     if (data.gender) updateFields.gender = data.gender;
     if (data.imageUrl) updateFields.image_url = data.imageUrl;

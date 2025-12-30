@@ -160,7 +160,7 @@ const getListOfTasks = async (shoppingListId, requestingUserId) => {
       },
       {
         model: User,
-        attributes: ['id', 'username', 'email']
+        attributes: ['id', 'name', 'email']
       }
     ],
     order: [['created_at', 'ASC']]

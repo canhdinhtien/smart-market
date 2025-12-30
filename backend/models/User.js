@@ -35,13 +35,8 @@ User.init({
   },
   name: {
     type: DataTypes.STRING(100),
-    unique: true,
+    unique: false,
     allowNull: false
-  },
-  username: {
-    type: DataTypes.STRING(50),
-    allowNull: true,
-    unique: true
   },
   gender: {
     type: DataTypes.ENUM('male', 'female', 'other'),
