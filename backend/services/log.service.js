@@ -25,7 +25,7 @@ const createLog = async ({ userId, action, details, entity, entityId }) => {
 };
 
 const getLogs = async ({ page = 1, limit = 10, userId }) => {
-  const User = require('../models/User'); // Lazy load
+  const User = require('../models/User');
   const offset = (page - 1) * limit;
   const where = {};
   if (userId) {

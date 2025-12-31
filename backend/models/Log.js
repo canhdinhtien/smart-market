@@ -6,7 +6,7 @@ class Log extends Model { }
 
 Log.init({
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false },
-  user_id: { type: DataTypes.INTEGER, references: { model: 'users', key: 'id' } },
+  user_id: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'users', key: 'id' } },
   action: { type: DataTypes.STRING, allowNull: false },
   details: DataTypes.TEXT,
   entity: DataTypes.STRING,
