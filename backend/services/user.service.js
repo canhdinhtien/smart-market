@@ -28,14 +28,15 @@ const registerUser = async ({ email, password, name }) => {
     const accessToken = Jwt.generateAccessToken(user.id);
     const refreshToken = Jwt.generateRefreshToken(user.id);
 
+    let verifyToken = null;
     try {
-      await sendVerificationCode(user.email);
+      const result = await sendVerificationCode(user.email);
+      verifyToken = result.verificationToken;
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
-      // Continue - do not fail registration
     }
 
-    return { ...userJson, accessToken, refreshToken };
+    return { userJson, accessToken, refreshToken, verifyToken };
   } catch (err) {
     throw new Error(err.message || 'Failed to register user');
   }

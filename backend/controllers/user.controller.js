@@ -3,7 +3,7 @@ const userService = require('../services/user.service');
 const registerUser = async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
-    const { accessToken, refreshToken, ...user } = await userService.registerUser({ email, password, name });
+    const { accessToken, refreshToken, userJson: user, verifyToken } = await userService.registerUser({ email, password, name });
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
@@ -23,7 +23,9 @@ const registerUser = async (req, res, next) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        isVerified: user.is_verified,
       },
+      verifyToken: verifyToken,
     });
   } catch (error) {
     next(error);
@@ -56,6 +58,7 @@ const loginUser = async (req, res, next) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        isVerified: user.is_verified,
       },
     });
   } catch (error) {
