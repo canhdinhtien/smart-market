@@ -3,6 +3,8 @@ const path = require('path');
 const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
 const sequelize = require('../config/database');
+const { addLoggingHooks } = require('../utils/loggingHooks');
+
 const db = {};
 
 fs
@@ -21,6 +23,8 @@ Object.keys(db).forEach(modelName => {
     if (db[modelName].associate) {
         db[modelName].associate(db);
     }
+    // Apply automated logging hooks to all models
+    addLoggingHooks(db[modelName], modelName);
 });
 
 db.sequelize = sequelize;

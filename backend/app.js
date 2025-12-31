@@ -5,9 +5,12 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger.js');
 const routes = require('./routes/index.js');
 const errorHandler = require('./middleware/error.middleware.js');
+const { contextMiddleware } = require('./middleware/context.middleware');
 
 const app = express();
 
+
+app.use(contextMiddleware);
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());

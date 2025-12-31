@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 const Jwt = require('../utils/jwtUtils');
 const User = require('../models/User');
+const { getContext } = require('../utils/context');
 
 dotenv.config();
 
@@ -13,6 +14,10 @@ async function verifyUser(req, res, next) {
         if (!user) return res.status(404).json({ message: 'User not found' });
         if (!user.is_verified) return res.status(403).json({ message: 'User is not verified' });
         req.user = { id: user.id, email: user.email };
+        const store = getContext();
+        if (store) {
+            store.user = req.user;
+        }
         next();
     } catch (error) {
         return res.status(403).json({ message: 'Invalid or Expired Token' });
