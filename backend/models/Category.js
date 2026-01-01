@@ -19,7 +19,8 @@ Category.init({
   sequelize,
   modelName: 'Category',
   tableName: 'categories',
-  timestamps: true
+  timestamps: true,
+  underscored: true
 });
 
 module.exports = Category;
