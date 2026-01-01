@@ -184,9 +184,10 @@ const changeUserPassword = async (userId, oldPassword, newPassword) => {
 const updateUser = async (userId, data) => {
   try {
     const user = await User.findByPk(userId);
-    if (!user) throw new Error('User not found');
+    if (!user) {
+      throw new Error('User not found');
+    }
 
-    // Email Uniqueness Check
     if (data.email && data.email !== user.email) {
       const emailExists = await User.findOne({ where: { email: data.email } });
       if (emailExists) throw new Error('Email already exists');

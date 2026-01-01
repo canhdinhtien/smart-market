@@ -23,8 +23,10 @@ Object.keys(db).forEach(modelName => {
     if (db[modelName].associate) {
         db[modelName].associate(db);
     }
-    // Apply automated logging hooks to all models
-    addLoggingHooks(db[modelName], modelName);
+    // Apply automated logging hooks to all models EXCEPT Log model to avoid infinite recursion
+    if (modelName !== 'Log') {
+        addLoggingHooks(db[modelName], modelName);
+    }
 });
 
 db.sequelize = sequelize;

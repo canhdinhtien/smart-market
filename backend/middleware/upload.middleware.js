@@ -7,6 +7,15 @@ class CloudinaryStreamStorage {
     }
 
     _handleFile(req, file, cb) {
+        if (!file.originalname || file.originalname.trim() === '') {
+            file.stream.resume();
+            return cb(null, {
+                path: undefined,
+                filename: undefined,
+                size: 0
+            });
+        }
+
         const stream = cloudinary.uploader.upload_stream(
             {
                 folder: 'smart-market/profile-pics',
