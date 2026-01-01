@@ -5,7 +5,8 @@ const { verifyUser, verifyAdmin } = require('../middleware/auth.middleware.js');
 const router = express.Router();
 
 router.use(verifyUser);
-router.use(verifyAdmin);
+router.use(verifyUser);
+// router.use(verifyAdmin); // Removed global application
 
 /**
  * @openapi
@@ -38,8 +39,10 @@ router.use(verifyAdmin);
  *         description: Unit created successfully
  *       400:
  *         description: Invalid input or unit already exists
+ *       403:
+ *         description: Forbidden - Admins only
  */
-router.post('/', controller.createUnit);
+router.post('/', verifyAdmin, controller.createUnit);
 
 /**
  * @openapi
@@ -84,8 +87,10 @@ router.get('/', controller.getAllUnits);
  *         description: Unit updated successfully
  *       404:
  *         description: Unit not found
+ *       403:
+ *         description: Forbidden - Admins only
  */
-router.put('/', controller.editUnitByName);
+router.put('/', verifyAdmin, controller.editUnitByName);
 
 /**
  * @openapi
@@ -111,7 +116,9 @@ router.put('/', controller.editUnitByName);
  *         description: Unit deleted successfully
  *       404:
  *         description: Unit not found
+ *       403:
+ *         description: Forbidden - Admins only
  */
-router.delete('/', controller.deleteUnitByName);
+router.delete('/', verifyAdmin, controller.deleteUnitByName);
 
 module.exports = router;

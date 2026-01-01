@@ -5,7 +5,6 @@ const { verifyUser, verifyAdmin } = require('../middleware/auth.middleware.js');
 const router = express.Router();
 
 router.use(verifyUser);
-router.use(verifyAdmin);
 
 /**
  * @openapi
@@ -38,8 +37,10 @@ router.use(verifyAdmin);
  *         description: Category created successfully
  *       400:
  *         description: Invalid input or category already exists
+ *       403:
+ *         description: Forbidden - Admins only
  */
-router.post('/', controller.createCategory);
+router.post('/', verifyAdmin, controller.createCategory);
 
 /**
  * @openapi
@@ -84,8 +85,10 @@ router.get('/', controller.getAllCategories);
  *         description: Category updated successfully
  *       404:
  *         description: Category not found
+ *       403:
+ *         description: Forbidden - Admins only
  */
-router.put('/', controller.editCategoryByName);
+router.put('/', verifyAdmin, controller.editCategoryByName);
 
 /**
  * @openapi
@@ -111,7 +114,9 @@ router.put('/', controller.editCategoryByName);
  *         description: Category deleted successfully
  *       404:
  *         description: Category not found
+ *       403:
+ *         description: Forbidden - Admins only
  */
-router.delete('/', controller.deleteCategoryByName);
+router.delete('/', verifyAdmin, controller.deleteCategoryByName);
 
 module.exports = router;
