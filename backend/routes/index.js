@@ -15,8 +15,8 @@ const router = express.Router();
 
 router.use('/users', userRoutes);
 router.use('/users/group', groupRoutes);
-router.use('/admin/categories', categoryRoutes);
-router.use('/admin/units', unitRoutes);
+router.use('/categories', categoryRoutes);
+router.use('/units', unitRoutes);
 router.use('/logs', logRoutes);
 router.use('/food', foodRoutes);
 router.use('/fridge', fridgeRoutes);
