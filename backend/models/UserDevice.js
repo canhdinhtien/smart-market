@@ -42,6 +42,7 @@ const UserDevice = sequelize.define("UserDevice", {
 }, {
   tableName: "user_devices",
   timestamps: true,
+  underscored: true,
 });
 
 UserDevice.associate = (models) => {
