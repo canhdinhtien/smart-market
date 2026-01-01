@@ -3,8 +3,9 @@ const RecipeIngredient = require('../models/RecipeIngredient');
 const Food = require('../models/Food');
 const Unit = require('../models/Unit');
 const sequelize = require('../config/database');
+const NotificationService = require('./notification.service');
 
-const createRecipe = async (data) => {
+const createRecipe = async (data, requestingUserId) => {
   const { name, description, instructions, group_id, ingredients } = data;
 
   if (!name || !group_id) {
@@ -34,6 +35,15 @@ const createRecipe = async (data) => {
     }
 
     await t.commit();
+
+    NotificationService.sendToGroup(
+      group_id,
+      'New Recipe',
+      `${name} added to group recipes`,
+      { type: 'RECIPE_ADD', recipeId: recipe.id },
+      requestingUserId
+    );
+
     return await getRecipeById(recipe.id);
   } catch (error) {
     await t.rollback();
@@ -41,7 +51,7 @@ const createRecipe = async (data) => {
   }
 };
 
-const updateRecipe = async (id, data) => {
+const updateRecipe = async (id, data, requestingUserId) => {
   const { name, description, instructions, ingredients } = data;
 
   const recipe = await Recipe.findByPk(id);
@@ -80,6 +90,15 @@ const updateRecipe = async (id, data) => {
     }
 
     await t.commit();
+
+    NotificationService.sendToGroup(
+      recipe.group_id,
+      'Recipe Updated',
+      `${name || recipe.name} has been updated`,
+      { type: 'RECIPE_UPDATE', recipeId: id },
+      requestingUserId
+    );
+
     return await getRecipeById(id);
   } catch (error) {
     await t.rollback();

@@ -2,7 +2,7 @@ const mealplanService = require('../services/mealplan.service');
 
 const createMealPlan = async (req, res, next) => {
   try {
-    const plan = await mealplanService.createMealPlan(req.body);
+    const plan = await mealplanService.createMealPlan(req.body, req.user.id);
     return res.status(201).json({
       message: 'Meal plan created successfully',
       data: plan
@@ -25,7 +25,7 @@ const deletePlan = async (req, res, next) => {
 const updateMealPlan = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updated = await mealplanService.updateMealPlan(id, req.body);
+    const updated = await mealplanService.updateMealPlan(id, req.body, req.user.id);
     return res.json({
       message: 'Meal plan updated successfully',
       data: updated

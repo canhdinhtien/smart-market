@@ -2,8 +2,9 @@ const { Op } = require('sequelize');
 const MealPlan = require('../models/MealPlan');
 const Recipe = require('../models/Recipe');
 const Food = require('../models/Food');
+const NotificationService = require('./notification.service');
 
-const createMealPlan = async (data) => {
+const createMealPlan = async (data, requestingUserId) => {
   const { meal_type, date, group_id } = data;
 
   if (!meal_type || !date || !group_id) {
@@ -19,7 +20,17 @@ const createMealPlan = async (data) => {
     throw error;
   }
 
-  return await MealPlan.create(data);
+  const plan = await MealPlan.create(data);
+
+  NotificationService.sendToGroup(
+    group_id,
+    'New Meal Plan',
+    `Meal plan added for ${date} (${meal_type})`,
+    { type: 'MEAL_PLAN_ADD', planId: plan.id },
+    requestingUserId
+  );
+
+  return plan;
 };
 
 const deletePlan = async (id) => {
@@ -32,7 +43,7 @@ const deletePlan = async (id) => {
   return { message: 'Meal plan deleted successfully' };
 };
 
-const updateMealPlan = async (id, data) => {
+const updateMealPlan = async (id, data, requestingUserId) => {
   const plan = await MealPlan.findByPk(id);
   if (!plan) {
     const error = new Error('Meal plan not found');
@@ -47,6 +58,15 @@ const updateMealPlan = async (id, data) => {
   }
 
   await plan.update(data);
+
+  NotificationService.sendToGroup(
+    plan.group_id,
+    'Meal Plan Updated',
+    `Meal plan for ${plan.date} updated`,
+    { type: 'MEAL_PLAN_UPDATE', planId: plan.id },
+    requestingUserId
+  );
+
   return plan;
 };
 

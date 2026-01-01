@@ -40,7 +40,7 @@ const addMember = async (groupId, targetUserId, requestingUserId) => {
   await GroupMember.create({ group_id: groupId, user_id: user.id });
 
   // Notify the user
-  await NotificationService.sendToUser(
+  NotificationService.sendToUser(
     user.id,
     'Added to Group',
     `You have been added to the group "${group.name}"`,
@@ -69,7 +69,7 @@ const deleteMember = async (groupId, targetUserId, requestingUserId) => {
   await member.destroy();
 
   // Notify the user (even though they are removed, they might still get the push if token is active)
-  await NotificationService.sendToUser(
+  NotificationService.sendToUser(
     user.id,
     'Removed from Group',
     `You have been removed from the group "${group.name}"`,

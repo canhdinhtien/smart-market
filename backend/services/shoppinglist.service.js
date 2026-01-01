@@ -121,7 +121,7 @@ const createTasks = async (listId, tasksData, requestingUserId) => {
 
   // Notify group members
   const taskCount = Array.isArray(tasksData) ? tasksData.length : 1;
-  await NotificationService.sendToGroup(
+  NotificationService.sendToGroup(
     list.group_id,
     'New Shopping Task',
     `${taskCount} new task(s) added to list "${list.name}"`,
@@ -210,7 +210,7 @@ const updateTask = async (taskId, data, requestingUserId) => {
     // We should probably fetch the Task name again or use existing if not updated
     // But task object has old data before reload? 
     // Wait, update modifies the instance in place in Sequelize? Yes usually.
-    await NotificationService.sendToGroup(
+    NotificationService.sendToGroup(
       task.ShoppingList.group_id,
       'Shopping Task Updated',
       `Task "${task.name || 'Unknown'}" marked as ${status}`,

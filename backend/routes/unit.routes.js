@@ -1,10 +1,11 @@
 const express = require('express');
 const controller = require('../controllers/unit.controller.js');
-const { verifyUser } = require('../middleware/auth.middleware.js');
+const { verifyUser, verifyAdmin } = require('../middleware/auth.middleware.js');
 
 const router = express.Router();
 
 router.use(verifyUser);
+router.use(verifyAdmin);
 
 /**
  * @openapi

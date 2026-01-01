@@ -6,7 +6,7 @@ const recipeService = require('../services/recipe.service');
 const createRecipe = async (req, res, next) => {
   try {
     const data = req.body;
-    const recipe = await recipeService.createRecipe(data);
+    const recipe = await recipeService.createRecipe(data, req.user.id);
 
     res.status(201).json({
       message: 'Recipe created successfully',
@@ -25,7 +25,7 @@ const updateRecipe = async (req, res, next) => {
     const { id } = req.params;
     const data = req.body;
 
-    const updatedRecipe = await recipeService.updateRecipe(id, data);
+    const updatedRecipe = await recipeService.updateRecipe(id, data, req.user.id);
 
     res.status(200).json({
       message: 'Recipe updated successfully',

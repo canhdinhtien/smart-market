@@ -3,6 +3,7 @@ const Food = require('../models/Food');
 const Category = require('../models/Category');
 const Unit = require('../models/Unit');
 const groupService = require('./group.service');
+const NotificationService = require('./notification.service');
 
 const createFridgeItem = async (data, requestingUserId) => {
   const { food_id, group_id } = data;
@@ -22,6 +23,17 @@ const createFridgeItem = async (data, requestingUserId) => {
   }
 
   const newItem = await FridgeItem.create(data);
+
+  // Notify group
+  const food = await Food.findByPk(food_id);
+  NotificationService.sendToGroup(
+    group_id,
+    'Fridge Update',
+    `${food ? food.name : 'Item'} added to fridge`,
+    { type: 'FRIDGE_ADD', itemId: newItem.id },
+    requestingUserId
+  );
+
   return newItem;
 };
 
@@ -41,6 +53,15 @@ const updateFridgeItem = async (id, data, requestingUserId) => {
   }
 
   await item.update(data);
+
+  NotificationService.sendToGroup(
+    item.group_id,
+    'Fridge Update',
+    'Item in fridge updated',
+    { type: 'FRIDGE_UPDATE', itemId: item.id },
+    requestingUserId
+  );
+
   return item;
 };
 
@@ -60,6 +81,15 @@ const deleteFridgeItem = async (id, requestingUserId) => {
   }
 
   await item.destroy();
+
+  NotificationService.sendToGroup(
+    item.group_id,
+    'Fridge Update',
+    'Item removed from fridge',
+    { type: 'FRIDGE_REMOVE', itemId: id },
+    requestingUserId
+  );
+
   return { message: 'Fridge item deleted successfully' };
 };
 
