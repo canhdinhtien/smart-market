@@ -4,6 +4,7 @@ const Food = require('../models/Food');
 const Unit = require('../models/Unit');
 const sequelize = require('../config/database');
 const NotificationService = require('./notification.service');
+const groupService = require('./group.service');
 
 const createRecipe = async (data, requestingUserId) => {
   const { name, description, instructions, group_id, ingredients } = data;
@@ -11,6 +12,13 @@ const createRecipe = async (data, requestingUserId) => {
   if (!name || !group_id) {
     const error = new Error('Name and Group ID are required');
     error.statusCode = 400;
+    throw error;
+  }
+
+  const isMember = await groupService.isMember(group_id, requestingUserId);
+  if (!isMember) {
+    const error = new Error('Access denied: You must be a member of the group to create a recipe');
+    error.statusCode = 403;
     throw error;
   }
 
@@ -61,6 +69,13 @@ const updateRecipe = async (id, data, requestingUserId) => {
     throw error;
   }
 
+  const isMember = await groupService.isMember(recipe.group_id, requestingUserId);
+  if (!isMember) {
+    const error = new Error('Access denied: You must be a member of the group to update this recipe');
+    error.statusCode = 403;
+    throw error;
+  }
+
   const t = await sequelize.transaction();
 
   try {
@@ -106,19 +121,27 @@ const updateRecipe = async (id, data, requestingUserId) => {
   }
 };
 
-const deleteRecipe = async (id) => {
+const deleteRecipe = async (id, requestingUserId) => {
+  const recipe = await Recipe.findByPk(id);
+  if (!recipe) {
+    const error = new Error('Recipe not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const isMember = await groupService.isMember(recipe.group_id, requestingUserId);
+  if (!isMember) {
+    const error = new Error('Access denied: You must be a member of the group to delete this recipe');
+    error.statusCode = 403;
+    throw error;
+  }
+
   const t = await sequelize.transaction();
   try {
     // Delete ingredients first (if no cascade)
     await RecipeIngredient.destroy({ where: { recipe_id: id }, transaction: t });
 
-    const deletedRows = await Recipe.destroy({ where: { id }, transaction: t });
-
-    if (deletedRows === 0) {
-      const error = new Error('Recipe not found');
-      error.statusCode = 404;
-      throw error;
-    }
+    await recipe.destroy({ transaction: t });
 
     await t.commit();
     return { message: 'Recipe deleted successfully' };

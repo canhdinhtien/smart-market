@@ -43,7 +43,7 @@ const deleteRecipe = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const result = await recipeService.deleteRecipe(id);
+    const result = await recipeService.deleteRecipe(id, req.user.id);
 
     res.status(200).json(result);
   } catch (error) {

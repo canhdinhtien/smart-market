@@ -3,6 +3,7 @@ const MealPlan = require('../models/MealPlan');
 const Recipe = require('../models/Recipe');
 const Food = require('../models/Food');
 const NotificationService = require('./notification.service');
+const groupService = require('./group.service');
 
 const createMealPlan = async (data, requestingUserId) => {
   const { meal_type, date, group_id } = data;
@@ -10,6 +11,13 @@ const createMealPlan = async (data, requestingUserId) => {
   if (!meal_type || !date || !group_id) {
     const error = new Error('Meal type, date, and group ID are required');
     error.statusCode = 400;
+    throw error;
+  }
+
+  const isMember = await groupService.isMember(group_id, requestingUserId);
+  if (!isMember) {
+    const error = new Error('Access denied: You must be a member of the group to create a meal plan');
+    error.statusCode = 403;
     throw error;
   }
 
@@ -33,13 +41,22 @@ const createMealPlan = async (data, requestingUserId) => {
   return plan;
 };
 
-const deletePlan = async (id) => {
-  const deletedRows = await MealPlan.destroy({ where: { id } });
-  if (deletedRows === 0) {
+const deletePlan = async (id, requestingUserId) => {
+  const plan = await MealPlan.findByPk(id);
+  if (!plan) {
     const error = new Error('Meal plan not found');
     error.statusCode = 404;
     throw error;
   }
+
+  const isMember = await groupService.isMember(plan.group_id, requestingUserId);
+  if (!isMember) {
+    const error = new Error('Access denied: You must be a member of the group to delete this meal plan');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  await plan.destroy();
   return { message: 'Meal plan deleted successfully' };
 };
 
@@ -48,6 +65,13 @@ const updateMealPlan = async (id, data, requestingUserId) => {
   if (!plan) {
     const error = new Error('Meal plan not found');
     error.statusCode = 404;
+    throw error;
+  }
+
+  const isMember = await groupService.isMember(plan.group_id, requestingUserId);
+  if (!isMember) {
+    const error = new Error('Access denied: You must be a member of the group to update this meal plan');
+    error.statusCode = 403;
     throw error;
   }
 
@@ -70,7 +94,14 @@ const updateMealPlan = async (id, data, requestingUserId) => {
   return plan;
 };
 
-const getMealPlanByDate = async (groupId, startDate, endDate) => {
+const getMealPlanByDate = async (groupId, startDate, endDate, requestingUserId) => {
+  const isMember = await groupService.isMember(groupId, requestingUserId);
+  if (!isMember) {
+    const error = new Error('Access denied: You must be a member of the group to view meal plans');
+    error.statusCode = 403;
+    throw error;
+  }
+
   const whereClause = {
     group_id: groupId
   };

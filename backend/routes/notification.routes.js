@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/notification.controller");
+const { verifyUser } = require("../middleware/auth.middleware");
 
 /**
  * @openapi
@@ -39,7 +40,7 @@ const controller = require("../controllers/notification.controller");
  *       400:
  *         description: Invalid input
  */
-router.post("/register-fcm", controller.registerDevice);
+router.post("/register-fcm", verifyUser, controller.registerDevice);
 
 /**
  * @openapi
@@ -72,6 +73,6 @@ router.post("/register-fcm", controller.registerDevice);
  *       400:
  *         description: Invalid input
  */
-router.post("/send", controller.sendToUser);
+router.post("/send", verifyUser, controller.sendToUser);
 
 module.exports = router;

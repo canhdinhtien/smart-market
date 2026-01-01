@@ -15,7 +15,7 @@ const createMealPlan = async (req, res, next) => {
 const deletePlan = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await mealplanService.deletePlan(id);
+    const result = await mealplanService.deletePlan(id, req.user.id);
     return res.json(result);
   } catch (error) {
     next(error);
@@ -43,7 +43,8 @@ const getMealPlanByDate = async (req, res, next) => {
     const plans = await mealplanService.getMealPlanByDate(
       groupId,
       startDate,
-      endDate
+      endDate,
+      req.user.id
     );
 
     return res.json({
