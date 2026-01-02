@@ -131,8 +131,8 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/notifications/register-fcm` | 🔒 | **Register Device**<br>**Body**: `{ fcm_token, platform, device_id }` |
-| `POST` | `/notifications/send` | 🔒 | **Send Notification** (Dev)<br>**Body**: `{ userId, title, body, data }` |
+| `POST` | `/notifications/register-fcm` | 🔒 | **Register Device**<br>**Body**: `{ user_id, fcm_token, platform, device_id }`<br>**Returns**: `{ message: "Device registered" }` |
+| `POST` | `/notifications/send` | 🔒 | **Send Notification** (Dev)<br>**Body**: `{ user_id, title, body, data }`<br>**Returns**: `{ message: "Notification sent" }` |
 
 ---
 
