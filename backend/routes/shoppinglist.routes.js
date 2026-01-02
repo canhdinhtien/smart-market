@@ -30,7 +30,7 @@ router.use(verifyUser);
  *         description: Group ID to get shopping lists from
  *     responses:
  *       200:
- *         description: List of shopping lists
+ *         description: List of shopping lists with tasks and details
  *       400:
  *         description: Group ID is required
  */
@@ -53,7 +53,7 @@ router.get('/', controller.getAllShoppingLists);
  *         description: Shopping list ID
  *     responses:
  *       200:
- *         description: Shopping list details
+ *         description: Shopping list details including tasks
  *       404:
  *         description: Shopping list not found
  */

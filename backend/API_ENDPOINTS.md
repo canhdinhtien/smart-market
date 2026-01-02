@@ -1,147 +1,158 @@
-# Smart Market API Endpoints
+# Smart Market API Documentation
 
 Base URL: `/api/v1`
 
 ## Authentication
-All endpoints (except registration, login, and verification) require Bearer token authentication via the `Authorization` header: `Authorization: Bearer <token>`.
-Cookies are no longer used for authentication.
+Most endpoints require a Bearer Token.
+- **Header**: `Authorization: Bearer <your_access_token>`
+- **Legend**:
+  - 🔓 Public
+  - 🔒 Authenticated User
+  - 🛡️ Admin Only
 
 ---
 
-## Users (`/users`)
+## 👤 Users (`/users`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/users` | Register a new user | ❌ |
-| POST | `/users/login` | Login | ❌ |
-| POST | `/users/logout` | Logout | ✅ |
-| POST | `/users/refresh-token` | Refresh access token | ✅ |
-| POST | `/users/send-verification-code` | Send verification email | ❌ |
-| POST | `/users/verify-email` | Verify email with code | ❌ |
-| POST | `/users/forgot-password` | Request password reset | ❌ |
-| POST | `/users/reset-password` | Reset password with code | ❌ |
-| POST | `/users/change-password` | Change password | ✅ |
-| GET | `/users` | Get current user profile | ✅ |
-| PUT | `/users` | Update user profile (multipart) | ✅ |
-| DELETE | `/users` | Delete user account | ✅ |
-
-
----
-
-## Groups (`/groups`)
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/groups` | Get all groups for current user | ✅ |
-| POST | `/groups` | Create a new group | ✅ |
-| GET | `/groups/{id}/members` | Get group members | ✅ |
-| POST | `/groups/{id}/members` | Add member to group | ✅ |
-| DELETE | `/groups/{id}/members/{userId}` | Remove member from group | ✅ |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/users` | 🔓 | **Register a new user**<br>**Body**: `{ email, password, name }` |
+| `POST` | `/users/login` | 🔓 | **Login**<br>**Body**: `{ identifier, password }`<br>**Returns**: `{ user, accessToken, refreshToken }` |
+| `POST` | `/users/logout` | 🔒 | **Logout** |
+| `POST` | `/users/refresh-token` | 🔓 | **Refresh Access Token**<br>**Body**: `{ refreshToken }`<br>**Returns**: `{ accessToken }` |
+| `GET` | `/users` | 🔒 | **Get Current Profile** |
+| `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `email`, `profile_pic` (file) |
+| `DELETE` | `/users` | 🔒 | **Delete Account** |
+| `POST` | `/users/send-verification-code` | 🔓 | **Send Email Verification**<br>**Body**: `{ email }` |
+| `POST` | `/users/verify-email` | 🔓 | **Verify Email**<br>**Body**: `{ code, token }` |
+| `POST` | `/users/forgot-password` | 🔓 | **Request Password Reset**<br>**Body**: `{ email }` |
+| `POST` | `/users/reset-password` | 🔓 | **Reset Password**<br>**Body**: `{ code, token, newPassword }` |
+| `POST` | `/users/change-password` | 🔒 | **Change Password**<br>**Body**: `{ oldPassword, newPassword }` |
 
 ---
 
-## Food (`/food`)
+## 👥 Groups (`/groups`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/food?group_id={id}` | Get all foods in group | ✅ |
-| GET | `/food/{id}` | Get food by ID | ✅ |
-| POST | `/food` | Create food item (multipart) | ✅ |
-| PUT | `/food/{id}` | Update food item (multipart) | ✅ |
-| DELETE | `/food/{id}` | Delete food item | ✅ |
-
----
-
-## Categories (`/categories`)
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/categories` | Get all categories | ✅ |
-| POST | `/categories` | Create category | ✅ Admin |
-| PUT | `/categories` | Edit category by name | ✅ Admin |
-| DELETE | `/categories` | Delete category by name | ✅ Admin |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/groups` | 🔒 | **Get All Groups** |
+| `POST` | `/groups` | 🔒 | **Create Group**<br>**Body**: `{ name }` |
+| `GET` | `/groups/:id/members` | 🔒 | **Get Group Members** |
+| `POST` | `/groups/:id/members` | 🔒 | **Add Member**<br>**Body**: `{ userId }` |
+| `DELETE` | `/groups/:id/members/:userId` | 🔒 | **Remove Member** |
 
 ---
 
-## Units (`/units`)
+## 🍎 Food (`/food`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/units` | Get all units | ✅ |
-| POST | `/units` | Create unit | ✅ Admin |
-| PUT | `/units` | Edit unit by name | ✅ Admin |
-| DELETE | `/units` | Delete unit by name | ✅ Admin |
-
----
-
-## Fridge (`/fridge`)
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/fridge?group_id={id}` | Get all fridge items | ✅ |
-| GET | `/fridge/{id}` | Get fridge item by ID | ✅ |
-| POST | `/fridge` | Create fridge item | ✅ |
-| PUT | `/fridge/{id}` | Update fridge item | ✅ |
-| DELETE | `/fridge/{id}` | Delete fridge item | ✅ |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/food` | 🔒 | **Get Foods in Group**<br>**Query**: `?group_id=<id>` |
+| `GET` | `/food/:id` | 🔒 | **Get Food by ID** |
+| `POST` | `/food` | 🔒 | **Create Food** (Multipart)<br>**Form-Data**: `name`, `group_id`, `category`, `unit`, `quantity`, `image` (file) |
+| `PUT` | `/food/:id` | 🔒 | **Update Food** (Multipart)<br>**Form-Data**: `name`, `category`, `unit`, `quantity`, `image` (file) |
+| `DELETE` | `/food/:id` | 🔒 | **Delete Food** |
 
 ---
 
-## Recipes (`/recipes`)
+## ❄️ Fridge (`/fridge`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/recipes?food_id={id}` | Get recipes by food ID | ✅ |
-| POST | `/recipes` | Create recipe | ✅ |
-| PUT | `/recipes/{id}` | Update recipe | ✅ |
-| DELETE | `/recipes/{id}` | Delete recipe | ✅ |
-
----
-
-## Meal Plans (`/meals`)
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/meals/{groupId}?startDate=&endDate=` | Get meal plans by date range | ✅ |
-| POST | `/meals` | Create meal plan | ✅ |
-| PUT | `/meals/{id}` | Update meal plan | ✅ |
-| DELETE | `/meals/{id}` | Delete meal plan | ✅ |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/fridge` | 🔒 | **Get Fridge Items**<br>**Query**: `?group_id=<id>` |
+| `GET` | `/fridge/:id` | 🔒 | **Get Item by ID** |
+| `POST` | `/fridge` | 🔒 | **Add Item**<br>**Body**: `{ food_id, group_id, quantity, expiryDate (YYYY-MM-DD) }` |
+| `PUT` | `/fridge/:id` | 🔒 | **Update Item**<br>**Body**: `{ quantity, expiryDate }` |
+| `DELETE` | `/fridge/:id` | 🔒 | **Remove Item** |
 
 ---
 
-## Shopping Lists (`/shopping`)
+## 🏷️ Categories (`/categories`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/shopping?group_id={id}` | Get all shopping lists | ✅ |
-| GET | `/shopping/{id}` | Get shopping list by ID | ✅ |
-| POST | `/shopping` | Create shopping list | ✅ |
-| PUT | `/shopping/{id}` | Update shopping list | ✅ |
-| DELETE | `/shopping/{id}` | Delete shopping list | ✅ |
-| GET | `/shopping/{id}/tasks` | Get tasks in list | ✅ |
-| POST | `/shopping/{id}/tasks` | Create tasks | ✅ |
-| PUT | `/shopping/tasks/{taskId}` | Update task | ✅ |
-| DELETE | `/shopping/tasks/{taskId}` | Delete task | ✅ |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/categories` | 🔒 | **Get All Categories** |
+| `POST` | `/categories` | 🛡️ | **Create Category**<br>**Body**: `{ name }` |
+| `PUT` | `/categories` | 🛡️ | **Update Category**<br>**Body**: `{ oldName, newName }` |
+| `DELETE` | `/categories` | 🛡️ | **Delete Category**<br>**Body**: `{ name }` |
 
 ---
 
-## Notifications (`/notifications`)
+## 📏 Units (`/units`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/notifications/register-fcm` | Register FCM token | ✅ |
-| POST | `/notifications/send` | Send notification | ✅ |
-
----
-
-## Logs (`/logs`)
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/logs` | Get logs | ✅ |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/units` | 🔒 | **Get All Units** |
+| `POST` | `/units` | 🛡️ | **Create Unit**<br>**Body**: `{ unitName }` |
+| `PUT` | `/units` | 🛡️ | **Update Unit**<br>**Body**: `{ oldName, newName }` |
+| `DELETE` | `/units` | 🛡️ | **Delete Unit**<br>**Body**: `{ unitName }` |
 
 ---
 
-## Notes
-- **Auth Legend**: ✅ = Required, ❌ = Not required, Admin = Admin only
-- **Multipart**: Endpoints marked with (multipart) accept `multipart/form-data` for file uploads
-- **Group Membership**: All group-related resources (food, fridge, recipes, meals, shopping) enforce group membership checks
+## 🍳 Recipes (`/recipes`)
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/recipes` | 🔒 | **Get Recipes**<br>**Query**: `?foodId=<id>` |
+| `POST` | `/recipes` | 🔒 | **Create Recipe**<br>**Body**: `{ foodId, instructions, ingredients: [{...}] }` |
+| `PUT` | `/recipes/:id` | 🔒 | **Update Recipe**<br>**Body**: `{ name, instructions, ingredients }` |
+| `DELETE` | `/recipes/:id` | 🔒 | **Delete Recipe** |
+
+---
+
+## 📅 Meal Plans (`/meals`)
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/meals/:groupId` | 🔒 | **Get Meal Plans**<br>**Query**: `?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` |
+| `POST` | `/meals` | 🔒 | **Create Plan**<br>**Body**: `{ date, meals: [{...}] }` |
+| `PUT` | `/meals/:id` | 🔒 | **Update Plan**<br>**Body**: `{ date, meals }` |
+| `DELETE` | `/meals/:id` | 🔒 | **Delete Plan** |
+
+---
+
+## 🛒 Shopping Lists (`/shopping`)
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/shopping` | 🔒 | **Get All Lists**<br>**Query**: `?group_id=<id>`<br>**Returns**: Lists with full task details |
+| `GET` | `/shopping/:id` | 🔒 | **Get List by ID**<br>**Returns**: List with full task details |
+| `POST` | `/shopping` | 🔒 | **Create List**<br>**Body**: `{ name }` |
+| `PUT` | `/shopping/:id` | 🔒 | **Update List**<br>**Body**: `{ name }` |
+| `DELETE` | `/shopping/:id` | 🔒 | **Delete List** |
+| `GET` | `/shopping/:id/tasks` | 🔒 | **Get Tasks** |
+| `POST` | `/shopping/:id/tasks` | 🔒 | **Add Tasks**<br>**Body**: `{ tasks: [{ name, quantity }] }` |
+| `PUT` | `/shopping/tasks/:taskId` | 🔒 | **Update Task**<br>**Body**: `{ name, quantity, completed }` |
+| `DELETE` | `/shopping/tasks/:taskId` | 🔒 | **Delete Task** |
+
+---
+
+## 🔔 Notifications (`/notifications`)
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/notifications/register-fcm` | 🔒 | **Register Device**<br>**Body**: `{ fcm_token, platform, device_id }` |
+| `POST` | `/notifications/send` | 🔒 | **Send Notification** (Dev)<br>**Body**: `{ userId, title, body, data }` |
+
+---
+
+## 📜 Logs (`/logs`)
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/logs` | 🛡️ | **Get System Logs** |
+
+---
+
+## 🚦 Response Codes
+
+| Code | Status | Description |
+| :--- | :--- | :--- |
+| `200` | OK | Request succeeded. |
+| `201` | Created | Resource created successfully. |
+| `400` | Bad Request | Invalid input or missing required fields. |
+| `401` | Unauthorized | Authorization header missing or invalid token. |
+| `403` | Forbidden | Valid token but insufficient permissions (e.g., Admin only). |
+| `404` | Not Found | Resource (user, group, item) not found. |
+| `409` | Conflict | Resource already exists (e.g., duplicate email/category). |
+| `500` | Internal Server Error | Unexpected server error. |

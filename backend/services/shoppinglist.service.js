@@ -73,12 +73,52 @@ const getAllShoppingLists = async (groupId, requestingUserId) => {
 
   return await ShoppingList.findAll({
     where: { group_id: groupId },
-    order: [['created_at', 'DESC']]
+    include: [
+      {
+        model: ShoppingListTask,
+        include: [
+          {
+            model: Food,
+            attributes: ['id', 'name', 'image_url'],
+            include: [
+              { model: Unit, attributes: ['id', 'name'] },
+              { model: Category, attributes: ['id', 'name'] }
+            ]
+          },
+          {
+            model: User,
+            attributes: ['id', 'name', 'email']
+          }
+        ]
+      }
+    ],
+    order: [['created_at', 'DESC'], [ShoppingListTask, 'created_at', 'ASC']]
   });
 };
 
 const getShoppingListById = async (id, requestingUserId) => {
-  const list = await ShoppingList.findByPk(id);
+  const list = await ShoppingList.findByPk(id, {
+    include: [
+      {
+        model: ShoppingListTask,
+        include: [
+          {
+            model: Food,
+            attributes: ['id', 'name', 'image_url'],
+            include: [
+              { model: Unit, attributes: ['id', 'name'] },
+              { model: Category, attributes: ['id', 'name'] }
+            ]
+          },
+          {
+            model: User,
+            attributes: ['id', 'name', 'email']
+          }
+        ]
+      }
+    ],
+    order: [[ShoppingListTask, 'created_at', 'ASC']]
+  });
   if (!list) {
     const error = new Error('Shopping list not found');
     error.statusCode = 404;

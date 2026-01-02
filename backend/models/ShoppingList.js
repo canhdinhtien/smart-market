@@ -22,6 +22,7 @@ ShoppingList.init({
 
 ShoppingList.associate = (models) => {
   ShoppingList.belongsTo(models.Group, { foreignKey: 'group_id' });
+  ShoppingList.hasMany(models.ShoppingListTask, { foreignKey: 'shopping_list_id' });
 };
 
 
