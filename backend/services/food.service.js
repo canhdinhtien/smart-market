@@ -2,6 +2,7 @@ const Food = require('../models/Food');
 const Category = require('../models/Category');
 const Unit = require('../models/Unit');
 const groupService = require('./group.service');
+const { deleteImage } = require('../utils/imageUtils');
 
 const createFood = async (foodData, requestingUserId) => {
   const { name, group_id } = foodData;
@@ -55,7 +56,15 @@ const updateFood = async (id, foodData, requestingUserId) => {
     }
   }
 
+  const oldImageUrl = food.image_url;
+
   await food.update(foodData);
+
+  // If new image is provided and it's different from old one, delete old one
+  if (foodData.image_url && oldImageUrl && foodData.image_url !== oldImageUrl) {
+    await deleteImage(oldImageUrl);
+  }
+
   return food;
 };
 
@@ -74,7 +83,15 @@ const deleteFood = async (id, requestingUserId) => {
     throw error;
   }
 
+  const imageUrl = food.image_url;
+
   await food.destroy();
+
+  // Delete image if exists
+  if (imageUrl) {
+    await deleteImage(imageUrl);
+  }
+
   return { message: 'Food deleted successfully' };
 };
 

@@ -6,6 +6,7 @@ const Jwt = require('../utils/jwtUtils');
 const redisClient = require('../config/redis');
 const { generateVerificationCode } = require('../utils/codeUtils');
 const { sendVerificationEmail } = require('../utils/emailUtils');
+const { deleteImage } = require('../utils/imageUtils');
 
 dotenv.config();
 const saltRounds = 10;
@@ -127,7 +128,15 @@ const deleteUser = async (userId) => {
 
     if (!user) throw new Error('User not found');
 
+    const imageUrl = user.image_url;
+
     await user.destroy();
+
+    // Delete profile picture if exists AND user was successfully deleted
+    if (imageUrl) {
+      await deleteImage(imageUrl);
+    }
+
     return { message: 'User deleted successfully' };
   } catch (err) {
     throw new Error(err.message || 'Failed to delete user');
@@ -194,6 +203,8 @@ const updateUser = async (userId, data) => {
       if (emailExists) throw new Error('Email already exists');
     }
 
+    const oldImageUrl = user.image_url;
+
     const updateFields = {};
     if (data.name) updateFields.name = data.name;
     if (data.email) updateFields.email = data.email;
@@ -201,6 +212,11 @@ const updateUser = async (userId, data) => {
     if (data.imageUrl) updateFields.image_url = data.imageUrl;
 
     await user.update(updateFields);
+
+    // If new image is provided and it's different from old one, delete old one
+    if (data.imageUrl && oldImageUrl && data.imageUrl !== oldImageUrl) {
+      await deleteImage(oldImageUrl);
+    }
 
     const userJson = user.toJSON();
     delete userJson.password_hash;
