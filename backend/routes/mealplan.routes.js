@@ -15,7 +15,7 @@ router.use(verifyUser);
 
 /**
  * @openapi
- * /mealplans:
+ * /meals:
  *   post:
  *     summary: Create a new meal plan
  *     tags: [MealPlans]
@@ -48,7 +48,7 @@ router.post('/', controller.createMealPlan);
 
 /**
  * @openapi
- * /mealplans/{id}:
+ * /meals/{id}:
  *   delete:
  *     summary: Delete a meal plan
  *     tags: [MealPlans]
@@ -71,7 +71,7 @@ router.delete('/:id', controller.deletePlan);
 
 /**
  * @openapi
- * /mealplans/{id}:
+ * /meals/{id}:
  *   put:
  *     summary: Update a meal plan
  *     tags: [MealPlans]
@@ -108,7 +108,7 @@ router.put('/:id', controller.updateMealPlan);
 
 /**
  * @openapi
- * /mealplans/{groupId}:
+ * /meals/{groupId}:
  *   get:
  *     summary: Get meal plan by date for a group
  *     tags: [MealPlans]

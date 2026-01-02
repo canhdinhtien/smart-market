@@ -17,7 +17,7 @@ router.use(verifyUser);
 
 /**
  * @openapi
- * /foods:
+ * /food:
  *   get:
  *     summary: Get all foods in user's group
  *     tags: [Foods]
@@ -42,35 +42,7 @@ router.get('/', controller.getAllFoodsInGroup);
 
 /**
  * @openapi
- * /foods/unit:
- *   get:
- *     summary: Get all available units
- *     tags: [Foods]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of units
- */
-router.get('/unit', controller.getUnits);
-
-/**
- * @openapi
- * /foods/category:
- *   get:
- *     summary: Get all available categories
- *     tags: [Foods]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of categories
- */
-router.get('/category', controller.getCategories);
-
-/**
- * @openapi
- * /foods/{id}:
+ * /food/{id}:
  *   get:
  *     summary: Get a food item by ID
  *     tags: [Foods]
@@ -93,7 +65,7 @@ router.get('/:id', controller.getFoodById);
 
 /**
  * @openapi
- * /foods:
+ * /food:
  *   post:
  *     summary: Create a new food item
  *     tags: [Foods]
@@ -132,7 +104,7 @@ router.post('/', upload.single('image'), controller.createFood);
 
 /**
  * @openapi
- * /foods/{id}:
+ * /food/{id}:
  *   put:
  *     summary: Update a food item
  *     tags: [Foods]
@@ -173,7 +145,7 @@ router.put('/:id', upload.single('image'), controller.updateFood);
 
 /**
  * @openapi
- * /foods/{id}:
+ * /food/{id}:
  *   delete:
  *     summary: Delete a food item
  *     tags: [Foods]

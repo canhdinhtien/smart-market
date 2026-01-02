@@ -38,7 +38,7 @@ router.get('/', controller.getAllShoppingLists);
 
 /**
  * @openapi
- * /shoppinglists/{id}:
+ * /shopping/{id}:
  *   get:
  *     summary: Get a shopping list by ID
  *     tags: [ShoppingLists]
@@ -61,7 +61,7 @@ router.get('/:id', controller.getShoppingListById);
 
 /**
  * @openapi
- * /shoppinglists:
+ * /shopping:
  *   post:
  *     summary: Create a new shopping list
  *     tags: [ShoppingLists]
@@ -88,7 +88,7 @@ router.post('/', controller.createShoppingList);
 
 /**
  * @openapi
- * /shoppinglists/{id}:
+ * /shopping/{id}:
  *   put:
  *     summary: Update a shopping list
  *     tags: [ShoppingLists]
@@ -120,7 +120,7 @@ router.put('/:id', controller.updateShoppingList);
 
 /**
  * @openapi
- * /shoppinglists/{id}:
+ * /shopping/{id}:
  *   delete:
  *     summary: Delete a shopping list
  *     tags: [ShoppingLists]
@@ -143,7 +143,7 @@ router.delete('/:id', controller.deleteShoppingList);
 
 /**
  * @openapi
- * /shoppinglists/{id}/tasks:
+ * /shopping/{id}/tasks:
  *   post:
  *     summary: Create tasks in a shopping list
  *     tags: [ShoppingLists]
@@ -184,7 +184,7 @@ router.post('/:id/tasks', controller.createTasks);
 
 /**
  * @openapi
- * /shoppinglists/{id}/tasks:
+ * /shopping/{id}/tasks:
  *   get:
  *     summary: Get all tasks in a shopping list
  *     tags: [ShoppingLists]
@@ -207,7 +207,7 @@ router.get('/:id/tasks', controller.getListOfTasks);
 
 /**
  * @openapi
- * /shoppinglists/tasks/{taskId}:
+ * /shopping/tasks/{taskId}:
  *   put:
  *     summary: Update a task
  *     tags: [ShoppingLists]
@@ -243,7 +243,7 @@ router.put('/tasks/:taskId', controller.updateTask);
 
 /**
  * @openapi
- * /shoppinglists/tasks/{taskId}:
+ * /shopping/tasks/{taskId}:
  *   delete:
  *     summary: Delete a task
  *     tags: [ShoppingLists]

@@ -227,6 +227,79 @@ const updateUser = async (userId, data) => {
   }
 };
 
+const requestPasswordReset = async (email) => {
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return { message: 'If an account exists with this email, a reset code has been sent.' };
+    }
+
+    const code = generateVerificationCode();
+    await redisClient.set(`reset:${email}`, code, {
+      EX: 15 * 60, // 15 minutes
+    });
+
+    const { sendPasswordResetEmail } = require('../utils/emailUtils');
+    await sendPasswordResetEmail(code, email);
+
+    const resetToken = Jwt.generatePasswordResetToken(email);
+
+    // Log password reset request
+    const logService = require('./log.service');
+    logService.createLog({
+      userId: user.id,
+      action: 'PASSWORD_RESET_REQUEST',
+      details: 'Password reset code sent to email',
+      entity: 'User',
+      entityId: user.id
+    });
+
+    return {
+      message: 'If an account exists with this email, a reset code has been sent.',
+      resetToken,
+    };
+  } catch (err) {
+    throw new Error(err.message || 'Failed to request password reset');
+  }
+};
+
+const resetPassword = async (code, token, newPassword) => {
+  try {
+    const decoded = Jwt.verifyPasswordResetToken(token);
+    const email = decoded.email;
+
+    if (!email) throw new Error('Invalid token');
+
+    const storedCode = await redisClient.get(`reset:${email}`);
+    if (!storedCode) throw new Error('Reset code expired or not found');
+
+    if (storedCode !== code) throw new Error('Invalid reset code');
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) throw new Error('User not found');
+
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    user.password_hash = hashedPassword;
+    await user.save();
+
+    await redisClient.del(`reset:${email}`);
+
+    // Log successful password reset
+    const logService = require('./log.service');
+    logService.createLog({
+      userId: user.id,
+      action: 'PASSWORD_RESET_SUCCESS',
+      details: 'Password was reset successfully',
+      entity: 'User',
+      entityId: user.id
+    });
+
+    return { message: 'Password reset successfully' };
+  } catch (err) {
+    throw new Error(err.message || 'Password reset failed');
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -237,4 +310,6 @@ module.exports = {
   verifyEmail,
   changeUserPassword,
   updateUser,
+  requestPasswordReset,
+  resetPassword,
 };

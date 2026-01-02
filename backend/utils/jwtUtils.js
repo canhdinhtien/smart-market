@@ -31,11 +31,25 @@ const verifyEmailVerificationToken = (token) => {
     return verifyToken(token, process.env.JWT_EMAIL_SECRET);
 }
 
+function generatePasswordResetToken(email) {
+    return jwt.sign({ email, purpose: 'password_reset' }, process.env.JWT_EMAIL_SECRET, { expiresIn: '15m' });
+}
+
+const verifyPasswordResetToken = (token) => {
+    const decoded = verifyToken(token, process.env.JWT_EMAIL_SECRET);
+    if (decoded.purpose !== 'password_reset') {
+        throw new Error('Invalid token purpose');
+    }
+    return decoded;
+}
+
 module.exports = {
     generateAccessToken,
     generateRefreshToken,
     generateEmailVerificationToken,
+    generatePasswordResetToken,
     verifyAccessToken,
     verifyRefreshToken,
-    verifyEmailVerificationToken
+    verifyEmailVerificationToken,
+    verifyPasswordResetToken
 };

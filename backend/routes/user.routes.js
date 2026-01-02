@@ -256,4 +256,64 @@ router.post('/change-password', verifyUser, controller.changeUserPassword);
  */
 router.put('/', verifyUser, upload.single('profile_pic'), controller.editUser);
 
+/**
+ * @openapi
+ * /users/forgot-password:
+ *   post:
+ *     summary: Request password reset
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Reset code sent if account exists
+ *       400:
+ *         description: Email is required
+ */
+router.post('/forgot-password', controller.requestPasswordReset);
+
+/**
+ * @openapi
+ * /users/reset-password:
+ *   post:
+ *     summary: Reset password with code
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *               - token
+ *               - newPassword
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 description: 6-digit code from email
+ *               token:
+ *                 type: string
+ *                 description: Reset token from forgot-password response
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Invalid code, token, or password
+ */
+router.post('/reset-password', controller.resetPassword);
+
 module.exports = router;

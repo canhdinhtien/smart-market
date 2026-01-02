@@ -14,7 +14,7 @@ const notificationRoutes = require('./notification.routes');
 const router = express.Router();
 
 router.use('/users', userRoutes);
-router.use('/users/group', groupRoutes);
+router.use('/groups', groupRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/units', unitRoutes);
 router.use('/logs', logRoutes);
