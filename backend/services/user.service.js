@@ -51,10 +51,13 @@ const loginUser = async ({ identifier, password }) => {
       },
     });
     if (!user) throw new Error('User not found!');
-    if (!user.is_verified) throw new Error('User is not verified!');
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) throw new Error('Invalid credentials!');
+
+    if (!user.is_verified) {
+      throw new Error('User is not verified!');
+    }
 
     const accessToken = Jwt.generateAccessToken(user.id);
     const refreshToken = Jwt.generateRefreshToken(user.id);
