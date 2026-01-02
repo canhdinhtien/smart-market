@@ -16,12 +16,12 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/users` | 🔓 | **Register a new user**<br>**Body**: `{ email, password, name }` |
+| `POST` | `/users` | 🔓 | **Register a new user**<br>**Body**: `{ email, password, name, gender }` |
 | `POST` | `/users/login` | 🔓 | **Login**<br>**Body**: `{ identifier, password }`<br>**Returns**: `{ user, accessToken, refreshToken }` |
 | `POST` | `/users/logout` | 🔒 | **Logout** |
 | `POST` | `/users/refresh-token` | 🔓 | **Refresh Access Token**<br>**Body**: `{ refreshToken }`<br>**Returns**: `{ accessToken }` |
 | `GET` | `/users` | 🔒 | **Get Current Profile** |
-| `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `email`, `profile_pic` (file) |
+| `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `profile_pic` (file) |
 | `DELETE` | `/users` | 🔒 | **Delete Account** |
 | `POST` | `/users/send-verification-code` | 🔓 | **Send Email Verification**<br>**Body**: `{ email }` |
 | `POST` | `/users/verify-email` | 🔓 | **Verify Email**<br>**Body**: `{ code, token }` |

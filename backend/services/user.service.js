@@ -11,7 +11,7 @@ const { deleteImage } = require('../utils/imageUtils');
 dotenv.config();
 const saltRounds = 10;
 
-const registerUser = async ({ email, password, name }) => {
+const registerUser = async ({ email, password, name, gender }) => {
   try {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) throw new Error('User already exists');
@@ -21,6 +21,7 @@ const registerUser = async ({ email, password, name }) => {
       email,
       password_hash: hashedPassword,
       name,
+      gender,
     });
 
     const userJson = user.toJSON();
@@ -210,7 +211,6 @@ const updateUser = async (userId, data) => {
 
     const updateFields = {};
     if (data.name) updateFields.name = data.name;
-    if (data.email) updateFields.email = data.email;
     if (data.gender) updateFields.gender = data.gender;
     if (data.imageUrl) updateFields.image_url = data.imageUrl;
 

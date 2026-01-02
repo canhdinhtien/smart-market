@@ -3,8 +3,8 @@ const logService = require("../services/log.service");
 
 const registerUser = async (req, res, next) => {
   try {
-    const { email, password, name } = req.body;
-    const { accessToken, refreshToken, userJson: user, verifyToken } = await userService.registerUser({ email, password, name });
+    const { email, password, name, gender } = req.body;
+    const { accessToken, refreshToken, userJson: user, verifyToken } = await userService.registerUser({ email, password, name, gender });
 
     res.status(201).json({
       message: "User registered successfully!",

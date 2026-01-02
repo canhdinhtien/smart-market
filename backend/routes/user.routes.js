@@ -37,6 +37,9 @@ const router = express.Router();
  *                 minLength: 6
  *               name:
  *                 type: string
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -249,9 +252,7 @@ router.post('/change-password', verifyUser, controller.changeUserPassword);
  *                 type: string
  *               gender:
  *                 type: string
- *               email:
- *                 type: string
- *                 format: email
+
  *               profile_pic:
  *                 type: string
  *                 format: binary
