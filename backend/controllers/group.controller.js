@@ -54,20 +54,7 @@ const addMember = async (req, res, next) => {
       throw error;
     }
 
-    const group = await groupService.getGroupById(groupId);
-    if (!group) {
-      const error = new Error('Group not found');
-      error.statusCode = 404;
-      throw error;
-    }
-
-    if (group.admin_user_id !== adminId) {
-      const error = new Error('Only group admin can add members');
-      error.statusCode = 403;
-      throw error;
-    }
-
-    const result = await groupService.addMember(groupId, userId);
+    const result = await groupService.addMember(groupId, userId, adminId);
     res.json(result);
   } catch (err) {
     next(err);

@@ -29,7 +29,7 @@ const createGroup = async (adminId, groupName) => {
 const addMember = async (groupId, targetUserId, requestingUserId) => {
   const group = await Group.findByPk(groupId);
   if (!group) throw new Error('Group not found');
-  if (group.admin_user_id !== requestingUserId) throw new Error('Only group admin can add members');
+  if (group.admin_user_id != requestingUserId) throw new Error('Only group admin can add members');
 
   const user = await User.findByPk(targetUserId);
   if (!user) throw new Error('User not found');
@@ -58,7 +58,7 @@ const addMember = async (groupId, targetUserId, requestingUserId) => {
 const deleteMember = async (groupId, targetUserId, requestingUserId) => {
   const group = await Group.findByPk(groupId);
   if (!group) throw new Error('Group not found');
-  if (group.admin_user_id !== requestingUserId) throw new Error('Only group admin can remove members');
+  if (group.admin_user_id != requestingUserId) throw new Error('Only group admin can remove members');
 
   const user = await User.findByPk(targetUserId);
   if (!user) throw new Error('User not found');
@@ -91,7 +91,7 @@ const getGroupMembers = async (groupId, requestingUserId) => {
   if (!group) throw new Error('Group not found');
 
   const isMember = await GroupMember.findOne({ where: { group_id: groupId, user_id: requestingUserId } });
-  if (group.admin_user_id !== requestingUserId && !isMember) {
+  if (group.admin_user_id != requestingUserId && !isMember) {
     throw new Error('Access denied: You must be a member or admin to view this group');
   }
 
@@ -139,6 +139,11 @@ const getGroupById = async (groupId) => {
  * @param {number} userId
  */
 const isMember = async (groupId, userId) => {
+  const group = await Group.findByPk(groupId);
+  if (group && group.admin_user_id == userId) {
+    return true;
+  }
+
   const member = await GroupMember.findOne({
     where: {
       group_id: groupId,
