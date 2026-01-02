@@ -133,6 +133,21 @@ const getGroupById = async (groupId) => {
   return group;
 };
 
+/**
+ * Check if a user is a member of a group
+ * @param {number} groupId
+ * @param {number} userId
+ */
+const isMember = async (groupId, userId) => {
+  const member = await GroupMember.findOne({
+    where: {
+      group_id: groupId,
+      user_id: userId
+    }
+  });
+  return !!member;
+};
+
 
 module.exports = {
   createGroup,
@@ -141,4 +156,5 @@ module.exports = {
   getGroupMembers,
   getUserGroups,
   getGroupById,
+  isMember,
 };

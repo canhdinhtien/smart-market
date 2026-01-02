@@ -64,7 +64,7 @@ const getRecipesByFoodId = async (req, res, next) => {
       throw error;
     }
 
-    const recipes = await recipeService.getRecipesByFoodId(foodId);
+    const recipes = await recipeService.getRecipesByFoodId(foodId, req.user.id);
 
     res.status(200).json({
       message: 'Recipes fetched successfully',

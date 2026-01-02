@@ -52,7 +52,7 @@ const createRecipe = async (data, requestingUserId) => {
       requestingUserId
     );
 
-    return await getRecipeById(recipe.id);
+    return await getRecipeById(recipe.id, requestingUserId);
   } catch (error) {
     await t.rollback();
     throw error;
@@ -114,7 +114,7 @@ const updateRecipe = async (id, data, requestingUserId) => {
       requestingUserId
     );
 
-    return await getRecipeById(id);
+    return await getRecipeById(id, requestingUserId);
   } catch (error) {
     await t.rollback();
     throw error;
@@ -151,27 +151,51 @@ const deleteRecipe = async (id, requestingUserId) => {
   }
 };
 
-const getRecipesByFoodId = async (foodId) => {
+const getRecipesByFoodId = async (foodId, requestingUserId) => {
   const ingredients = await RecipeIngredient.findAll({
     where: { food_id: foodId },
     include: [{ model: Recipe }]
   });
 
-  // Extract unique recipes
-  const recipes = ingredients.map(ing => ing.Recipe);
-  // Remove duplicates if any (though one food per recipe usually, but just in case)
-  // Actually RecipeIngredient PK is recipe_id + food_id, so one food appears once per recipe.
-  return recipes;
+  // Filter recipes where user is a member of the group
+  const recipes = [];
+  for (const ing of ingredients) {
+    if (ing.Recipe) {
+      const isMember = await groupService.isMember(ing.Recipe.group_id, requestingUserId);
+      if (isMember) {
+        recipes.push(ing.Recipe);
+      }
+    }
+  }
+
+  // Remove duplicates
+  const uniqueRecipes = [];
+  const map = new Map();
+  for (const item of recipes) {
+    if (!map.has(item.id)) {
+      map.set(item.id, true);    // set any value to Map
+      uniqueRecipes.push(item);
+    }
+  }
+
+  return uniqueRecipes;
 };
 
-const getAllRecipesInGroup = async (groupId) => {
+const getAllRecipesInGroup = async (groupId, requestingUserId) => {
+  const isMember = await groupService.isMember(groupId, requestingUserId);
+  if (!isMember) {
+    const error = new Error('Access denied: You must be a member of the group to view recipes');
+    error.statusCode = 403;
+    throw error;
+  }
+
   return await Recipe.findAll({
     where: { group_id: groupId },
     order: [['created_at', 'DESC']]
   });
 };
 
-const getRecipeById = async (id) => {
+const getRecipeById = async (id, requestingUserId) => {
   const recipe = await Recipe.findByPk(id, {
     include: [
       {
@@ -183,6 +207,20 @@ const getRecipeById = async (id) => {
       }
     ]
   });
+
+  if (!recipe) {
+    const error = new Error('Recipe not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const isMember = await groupService.isMember(recipe.group_id, requestingUserId);
+  if (!isMember) {
+    const error = new Error('Access denied: You must be a member of the group to view this recipe');
+    error.statusCode = 403;
+    throw error;
+  }
+
   return recipe;
 };
 
