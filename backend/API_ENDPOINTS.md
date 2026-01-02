@@ -3,7 +3,8 @@
 Base URL: `/api/v1`
 
 ## Authentication
-All endpoints (except registration and login) require Bearer token authentication via cookies or Authorization header.
+All endpoints (except registration, login, and verification) require Bearer token authentication via the `Authorization` header: `Authorization: Bearer <token>`.
+Cookies are no longer used for authentication.
 
 ---
 

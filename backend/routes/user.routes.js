@@ -68,7 +68,7 @@ router.post('/', controller.registerUser);
  *                 type: string
  *     responses:
  *       200:
- *         description: Login successful, returns JWT token in cookies
+ *         description: Login successful, returns accessToken and refreshToken
  *       401:
  *         description: Invalid credentials
  */
@@ -92,15 +92,24 @@ router.post('/logout', controller.logoutUser);
  *   post:
  *     summary: Refresh access token
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
  *     responses:
  *       200:
  *         description: New access token returned
  *       401:
  *         description: Invalid or expired token
  */
-router.post('/refresh-token', verifyUser, controller.refreshToken);
+router.post('/refresh-token', controller.refreshToken);
 
 /**
  * @openapi

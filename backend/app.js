@@ -15,7 +15,27 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+const swaggerOptions = {
+    swaggerOptions: {
+        responseInterceptor: function (response) {
+            if (response.url.endsWith('/users/login') && response.status === 200) {
+                try {
+                    const body = JSON.parse(response.text);
+                    if (body.accessToken) {
+                        const token = body.accessToken;
+                        // 'bearerAuth' must match the security scheme name in swagger config
+                        ui.preauthorizeApiKey('bearerAuth', token);
+                    }
+                } catch (e) {
+                    console.error('Failed to auto-authorize in Swagger UI', e);
+                }
+            }
+            return response;
+        }
+    }
+};
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
 
 app.use('/api', routes);
 

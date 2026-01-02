@@ -16,16 +16,16 @@ const options = {
     ],
     components: {
       securitySchemes: {
-        cookieAuth: {
-          type: 'apiKey',
-          in: 'cookie',
-          name: 'accessToken',
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
         },
       },
     },
     security: [
       {
-        cookieAuth: [],
+        bearerAuth: [],
       },
     ],
   },

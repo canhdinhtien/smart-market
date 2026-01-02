@@ -6,8 +6,13 @@ const { getContext } = require('../utils/context');
 dotenv.config();
 
 async function verifyUser(req, res, next) {
-    const token = req.cookies.accessToken;
-    if (!token) return res.status(401).json({ message: 'Access Denied' });
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Access Denied: Bearer token missing' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
     try {
         const decoded = Jwt.verifyAccessToken(token);
         const user = await User.findByPk(decoded.id);

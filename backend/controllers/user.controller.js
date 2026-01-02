@@ -4,24 +4,7 @@ const logService = require("../services/log.service");
 const registerUser = async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
-    const {
-      accessToken,
-      refreshToken,
-      userJson: user,
-      verifyToken,
-    } = await userService.registerUser({ email, password, name });
-
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 60 * 60 * 1000,
-    });
+    const { accessToken, refreshToken, userJson: user, verifyToken } = await userService.registerUser({ email, password, name });
 
     res.status(201).json({
       message: "User registered successfully!",
@@ -31,6 +14,8 @@ const registerUser = async (req, res, next) => {
         email: user.email,
         isVerified: user.is_verified,
       },
+      accessToken,
+      refreshToken,
       verifyToken: verifyToken,
     });
   } catch (error) {
@@ -46,18 +31,6 @@ const loginUser = async (req, res, next) => {
       password,
     });
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 60 * 60 * 1000,
-    });
-
     res.status(200).json({
       message: "Login successful!",
       curUser: {
@@ -66,8 +39,8 @@ const loginUser = async (req, res, next) => {
         email: user.email,
         isVerified: user.is_verified,
       },
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      accessToken,
+      refreshToken,
     });
 
     await logService.createLog({
@@ -84,8 +57,6 @@ const loginUser = async (req, res, next) => {
 
 const logoutUser = async (req, res, next) => {
   try {
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
     if (req.user && req.user.id) {
       await logService.createLog({
         userId: req.user.id,
@@ -104,20 +75,17 @@ const logoutUser = async (req, res, next) => {
 
 const refreshToken = async (req, res, next) => {
   try {
-    const { refreshToken } = req.cookies;
+    const { refreshToken } = req.body;
     if (!refreshToken) {
       return res.status(401).json({ message: "Refresh token not found" });
     }
 
     const newAccessToken = await userService.refreshToken(refreshToken);
 
-    res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
+    res.status(200).json({
+      message: 'Access token refreshed successfully',
+      accessToken: newAccessToken
     });
-
-    res.status(200).json({ message: "Access token refreshed successfully" });
   } catch (error) {
     next(error);
   }
