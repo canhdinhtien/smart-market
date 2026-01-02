@@ -146,13 +146,13 @@ Most endpoints require a Bearer Token.
 
 ## 🚦 Response Codes
 
-| Code | Status | Description |
-| :--- | :--- | :--- |
-| `200` | OK | Request succeeded. |
-| `201` | Created | Resource created successfully. |
-| `400` | Bad Request | Invalid input or missing required fields. |
-| `401` | Unauthorized | Authorization header missing or invalid token. |
-| `403` | Forbidden | Valid token but insufficient permissions (e.g., Admin only). |
-| `404` | Not Found | Resource (user, group, item) not found. |
-| `409` | Conflict | Resource already exists (e.g., duplicate email/category). |
-| `500` | Internal Server Error | Unexpected server error. |
+| Code | Status | Description | Possible Messages |
+| :--- | :--- | :--- | :--- |
+| `200` | OK | Request succeeded. | `Login successful!`, `Logout successful!`, `User registered successfully!`, `Access token refreshed successfully`, `User updated successfully`, `Password changed successfully`, `Password reset successfully`, `Email verified successfully`, `Verification code sent successfully.`, `[Entity] deleted successfully`, `Member added successfully`, `Member removed successfully`, `Recipe updated successfully`, `Meal plan updated successfully`, `Fridge item deleted successfully`, `Food deleted successfully` |
+| `201` | Created | Resource created successfully. | `User registered successfully!`, `Recipe created successfully`, `Meal plan created successfully`, `[Entity] created successfully` |
+| `400` | Bad Request | Invalid input or missing fields. | `[Field] is required`, `Invalid meal type`, `Password must be at least 6 characters`, `Invalid verification code`, `Verification code expired or not found`, `Invalid token`, `Invalid reset code`, `Reset code expired or not found`, `Group ID is required`, `Food ID is required`, `Name and group_id are required`, `Invalid meal type. Must be sang, trua, or toi` |
+| `401` | Unauthorized | Auth missing or invalid. | `Unauthorized: User ID missing`, `Refresh token not found`, `Invalid credentials!`, `User is not verified!`, `Invalid token`, `Invalid password`, `Failed to refresh token` |
+| `403` | Forbidden | Good token, bad permissions. | `Only group admin can [action]`, `Access denied: You must be a member of the group to [action]`, `Access denied: You must be a member or admin to view this group` |
+| `404` | Not Found | Resource not found. | `User not found`, `Group not found`, `Food not found`, `Recipe not found`, `Shopping list not found`, `Task not found`, `Meal plan not found`, `Fridge item not found`, `Category not found`, `Unit not found`, `User not in group`, `Reset code expired or not found` |
+| `409` | Conflict | Resource conflict. | `User already exists`, `Email already exists`, `User already in group`, `Category already exists`, `Unit already exists`, `Food with this name already exists in the group`, `This email is already associated with a verified account.` |
+| `500` | Internal Server Error | Unexpected error. | `Failed to [action]`, `Unexpected server error`, `Error sending notification` |

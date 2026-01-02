@@ -14,7 +14,11 @@ const saltRounds = 10;
 const registerUser = async ({ email, password, name, gender }) => {
   try {
     const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) throw new Error('User already exists');
+    if (existingUser) {
+      const error = new Error('User already exists');
+      error.statusCode = 409;
+      throw error;
+    }
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const user = await User.create({
@@ -51,13 +55,23 @@ const loginUser = async ({ identifier, password }) => {
         [Op.or]: [{ email: identifier }],
       },
     });
-    if (!user) throw new Error('User not found!');
+    if (!user) {
+      const error = new Error('User not found!');
+      error.statusCode = 401; // Avoid enumeration, treat as auth failure
+      throw error;
+    }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) throw new Error('Invalid credentials!');
+    if (!isMatch) {
+      const error = new Error('Invalid credentials!');
+      error.statusCode = 401;
+      throw error;
+    }
 
     if (!user.is_verified) {
-      throw new Error('User is not verified!');
+      const error = new Error('User is not verified!');
+      error.statusCode = 401;
+      throw error;
     }
 
     const accessToken = Jwt.generateAccessToken(user.id);
@@ -78,7 +92,9 @@ const refreshToken = async (refreshToken) => {
     const accessToken = Jwt.generateAccessToken(decoded.id);
     return accessToken;
   } catch (err) {
-    throw new Error(err.message || 'Failed to refresh token');
+    const error = new Error(err.message || 'Failed to refresh token');
+    error.statusCode = 401;
+    throw error;
   }
 };
 
@@ -115,7 +131,11 @@ const getUser = async (userId) => {
       attributes: { exclude: ['password_hash'] },
     });
 
-    if (!user) throw new Error('User not found');
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
 
     const userJson = user.toJSON();
     delete userJson.password_hash;
@@ -130,7 +150,11 @@ const deleteUser = async (userId) => {
   try {
     const user = await User.findByPk(userId);
 
-    if (!user) throw new Error('User not found');
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
 
     const imageUrl = user.image_url;
 
@@ -152,15 +176,31 @@ const verifyEmail = async (code, token) => {
     const decoded = Jwt.verifyEmailVerificationToken(token);
     const email = decoded.email;
 
-    if (!email) throw new Error('Invalid token');
+    if (!email) {
+      const error = new Error('Invalid token');
+      error.statusCode = 400;
+      throw error;
+    }
 
     const storedCode = await redisClient.get(email);
-    if (!storedCode) throw new Error('Verification code expired or not found');
+    if (!storedCode) {
+      const error = new Error('Verification code expired or not found');
+      error.statusCode = 400;
+      throw error;
+    }
 
-    if (storedCode !== code) throw new Error('Invalid verification code');
+    if (storedCode !== code) {
+      const error = new Error('Invalid verification code');
+      error.statusCode = 400;
+      throw error;
+    }
 
     const user = await User.findOne({ where: { email } });
-    if (!user) throw new Error('User not found');
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
 
     if (user.is_verified) {
       return { message: 'Email is already verified' };
@@ -180,10 +220,18 @@ const changeUserPassword = async (userId, oldPassword, newPassword) => {
   try {
     const user = await User.findByPk(userId);
 
-    if (!user) throw new Error('User not found');
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
-    if (!isMatch) throw new Error('Invalid password');
+    if (!isMatch) {
+      const error = new Error('Invalid password');
+      error.statusCode = 401;
+      throw error;
+    }
 
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
     user.password_hash = hashedPassword;
@@ -199,12 +247,18 @@ const updateUser = async (userId, data) => {
   try {
     const user = await User.findByPk(userId);
     if (!user) {
-      throw new Error('User not found');
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
     }
 
     if (data.email && data.email !== user.email) {
       const emailExists = await User.findOne({ where: { email: data.email } });
-      if (emailExists) throw new Error('Email already exists');
+      if (emailExists) {
+        const error = new Error('Email already exists');
+        error.statusCode = 409;
+        throw error;
+      }
     }
 
     const oldImageUrl = user.image_url;
@@ -271,15 +325,31 @@ const resetPassword = async (code, token, newPassword) => {
     const decoded = Jwt.verifyPasswordResetToken(token);
     const email = decoded.email;
 
-    if (!email) throw new Error('Invalid token');
+    if (!email) {
+      const error = new Error('Invalid token');
+      error.statusCode = 400;
+      throw error;
+    }
 
     const storedCode = await redisClient.get(`reset:${email}`);
-    if (!storedCode) throw new Error('Reset code expired or not found');
+    if (!storedCode) {
+      const error = new Error('Reset code expired or not found');
+      error.statusCode = 400;
+      throw error;
+    }
 
-    if (storedCode !== code) throw new Error('Invalid reset code');
+    if (storedCode !== code) {
+      const error = new Error('Invalid reset code');
+      error.statusCode = 400;
+      throw error;
+    }
 
     const user = await User.findOne({ where: { email } });
-    if (!user) throw new Error('User not found');
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
 
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
     user.password_hash = hashedPassword;

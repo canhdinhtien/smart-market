@@ -9,7 +9,11 @@ const NotificationService = require('./notification.service');
  * @param {string} groupName
  */
 const createGroup = async (adminId, groupName) => {
-  if (!groupName) throw new Error('Group name is required');
+  if (!groupName) {
+    const error = new Error('Group name is required');
+    error.statusCode = 400;
+    throw error;
+  }
 
   const group = await Group.create({ name: groupName, admin_user_id: adminId });
 
@@ -28,14 +32,30 @@ const createGroup = async (adminId, groupName) => {
  */
 const addMember = async (groupId, targetUserId, requestingUserId) => {
   const group = await Group.findByPk(groupId);
-  if (!group) throw new Error('Group not found');
-  if (group.admin_user_id != requestingUserId) throw new Error('Only group admin can add members');
+  if (!group) {
+    const error = new Error('Group not found');
+    error.statusCode = 404;
+    throw error;
+  }
+  if (group.admin_user_id != requestingUserId) {
+    const error = new Error('Only group admin can add members');
+    error.statusCode = 403;
+    throw error;
+  }
 
   const user = await User.findByPk(targetUserId);
-  if (!user) throw new Error('User not found');
+  if (!user) {
+    const error = new Error('User not found');
+    error.statusCode = 404;
+    throw error;
+  }
 
   const exists = await GroupMember.findOne({ where: { group_id: groupId, user_id: user.id } });
-  if (exists) throw new Error('User already in group');
+  if (exists) {
+    const error = new Error('User already in group');
+    error.statusCode = 409;
+    throw error;
+  }
 
   await GroupMember.create({ group_id: groupId, user_id: user.id });
 
@@ -57,14 +77,30 @@ const addMember = async (groupId, targetUserId, requestingUserId) => {
  */
 const deleteMember = async (groupId, targetUserId, requestingUserId) => {
   const group = await Group.findByPk(groupId);
-  if (!group) throw new Error('Group not found');
-  if (group.admin_user_id != requestingUserId) throw new Error('Only group admin can remove members');
+  if (!group) {
+    const error = new Error('Group not found');
+    error.statusCode = 404;
+    throw error;
+  }
+  if (group.admin_user_id != requestingUserId) {
+    const error = new Error('Only group admin can remove members');
+    error.statusCode = 403;
+    throw error;
+  }
 
   const user = await User.findByPk(targetUserId);
-  if (!user) throw new Error('User not found');
+  if (!user) {
+    const error = new Error('User not found');
+    error.statusCode = 404;
+    throw error;
+  }
 
   const member = await GroupMember.findOne({ where: { group_id: groupId, user_id: user.id } });
-  if (!member) throw new Error('User not in group');
+  if (!member) {
+    const error = new Error('User not in group');
+    error.statusCode = 404; // User not in group is conceptually 404 (resource not found), or 400.
+    throw error;
+  }
 
   await member.destroy();
 
@@ -88,11 +124,17 @@ const getGroupMembers = async (groupId, requestingUserId) => {
     include: { model: User, as: 'members', attributes: ['id', 'name', 'email'] }
   });
 
-  if (!group) throw new Error('Group not found');
+  if (!group) {
+    const error = new Error('Group not found');
+    error.statusCode = 404;
+    throw error;
+  }
 
   const isMember = await GroupMember.findOne({ where: { group_id: groupId, user_id: requestingUserId } });
   if (group.admin_user_id != requestingUserId && !isMember) {
-    throw new Error('Access denied: You must be a member or admin to view this group');
+    const error = new Error('Access denied: You must be a member or admin to view this group');
+    error.statusCode = 403;
+    throw error;
   }
 
   return group.members;

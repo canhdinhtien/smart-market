@@ -116,7 +116,10 @@ const getUser = async (req, res, next) => {
     const user = await userService.getUser(req.user.id);
     res.status(200).json({ user });
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    next(error);
   }
 };
 
@@ -130,7 +133,10 @@ const deleteUser = async (req, res, next) => {
     const result = await userService.deleteUser(req.user.id);
     res.status(200).json(result);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    next(error);
   }
 };
 
@@ -140,7 +146,10 @@ const verifyEmail = async (req, res, next) => {
     const result = await userService.verifyEmail(code, token);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    next(error);
   }
 };
 
@@ -159,7 +168,10 @@ const changeUserPassword = async (req, res, next) => {
     );
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    next(error);
   }
 };
 
@@ -191,11 +203,10 @@ const editUser = async (req, res, next) => {
     const result = await userService.updateUser(req.user.id, updateData);
     res.status(200).json(result);
   } catch (error) {
-    // If it's a validation error (like duplicate email), we might want 400 or 409
-    if (error.message.includes("already exists")) {
-      return res.status(409).json({ message: error.message });
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
     }
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -208,7 +219,10 @@ const requestPasswordReset = async (req, res, next) => {
     const result = await userService.requestPasswordReset(email);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    next(error);
   }
 };
 
@@ -228,7 +242,10 @@ const resetPassword = async (req, res, next) => {
     const result = await userService.resetPassword(code, token, newPassword);
     res.status(200).json(result);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    next(error);
   }
 };
 
