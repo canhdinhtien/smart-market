@@ -2,11 +2,14 @@ const logService = require('../services/log.service');
 
 const getLogs = async (req, res, next) => {
   try {
-    const { page, limit, userId } = req.query;
-    const result = await logService.getLogs({ page, limit, userId });
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
+    let { page, limit } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+
+    const logs = await logService.getLogs(page, limit);
+    res.json(logs);
+  } catch (err) {
+    next(err);
   }
 };
 

@@ -35,9 +35,9 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/groups` | 🔒 | **Get All Groups** |
+| `GET` | `/groups` | 🔒 | **Get All Groups**<br>**Query**: `?page=1&limit=20` |
 | `POST` | `/groups` | 🔒 | **Create Group**<br>**Body**: `{ name }` |
-| `GET` | `/groups/:id/members` | 🔒 | **Get Group Members** |
+| `GET` | `/groups/:id/members` | 🔒 | **Get Group Members**<br>**Query**: `?page=1&limit=20` |
 | `POST` | `/groups/:id/members` | 🔒 | **Add Member**<br>**Body**: `{ userId }` |
 | `DELETE` | `/groups/:id/members/:userId` | 🔒 | **Remove Member** |
 
@@ -47,7 +47,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/food` | 🔒 | **Get Foods in Group**<br>**Query**: `?group_id=<id>` |
+| `GET` | `/food` | 🔒 | **Get Foods in Group**<br>**Query**: `?group_id=<id>&page=1&limit=20` |
 | `GET` | `/food/:id` | 🔒 | **Get Food by ID** |
 | `POST` | `/food` | 🔒 | **Create Food** (Multipart)<br>**Form-Data**: `name`, `group_id`, `category`, `unit`, `quantity`, `image` (file) |
 | `PUT` | `/food/:id` | 🔒 | **Update Food** (Multipart)<br>**Form-Data**: `name`, `category`, `unit`, `quantity`, `image` (file) |
@@ -59,7 +59,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/fridge` | 🔒 | **Get Fridge Items**<br>**Query**: `?group_id=<id>` |
+| `GET` | `/fridge` | 🔒 | **Get Fridge Items**<br>**Query**: `?group_id=<id>&page=1&limit=20` |
 | `GET` | `/fridge/:id` | 🔒 | **Get Item by ID** |
 | `POST` | `/fridge` | 🔒 | **Add Item**<br>**Body**: `{ food_id, group_id, quantity, expiryDate (YYYY-MM-DD) }` |
 | `PUT` | `/fridge/:id` | 🔒 | **Update Item**<br>**Body**: `{ quantity, expiryDate }` |
@@ -71,7 +71,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/categories` | 🔒 | **Get All Categories** |
+| `GET` | `/categories` | 🔒 | **Get All Categories**<br>**Query**: `?page=1&limit=20` |
 | `POST` | `/categories` | 🛡️ | **Create Category**<br>**Body**: `{ name }` |
 | `PUT` | `/categories` | 🛡️ | **Update Category**<br>**Body**: `{ oldName, newName }` |
 | `DELETE` | `/categories` | 🛡️ | **Delete Category**<br>**Body**: `{ name }` |
@@ -82,7 +82,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/units` | 🔒 | **Get All Units** |
+| `GET` | `/units` | 🔒 | **Get All Units**<br>**Query**: `?page=1&limit=20` |
 | `POST` | `/units` | 🛡️ | **Create Unit**<br>**Body**: `{ unitName }` |
 | `PUT` | `/units` | 🛡️ | **Update Unit**<br>**Body**: `{ oldName, newName }` |
 | `DELETE` | `/units` | 🛡️ | **Delete Unit**<br>**Body**: `{ unitName }` |
@@ -93,7 +93,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/recipes` | 🔒 | **Get Recipes**<br>**Query**: `?foodId=<id>` |
+| `GET` | `/recipes` | 🔒 | **Get Recipes**<br>**Query**: `?foodId=<id>&page=1&limit=20` |
 | `POST` | `/recipes` | 🔒 | **Create Recipe**<br>**Body**: `{ foodId, instructions, ingredients: [{...}] }` |
 | `PUT` | `/recipes/:id` | 🔒 | **Update Recipe**<br>**Body**: `{ name, instructions, ingredients }` |
 | `DELETE` | `/recipes/:id` | 🔒 | **Delete Recipe** |
@@ -104,7 +104,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/meals/:groupId` | 🔒 | **Get Meal Plans**<br>**Query**: `?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` |
+| `GET` | `/meals/:groupId` | 🔒 | **Get Meal Plans**<br>**Query**: `?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&page=1&limit=20` |
 | `POST` | `/meals` | 🔒 | **Create Plan**<br>**Body**: `{ date, meals: [{...}] }` |
 | `PUT` | `/meals/:id` | 🔒 | **Update Plan**<br>**Body**: `{ date, meals }` |
 | `DELETE` | `/meals/:id` | 🔒 | **Delete Plan** |
@@ -115,12 +115,12 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/shopping` | 🔒 | **Get All Lists**<br>**Query**: `?group_id=<id>`<br>**Returns**: Lists with full task details |
+| `GET` | `/shopping` | 🔒 | **Get All Lists**<br>**Query**: `?group_id=<id>&page=1&limit=20`<br>**Returns**: Lists with full task details |
 | `GET` | `/shopping/:id` | 🔒 | **Get List by ID**<br>**Returns**: List with full task details |
 | `POST` | `/shopping` | 🔒 | **Create List**<br>**Body**: `{ name }` |
 | `PUT` | `/shopping/:id` | 🔒 | **Update List**<br>**Body**: `{ name }` |
 | `DELETE` | `/shopping/:id` | 🔒 | **Delete List** |
-| `GET` | `/shopping/:id/tasks` | 🔒 | **Get Tasks** |
+| `GET` | `/shopping/:id/tasks` | 🔒 | **Get Tasks**<br>**Query**: `?page=1&limit=20` |
 | `POST` | `/shopping/:id/tasks` | 🔒 | **Add Tasks**<br>**Body**: `{ tasks: [{ name, quantity }] }` |
 | `PUT` | `/shopping/tasks/:taskId` | 🔒 | **Update Task**<br>**Body**: `{ name, quantity, completed }` |
 | `DELETE` | `/shopping/tasks/:taskId` | 🔒 | **Delete Task** |
@@ -140,7 +140,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/logs` | 🛡️ | **Get System Logs** |
+| `GET` | `/logs` | 🛡️ | **Get System Logs**<br>**Query**: `?page=1&limit=20` |
 
 ---
 

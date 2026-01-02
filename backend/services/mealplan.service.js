@@ -94,7 +94,7 @@ const updateMealPlan = async (id, data, requestingUserId) => {
   return plan;
 };
 
-const getMealPlanByDate = async (groupId, startDate, endDate, requestingUserId) => {
+const getMealPlanByDate = async (groupId, startDate, endDate, requestingUserId, page = 1, limit = 20) => {
   const isMember = await groupService.isMember(groupId, requestingUserId);
   if (!isMember) {
     const error = new Error('Access denied: You must be a member of the group to view meal plans');
@@ -114,14 +114,25 @@ const getMealPlanByDate = async (groupId, startDate, endDate, requestingUserId) 
     whereClause.date = startDate;
   }
 
-  return await MealPlan.findAll({
+  const offset = (page - 1) * limit;
+
+  const { count, rows } = await MealPlan.findAndCountAll({
     where: whereClause,
     include: [
       { model: Recipe, attributes: ['id', 'name'] },
       { model: Food, attributes: ['id', 'name', 'image_url'] }
     ],
-    order: [['date', 'ASC'], ['meal_type', 'ASC']]
+    order: [['date', 'ASC'], ['meal_type', 'ASC']],
+    limit: limit,
+    offset: offset
   });
+
+  return {
+    plans: rows,
+    total: count,
+    page: parseInt(page),
+    totalPages: Math.ceil(count / limit)
+  };
 };
 
 module.exports = {

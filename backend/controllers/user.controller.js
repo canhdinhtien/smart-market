@@ -249,6 +249,21 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+const searchUsers = async (req, res, next) => {
+  try {
+    let { q, page, limit } = req.query;
+
+    q = q || "";
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+
+    const result = await userService.searchUsers(q, page, limit);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -262,4 +277,5 @@ module.exports = {
   editUser,
   requestPasswordReset,
   resetPassword,
+  searchUsers,
 };

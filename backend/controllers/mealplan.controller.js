@@ -38,19 +38,21 @@ const updateMealPlan = async (req, res, next) => {
 const getMealPlanByDate = async (req, res, next) => {
   try {
     const { groupId } = req.params;
-    const { startDate, endDate } = req.query;
+    let { startDate, endDate, page, limit } = req.query;
 
-    const plans = await mealplanService.getMealPlanByDate(
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+
+    const result = await mealplanService.getMealPlanByDate(
       groupId,
       startDate,
       endDate,
-      req.user.id
+      req.user.id,
+      page,
+      limit
     );
 
-    return res.json({
-      message: 'Meal plans fetched successfully',
-      data: plans
-    });
+    return res.json(result);
   } catch (error) {
     next(error);
   }

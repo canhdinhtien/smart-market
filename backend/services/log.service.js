@@ -24,7 +24,7 @@ const createLog = async ({ userId, action, details, entity, entityId }) => {
   }
 };
 
-const getLogs = async ({ page = 1, limit = 10, userId }) => {
+const getLogs = async (page = 1, limit = 20, userId = null) => {
   const User = require('../models/User');
   const offset = (page - 1) * limit;
   const where = {};
@@ -34,20 +34,17 @@ const getLogs = async ({ page = 1, limit = 10, userId }) => {
 
   const { count, rows } = await Log.findAndCountAll({
     where,
-    limit: parseInt(limit),
-    offset: parseInt(offset),
-    order: [['timestamp', 'DESC']],
-    include: [{
-      model: User,
-      attributes: ['id', 'email', 'name']
-    }]
+    include: [{ model: User, attributes: ['id', 'name', 'email'] }],
+    order: [['created_at', 'DESC']],
+    limit: limit,
+    offset: offset
   });
 
   return {
+    logs: rows,
     total: count,
-    pages: Math.ceil(count / limit),
-    currentPage: parseInt(page),
-    logs: rows
+    page: parseInt(page),
+    totalPages: Math.ceil(count / limit)
   };
 };
 

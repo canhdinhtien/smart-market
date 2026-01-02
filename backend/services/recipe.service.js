@@ -151,7 +151,7 @@ const deleteRecipe = async (id, requestingUserId) => {
   }
 };
 
-const getRecipesByFoodId = async (foodId, requestingUserId) => {
+const getRecipesByFoodId = async (foodId, requestingUserId, page = 1, limit = 20) => {
   const ingredients = await RecipeIngredient.findAll({
     where: { food_id: foodId },
     include: [{ model: Recipe }]
@@ -173,12 +173,23 @@ const getRecipesByFoodId = async (foodId, requestingUserId) => {
   const map = new Map();
   for (const item of recipes) {
     if (!map.has(item.id)) {
-      map.set(item.id, true);    // set any value to Map
+      map.set(item.id, true);
       uniqueRecipes.push(item);
     }
   }
 
-  return uniqueRecipes;
+  // Manual pagination
+  const total = uniqueRecipes.length;
+  const totalPages = Math.ceil(total / limit);
+  const startIndex = (page - 1) * limit;
+  const paginatedRecipes = uniqueRecipes.slice(startIndex, startIndex + limit);
+
+  return {
+    recipes: paginatedRecipes,
+    total: total,
+    page: parseInt(page),
+    totalPages: totalPages
+  };
 };
 
 const getAllRecipesInGroup = async (groupId, requestingUserId) => {

@@ -12,8 +12,19 @@ const createCategory = async (categoryData) => {
   return newCategory;
 };
 
-const getAllCategories = async () => {
-  return await Category.findAll();
+const getAllCategories = async (page = 1, limit = 20) => {
+  const offset = (page - 1) * limit;
+  const { count, rows } = await Category.findAndCountAll({
+    limit: limit,
+    offset: offset,
+    order: [['name', 'ASC']]
+  });
+  return {
+    categories: rows,
+    total: count,
+    page: parseInt(page),
+    totalPages: Math.ceil(count / limit)
+  };
 };
 
 const editCategoryByName = async (categoryName, newCategoryName) => {

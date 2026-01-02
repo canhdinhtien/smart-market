@@ -95,7 +95,7 @@ const deleteFood = async (id, requestingUserId) => {
   return { message: 'Food deleted successfully' };
 };
 
-const getAllFoodsInGroup = async (groupId, requestingUserId) => {
+const getAllFoodsInGroup = async (groupId, requestingUserId, page = 1, limit = 20) => {
   const isMember = await groupService.isMember(groupId, requestingUserId);
   if (!isMember) {
     const error = new Error('Access denied: You must be a member of the group to view foods');
@@ -103,14 +103,25 @@ const getAllFoodsInGroup = async (groupId, requestingUserId) => {
     throw error;
   }
 
-  return await Food.findAll({
+  const offset = (page - 1) * limit;
+
+  const { count, rows } = await Food.findAndCountAll({
     where: { group_id: groupId },
     include: [
-      { model: Category, attributes: ['id', 'name'] },
-      { model: Unit, attributes: ['id', 'name'] }
+      { model: Unit, attributes: ['id', 'name'] },
+      { model: Category, attributes: ['id', 'name'] }
     ],
-    order: [['created_at', 'DESC']]
+    limit: limit,
+    offset: offset,
+    order: [['name', 'ASC']]
   });
+
+  return {
+    foods: rows,
+    total: count,
+    page: parseInt(page),
+    totalPages: Math.ceil(count / limit)
+  };
 };
 
 const getUnits = async () => {

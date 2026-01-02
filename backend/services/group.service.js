@@ -119,11 +119,10 @@ const deleteMember = async (groupId, targetUserId, requestingUserId) => {
  * Get all members of a group
  * @param {number} groupId
  */
-const getGroupMembers = async (groupId, requestingUserId) => {
-  const group = await Group.findByPk(groupId, {
-    include: { model: User, as: 'members', attributes: ['id', 'name', 'email'] }
-  });
+const getGroupMembers = async (groupId, requestingUserId, page = 1, limit = 20) => {
+  const offset = (page - 1) * limit;
 
+  const group = await Group.findByPk(groupId);
   if (!group) {
     const error = new Error('Group not found');
     error.statusCode = 404;
@@ -137,10 +136,28 @@ const getGroupMembers = async (groupId, requestingUserId) => {
     throw error;
   }
 
-  return group.members;
+  const { count, rows } = await User.findAndCountAll({
+    include: [{
+      model: GroupMember,
+      as: 'memberships',
+      where: { group_id: groupId },
+      attributes: [],
+      required: true
+    }],
+    attributes: ['id', 'name', 'email'],
+    limit: limit,
+    offset: offset
+  });
+
+  return {
+    members: rows,
+    total: count,
+    page: parseInt(page),
+    totalPages: Math.ceil(count / limit)
+  };
 };
 
-const getUserGroups = async (userId) => {
+const getUserGroups = async (userId, page = 1, limit = 20) => {
   // Groups where user is admin
   const adminGroups = await Group.findAll({
     where: { admin_user_id: userId },
@@ -167,7 +184,18 @@ const getUserGroups = async (userId) => {
     return acc;
   }, []);
 
-  return allGroups;
+  // Manual pagination
+  const total = allGroups.length;
+  const totalPages = Math.ceil(total / limit);
+  const startIndex = (page - 1) * limit;
+  const paginatedGroups = allGroups.slice(startIndex, startIndex + limit);
+
+  return {
+    groups: paginatedGroups,
+    total: total,
+    page: parseInt(page),
+    totalPages: totalPages
+  };
 };
 
 const getGroupById = async (groupId) => {

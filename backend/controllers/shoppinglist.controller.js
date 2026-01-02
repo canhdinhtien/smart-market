@@ -46,11 +46,15 @@ const deleteShoppingList = async (req, res, next) => {
 const getAllShoppingLists = async (req, res, next) => {
   try {
     const { group_id } = req.query;
+    let { page, limit } = req.query;
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized: User ID missing' });
     if (!group_id) return res.status(400).json({ message: 'Group ID is required' });
 
-    const result = await shoppinglistService.getAllShoppingLists(group_id, userId);
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+
+    const result = await shoppinglistService.getAllShoppingLists(group_id, userId, page, limit);
     res.status(200).json(result);
   } catch (error) {
     if (error.statusCode) return res.status(error.statusCode).json({ message: error.message });
@@ -91,11 +95,15 @@ const createTasks = async (req, res, next) => {
 const getListOfTasks = async (req, res, next) => {
   try {
     const { id } = req.params;
+    let { page, limit } = req.query;
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized: User ID missing' });
     if (!id) return res.status(400).json({ message: 'List ID is required' });
 
-    const result = await shoppinglistService.getListOfTasks(id, userId);
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+
+    const result = await shoppinglistService.getListOfTasks(id, userId, page, limit);
     res.status(200).json(result);
   } catch (error) {
     if (error.statusCode) return res.status(error.statusCode).json({ message: error.message });

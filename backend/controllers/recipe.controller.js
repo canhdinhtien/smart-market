@@ -56,7 +56,7 @@ const deleteRecipe = async (req, res, next) => {
  */
 const getRecipesByFoodId = async (req, res, next) => {
   try {
-    const { foodId } = req.query;
+    let { foodId, page, limit } = req.query;
 
     if (!foodId) {
       const error = new Error('foodId is required');
@@ -64,12 +64,12 @@ const getRecipesByFoodId = async (req, res, next) => {
       throw error;
     }
 
-    const recipes = await recipeService.getRecipesByFoodId(foodId, req.user.id);
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
 
-    res.status(200).json({
-      message: 'Recipes fetched successfully',
-      data: recipes
-    });
+    const result = await recipeService.getRecipesByFoodId(foodId, req.user.id, page, limit);
+
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }

@@ -61,16 +61,28 @@ const deleteFridgeItem = async (req, res, next) => {
 const getAllFridgeItems = async (req, res, next) => {
   try {
     const { group_id } = req.query;
+    let { page, limit } = req.query;
     const userId = req.user?.id;
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized: User ID missing' });
-    if (!group_id) {
-      return res.status(400).json({ message: 'Group ID is required' });
+    if (!userId) {
+      const error = new Error('Unauthorized: User ID missing');
+      error.statusCode = 401;
+      throw error;
     }
-    const items = await fridgeService.getAllFridgeItems(group_id, userId);
-    res.status(200).json(items);
-  } catch (error) {
-    next(error);
+
+    if (!group_id) {
+      const error = new Error('Group ID is required');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+
+    const result = await fridgeService.getAllFridgeItems(group_id, userId, page, limit);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };
 

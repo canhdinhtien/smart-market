@@ -373,6 +373,37 @@ const resetPassword = async (code, token, newPassword) => {
   }
 };
 
+const searchUsers = async (query, page = 1, limit = 20) => {
+  try {
+    const offset = (page - 1) * limit;
+    const whereClause = {};
+
+    if (query) {
+      whereClause[Op.or] = [
+        { name: { [Op.iLike]: `%${query}%` } },
+        { email: { [Op.iLike]: `%${query}%` } }
+      ];
+    }
+
+    const { count, rows } = await User.findAndCountAll({
+      where: whereClause,
+      attributes: ['id', 'name', 'email', 'image_url'],
+      limit: limit,
+      offset: offset,
+      order: [['name', 'ASC']]
+    });
+
+    return {
+      users: rows,
+      total: count,
+      page: parseInt(page),
+      totalPages: Math.ceil(count / limit)
+    };
+  } catch (err) {
+    throw new Error(err.message || 'Failed to search users');
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -385,4 +416,5 @@ module.exports = {
   updateUser,
   requestPasswordReset,
   resetPassword,
+  searchUsers,
 };

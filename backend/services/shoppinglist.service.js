@@ -63,7 +63,7 @@ const deleteShoppingList = async (id, requestingUserId) => {
   return { message: 'Shopping list deleted successfully' };
 };
 
-const getAllShoppingLists = async (groupId, requestingUserId) => {
+const getAllShoppingLists = async (groupId, requestingUserId, page = 1, limit = 20) => {
   const isMember = await groupService.isMember(groupId, requestingUserId);
   if (!isMember) {
     const error = new Error('Access denied: You must be a member of the group to view shopping lists');
@@ -71,29 +71,28 @@ const getAllShoppingLists = async (groupId, requestingUserId) => {
     throw error;
   }
 
-  return await ShoppingList.findAll({
+  const offset = (page - 1) * limit;
+
+  const { count, rows } = await ShoppingList.findAndCountAll({
     where: { group_id: groupId },
     include: [
       {
         model: ShoppingListTask,
-        include: [
-          {
-            model: Food,
-            attributes: ['id', 'name', 'image_url'],
-            include: [
-              { model: Unit, attributes: ['id', 'name'] },
-              { model: Category, attributes: ['id', 'name'] }
-            ]
-          },
-          {
-            model: User,
-            attributes: ['id', 'name', 'email']
-          }
-        ]
+        as: 'tasks',
+        attributes: ['id', 'name', 'quantity', 'is_completed']
       }
     ],
-    order: [['created_at', 'DESC'], [ShoppingListTask, 'created_at', 'ASC']]
+    limit: limit,
+    offset: offset,
+    order: [['created_at', 'DESC']]
   });
+
+  return {
+    lists: rows,
+    total: count,
+    page: parseInt(page),
+    totalPages: Math.ceil(count / limit)
+  };
 };
 
 const getShoppingListById = async (id, requestingUserId) => {
@@ -172,7 +171,7 @@ const createTasks = async (listId, tasksData, requestingUserId) => {
   return newTasks;
 };
 
-const getListOfTasks = async (shoppingListId, requestingUserId) => {
+const getListOfTasks = async (shoppingListId, requestingUserId, page = 1, limit = 20) => {
   const list = await ShoppingList.findByPk(shoppingListId);
   if (!list) {
     const error = new Error('Shopping list not found');
@@ -187,7 +186,9 @@ const getListOfTasks = async (shoppingListId, requestingUserId) => {
     throw error;
   }
 
-  return await ShoppingListTask.findAll({
+  const offset = (page - 1) * limit;
+
+  const { count, rows } = await ShoppingListTask.findAndCountAll({
     where: { shopping_list_id: shoppingListId },
     include: [
       {
@@ -203,8 +204,17 @@ const getListOfTasks = async (shoppingListId, requestingUserId) => {
         attributes: ['id', 'name', 'email']
       }
     ],
+    limit: limit,
+    offset: offset,
     order: [['created_at', 'ASC']]
   });
+
+  return {
+    tasks: rows,
+    total: count,
+    page: parseInt(page),
+    totalPages: Math.ceil(count / limit)
+  };
 };
 
 const deleteTask = async (taskId, requestingUserId) => {

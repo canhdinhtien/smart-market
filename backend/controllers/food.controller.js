@@ -67,13 +67,18 @@ const deleteFood = async (req, res, next) => {
 const getAllFoodsInGroup = async (req, res, next) => {
   try {
     const { group_id } = req.query;
+    let { page, limit } = req.query;
     const userId = req.user?.id;
 
     if (!userId) return res.status(401).json({ message: 'Unauthorized: User ID missing' });
     if (!group_id) {
       return res.status(400).json({ message: 'Group ID is required' });
     }
-    const foods = await foodService.getAllFoodsInGroup(group_id, userId);
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+
+    const foods = await foodService.getAllFoodsInGroup(group_id, userId, page, limit);
     res.status(200).json(foods);
   } catch (error) {
     next(error);

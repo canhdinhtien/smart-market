@@ -19,7 +19,10 @@ const createUnit = async (req, res, next) => {
 
 const getAllUnits = async (req, res, next) => {
   try {
-    const units = await unitService.getAllUnits();
+    let { page, limit } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+    const units = await unitService.getAllUnits(page, limit);
     res.status(200).json(units);
   } catch (error) {
     next(error);

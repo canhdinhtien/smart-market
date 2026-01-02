@@ -12,8 +12,19 @@ const createUnit = async (unitName) => {
   return newUnit;
 };
 
-const getAllUnits = async () => {
-  return await Unit.findAll();
+const getAllUnits = async (page = 1, limit = 20) => {
+  const offset = (page - 1) * limit;
+  const { count, rows } = await Unit.findAndCountAll({
+    limit: limit,
+    offset: offset,
+    order: [['name', 'ASC']]
+  });
+  return {
+    units: rows,
+    total: count,
+    page: parseInt(page),
+    totalPages: Math.ceil(count / limit)
+  };
 };
 
 const editUnitByName = async (oldName, newName) => {
