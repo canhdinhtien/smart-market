@@ -2,6 +2,7 @@ const Group = require('../models/Group');
 const GroupMember = require('../models/GroupMember');
 const User = require('../models/User');
 const NotificationService = require('./notification.service');
+const { validateNotDeleted } = require('../utils/validateNotDeleted');
 const { Op } = require('sequelize');
 
 /**
@@ -15,6 +16,9 @@ const createGroup = async (adminId, groupName) => {
     error.statusCode = 400;
     throw error;
   }
+
+  // Validate that admin user exists and is not deleted
+  await validateNotDeleted(User, adminId, 'User');
 
   const group = await Group.create({ name: groupName, admin_user_id: adminId });
 
@@ -50,6 +54,10 @@ const addMember = async (groupId, targetUserId, requestingUserId) => {
     error.statusCode = 404;
     throw error;
   }
+
+  // Validate that group and user are not deleted
+  await validateNotDeleted(Group, groupId, 'Group');
+  await validateNotDeleted(User, targetUserId, 'User');
 
   const exists = await GroupMember.findOne({ where: { group_id: groupId, user_id: user.id } });
   if (exists) {

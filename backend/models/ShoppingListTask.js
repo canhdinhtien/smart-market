@@ -18,8 +18,12 @@ ShoppingListTask.init({
   sequelize,
   modelName: 'ShoppingListTask',
   tableName: 'shopping_list_tasks',
-  timestamps: false,
-  hooks: { beforeUpdate: (t) => { t.updated_at = new Date(); } }
+  timestamps: true,
+  underscored: true,
+  paranoid: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at'
 });
 
 ShoppingListTask.associate = (models) => {

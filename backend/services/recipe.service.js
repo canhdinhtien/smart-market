@@ -2,9 +2,11 @@ const Recipe = require('../models/Recipe');
 const RecipeIngredient = require('../models/RecipeIngredient');
 const Food = require('../models/Food');
 const Unit = require('../models/Unit');
+const Group = require('../models/Group');
 const sequelize = require('../config/database');
 const NotificationService = require('./notification.service');
 const groupService = require('./group.service');
+const { validateNotDeleted } = require('../utils/validateNotDeleted');
 const { Op } = require('sequelize');
 
 const createRecipe = async (data, requestingUserId) => {
@@ -21,6 +23,17 @@ const createRecipe = async (data, requestingUserId) => {
     const error = new Error('Access denied: You must be a member of the group to create a recipe');
     error.statusCode = 403;
     throw error;
+  }
+
+  // Validate that group is not deleted
+  await validateNotDeleted(Group, group_id, 'Group');
+
+  // Validate ingredients if provided
+  if (ingredients && ingredients.length > 0) {
+    for (const ing of ingredients) {
+      await validateNotDeleted(Food, ing.food_id, 'Food');
+      await validateNotDeleted(Unit, ing.unit_id, 'Unit');
+    }
   }
 
   const t = await sequelize.transaction();

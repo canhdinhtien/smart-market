@@ -69,12 +69,12 @@ User.init({
   sequelize,
   modelName: 'User',
   tableName: 'users',
-  timestamps: false, // since we are using custom timestamps
-  hooks: {
-    beforeUpdate: (user) => {
-      user.updated_at = new Date();
-    }
-  }
+  timestamps: true, // Required for paranoid mode
+  underscored: true, // Use snake_case: created_at, updated_at, deleted_at
+  paranoid: true, // Enable soft delete
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at'
 });
 
 

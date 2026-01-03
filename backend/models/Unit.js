@@ -1,7 +1,7 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 
-class Unit extends Model {}
+class Unit extends Model { }
 
 Unit.init({
   id: {
@@ -19,7 +19,19 @@ Unit.init({
   sequelize,
   modelName: 'Unit',
   tableName: 'units',
-  timestamps: false
+  timestamps: true,
+  underscored: true,
+  paranoid: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at'
 });
+
+Unit.associate = (models) => {
+  Unit.hasMany(models.Food, {
+    foreignKey: 'unit_id',
+    as: 'foods'
+  });
+};
 
 module.exports = Unit;

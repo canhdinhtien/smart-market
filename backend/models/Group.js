@@ -36,12 +36,12 @@ Group.init({
   sequelize,
   modelName: 'Group',
   tableName: 'groups',
-  timestamps: false, // using custom timestamps
-  hooks: {
-    beforeUpdate: (group) => {
-      group.updated_at = new Date();
-    }
-  }
+  timestamps: true, // Required for paranoid mode
+  underscored: true,
+  paranoid: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at'
 });
 
 

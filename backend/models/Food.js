@@ -34,10 +34,12 @@ Food.init({
   sequelize,
   modelName: 'Food',
   tableName: 'foods',
-  timestamps: false,
-  hooks: {
-    beforeUpdate: (food) => { food.updated_at = new Date(); }
-  }
+  timestamps: true,
+  underscored: true,
+  paranoid: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at'
 });
 
 

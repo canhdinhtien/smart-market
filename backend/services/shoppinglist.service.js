@@ -4,8 +4,10 @@ const Food = require('../models/Food');
 const User = require('../models/User');
 const Unit = require('../models/Unit');
 const Category = require('../models/Category');
+const Group = require('../models/Group');
 const groupService = require('./group.service');
 const NotificationService = require('./notification.service');
+const { validateNotDeleted } = require('../utils/validateNotDeleted');
 const { Op } = require('sequelize');
 
 const createShoppingList = async (data, requestingUserId) => {
@@ -22,6 +24,9 @@ const createShoppingList = async (data, requestingUserId) => {
     error.statusCode = 403;
     throw error;
   }
+
+  // Validate that group is not deleted
+  await validateNotDeleted(Group, group_id, 'Group');
 
   return await ShoppingList.create(data);
 };
@@ -152,6 +157,20 @@ const createTasks = async (listId, tasksData, requestingUserId) => {
     const error = new Error('Access denied: You must be a member of the group to add tasks');
     error.statusCode = 403;
     throw error;
+  }
+
+  // Validate that shopping list is not deleted
+  await validateNotDeleted(ShoppingList, listId, 'Shopping list');
+
+  // Validate food items if provided
+  const tasksArray = Array.isArray(tasksData) ? tasksData : [tasksData];
+  for (const task of tasksArray) {
+    if (task.food_id) {
+      await validateNotDeleted(Food, task.food_id, 'Food');
+    }
+    if (task.assign_to_user_id) {
+      await validateNotDeleted(User, task.assign_to_user_id, 'User');
+    }
   }
 
   let newTasks;

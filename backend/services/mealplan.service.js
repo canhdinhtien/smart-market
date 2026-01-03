@@ -2,11 +2,13 @@ const { Op } = require('sequelize');
 const MealPlan = require('../models/MealPlan');
 const Recipe = require('../models/Recipe');
 const Food = require('../models/Food');
+const Group = require('../models/Group');
 const NotificationService = require('./notification.service');
 const groupService = require('./group.service');
+const { validateNotDeleted } = require('../utils/validateNotDeleted');
 
 const createMealPlan = async (data, requestingUserId) => {
-  const { meal_type, date, group_id } = data;
+  const { meal_type, date, group_id, recipe_id, food_id } = data;
 
   if (!meal_type || !date || !group_id) {
     const error = new Error('Meal type, date, and group ID are required');
@@ -26,6 +28,15 @@ const createMealPlan = async (data, requestingUserId) => {
     const error = new Error('Invalid meal type. Must be sang, trua, or toi');
     error.statusCode = 400;
     throw error;
+  }
+
+  // Validate that referenced entities are not deleted
+  await validateNotDeleted(Group, group_id, 'Group');
+  if (recipe_id) {
+    await validateNotDeleted(Recipe, recipe_id, 'Recipe');
+  }
+  if (food_id) {
+    await validateNotDeleted(Food, food_id, 'Food');
   }
 
   const plan = await MealPlan.create(data);

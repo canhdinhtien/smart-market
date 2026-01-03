@@ -16,8 +16,12 @@ Recipe.init({
   sequelize,
   modelName: 'Recipe',
   tableName: 'recipes',
-  timestamps: false,
-  hooks: { beforeUpdate: (r) => { r.updated_at = new Date(); } }
+  timestamps: true,
+  underscored: true,
+  paranoid: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at'
 });
 
 Recipe.associate = (models) => {

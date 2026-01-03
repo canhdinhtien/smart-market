@@ -2,8 +2,10 @@ const FridgeItem = require('../models/FridgeItem');
 const Food = require('../models/Food');
 const Category = require('../models/Category');
 const Unit = require('../models/Unit');
+const Group = require('../models/Group');
 const groupService = require('./group.service');
 const NotificationService = require('./notification.service');
+const { validateNotDeleted } = require('../utils/validateNotDeleted');
 const { Op } = require('sequelize');
 
 const createFridgeItem = async (data, requestingUserId) => {
@@ -22,6 +24,10 @@ const createFridgeItem = async (data, requestingUserId) => {
     error.statusCode = 403;
     throw error;
   }
+
+  // Validate that referenced entities are not deleted
+  await validateNotDeleted(Food, food_id, 'Food');
+  await validateNotDeleted(Group, group_id, 'Group');
 
   const newItem = await FridgeItem.create(data);
 

@@ -13,7 +13,12 @@ RecipeIngredient.init({
   sequelize,
   modelName: 'RecipeIngredient',
   tableName: 'recipe_ingredients',
-  timestamps: false
+  timestamps: true,
+  underscored: true,
+  paranoid: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at'
 });
 
 RecipeIngredient.associate = (models) => {

@@ -1,12 +1,14 @@
 const Food = require('../models/Food');
 const Category = require('../models/Category');
 const Unit = require('../models/Unit');
+const Group = require('../models/Group');
 const groupService = require('./group.service');
 const { deleteImage } = require('../utils/imageUtils');
+const { validateNotDeleted } = require('../utils/validateNotDeleted');
 const { Op } = require('sequelize');
 
 const createFood = async (foodData, requestingUserId) => {
-  const { name, group_id } = foodData;
+  const { name, group_id, category_id, unit_id } = foodData;
 
   const isMember = await groupService.isMember(group_id, requestingUserId);
   if (!isMember) {
@@ -14,6 +16,13 @@ const createFood = async (foodData, requestingUserId) => {
     error.statusCode = 403;
     throw error;
   }
+
+  // Validate that referenced entities are not deleted
+  await validateNotDeleted(Group, group_id, 'Group');
+  if (category_id) {
+    await validateNotDeleted(Category, category_id, 'Category');
+  }
+  await validateNotDeleted(Unit, unit_id, 'Unit');
 
   // Check if food with same name exists in the group
   const existingFood = await Food.findOne({ where: { name, group_id } });

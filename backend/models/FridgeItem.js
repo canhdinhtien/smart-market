@@ -19,8 +19,12 @@ FridgeItem.init({
   sequelize,
   modelName: 'FridgeItem',
   tableName: 'fridge_items',
-  timestamps: false,
-  hooks: { beforeUpdate: (item) => { item.updated_at = new Date(); } }
+  timestamps: true,
+  underscored: true,
+  paranoid: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at'
 });
 
 FridgeItem.associate = (models) => {
