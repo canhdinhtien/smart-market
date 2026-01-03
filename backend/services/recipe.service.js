@@ -342,15 +342,38 @@ const getRecipeRecommendations = async (
     };
   }
 
-  const fridgeFoodIds = new Set(fridgeItems.map(i => i.food_id));
+  const fridgeFoodIds = Array.from(new Set(fridgeItems.map(i => i.food_id)));
+  const fridgeFoodIdsSet = new Set(fridgeFoodIds);
 
-  // 3. Fetch recipes & ingredients (lean objects)
+  // 3. Pre-optimization: Get IDs of recipes that have AT LEAST one matching ingredient
+  // This drastically reduces the search space compared to fetching all recipes
+  const matchingIngredients = await RecipeIngredient.findAll({
+    where: { food_id: { [Op.in]: fridgeFoodIds } },
+    attributes: ['recipe_id'],
+    raw: true,
+    group: ['recipe_id'] // Ensure distinct recipe IDs
+  });
+
+  if (!matchingIngredients.length) {
+    return {
+      recommendations: [],
+      total: 0,
+      page,
+      totalPages: 0
+    };
+  }
+
+  const potentialRecipeIds = matchingIngredients.map(i => i.recipe_id);
+
+  // 4. Fetch full details ONLY for potential matches
   const recipes = await Recipe.findAll({
-    where: { group_id: groupId },
+    where: {
+      group_id: groupId,
+      id: { [Op.in]: potentialRecipeIds }
+    },
     include: [
       {
         model: RecipeIngredient,
-        attributes: ['food_id'],
         include: [
           { model: Food, attributes: ['id', 'name', 'image_url'] },
           { model: Unit, attributes: ['id', 'name'] }
@@ -359,7 +382,7 @@ const getRecipeRecommendations = async (
     ]
   });
 
-  // 4. Score recipes (single pass, no mutation side-effects)
+  // 5. Score recipes
   const scoredRecipes = [];
 
   for (const recipe of recipes) {
@@ -369,12 +392,25 @@ const getRecipeRecommendations = async (
     if (!ingredients.length) continue;
 
     let matchedIngredientsCount = 0;
+    const missingIngredients = [];
 
     for (const ing of ingredients) {
-      ing.in_fridge = fridgeFoodIds.has(ing.food_id);
-      if (ing.in_fridge) matchedIngredientsCount++;
+      ing.in_fridge = fridgeFoodIdsSet.has(ing.food_id);
+      if (ing.in_fridge) {
+        matchedIngredientsCount++;
+      } else {
+        // Collect detailed missing ingredient info
+        missingIngredients.push({
+          food_id: ing.food_id,
+          name: ing.Food ? ing.Food.name : 'Unknown Food',
+          image_url: ing.Food ? ing.Food.image_url : null,
+          quantity: ing.quantity,
+          unit: ing.Unit ? ing.Unit.name : null
+        });
+      }
     }
 
+    // Should theoretically be > 0 due to pre-filtering, but safe check
     if (matchedIngredientsCount === 0) continue;
 
     const matchPercentage = Number(
@@ -385,17 +421,18 @@ const getRecipeRecommendations = async (
       ...recipeJson,
       matchPercentage,
       matchedIngredientsCount,
-      missingIngredientsCount: ingredients.length - matchedIngredientsCount
+      missingIngredientsCount: missingIngredients.length,
+      missingIngredients // Detailed list restored
     });
   }
 
-  // 5. Sort (stable & predictable)
+  // 6. Sort: Match % DESC -> Matched Count DESC
   scoredRecipes.sort((a, b) =>
     b.matchPercentage - a.matchPercentage ||
     b.matchedIngredientsCount - a.matchedIngredientsCount
   );
 
-  // 6. Pagination
+  // 7. Pagination
   const total = scoredRecipes.length;
   const startIndex = (page - 1) * limit;
 

@@ -111,6 +111,7 @@ const getShoppingListById = async (id, requestingUserId) => {
     include: [
       {
         model: ShoppingListTask,
+        as: 'tasks',
         paranoid: false,  // Include deleted tasks for history
         include: [
           {
@@ -130,7 +131,7 @@ const getShoppingListById = async (id, requestingUserId) => {
         ]
       }
     ],
-    order: [[ShoppingListTask, 'created_at', 'ASC']]
+    order: [[{ model: ShoppingListTask, as: 'tasks' }, 'created_at', 'ASC']]
   });
   if (!list) {
     const error = new Error('Shopping list not found');
@@ -147,8 +148,8 @@ const getShoppingListById = async (id, requestingUserId) => {
 
   // Add is_deleted flags
   const listJson = list.toJSON();
-  if (listJson.ShoppingListTasks) {
-    listJson.ShoppingListTasks = listJson.ShoppingListTasks.map(task => {
+  if (listJson.tasks) {
+    listJson.tasks = listJson.tasks.map(task => {
       task.is_deleted = !!task.deleted_at;
       delete task.deleted_at;
 
