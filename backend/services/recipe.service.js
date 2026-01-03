@@ -308,6 +308,105 @@ const getRecipeById = async (id, requestingUserId) => {
   return recipeJson;
 };
 
+const getRecipeRecommendations = async (
+  groupId,
+  requestingUserId,
+  page = 1,
+  limit = 20
+) => {
+  const FridgeItem = require('../models/FridgeItem');
+
+  // 1. Authorization (fail fast)
+  const isMember = await groupService.isMember(groupId, requestingUserId);
+  if (!isMember) {
+    const error = new Error(
+      'Access denied: You must be a member of the group to view recommendations'
+    );
+    error.statusCode = 403;
+    throw error;
+  }
+
+  // 2. Get fridge food IDs (Set for O(1) lookups)
+  const fridgeItems = await FridgeItem.findAll({
+    where: { group_id: groupId },
+    attributes: ['food_id'],
+    raw: true
+  });
+
+  if (!fridgeItems.length) {
+    return {
+      recommendations: [],
+      total: 0,
+      page,
+      totalPages: 0
+    };
+  }
+
+  const fridgeFoodIds = new Set(fridgeItems.map(i => i.food_id));
+
+  // 3. Fetch recipes & ingredients (lean objects)
+  const recipes = await Recipe.findAll({
+    where: { group_id: groupId },
+    include: [
+      {
+        model: RecipeIngredient,
+        attributes: ['food_id'],
+        include: [
+          { model: Food, attributes: ['id', 'name', 'image_url'] },
+          { model: Unit, attributes: ['id', 'name'] }
+        ]
+      }
+    ]
+  });
+
+  // 4. Score recipes (single pass, no mutation side-effects)
+  const scoredRecipes = [];
+
+  for (const recipe of recipes) {
+    const recipeJson = recipe.toJSON();
+    const ingredients = recipeJson.RecipeIngredients ?? [];
+
+    if (!ingredients.length) continue;
+
+    let matchedIngredientsCount = 0;
+
+    for (const ing of ingredients) {
+      ing.in_fridge = fridgeFoodIds.has(ing.food_id);
+      if (ing.in_fridge) matchedIngredientsCount++;
+    }
+
+    if (matchedIngredientsCount === 0) continue;
+
+    const matchPercentage = Number(
+      ((matchedIngredientsCount / ingredients.length) * 100).toFixed(1)
+    );
+
+    scoredRecipes.push({
+      ...recipeJson,
+      matchPercentage,
+      matchedIngredientsCount,
+      missingIngredientsCount: ingredients.length - matchedIngredientsCount
+    });
+  }
+
+  // 5. Sort (stable & predictable)
+  scoredRecipes.sort((a, b) =>
+    b.matchPercentage - a.matchPercentage ||
+    b.matchedIngredientsCount - a.matchedIngredientsCount
+  );
+
+  // 6. Pagination
+  const total = scoredRecipes.length;
+  const startIndex = (page - 1) * limit;
+
+  return {
+    recommendations: scoredRecipes.slice(startIndex, startIndex + limit),
+    total,
+    page,
+    totalPages: Math.ceil(total / limit)
+  };
+};
+
 module.exports = {
   createRecipe,
   updateRecipe,
@@ -315,4 +414,5 @@ module.exports = {
   getRecipesByFoodId,
   getAllRecipesInGroup,
   getRecipeById,
+  getRecipeRecommendations,
 };

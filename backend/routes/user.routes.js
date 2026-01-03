@@ -225,6 +225,33 @@ router.delete('/', verifyUser, controller.deleteUser);
 
 /**
  * @openapi
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete specific user account (Admin only)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user to delete
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: User not found
+ */
+router.delete('/:id', verifyUser, controller.deleteUser);
+
+/**
+ * @openapi
  * /users/verify-email:
  *   post:
  *     summary: Verify email with verification code

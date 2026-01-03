@@ -76,9 +76,34 @@ const getRecipesByFoodId = async (req, res, next) => {
   }
 };
 
+/**
+ * Get recipe recommendations matches based on fridge items
+ */
+const getRecipeRecommendations = async (req, res, next) => {
+  try {
+    const { group_id, page, limit } = req.query;
+
+    if (!group_id) {
+      return res.status(400).json({ message: 'group_id is required' });
+    }
+
+    const result = await recipeService.getRecipeRecommendations(
+      group_id,
+      req.user.id,
+      parseInt(page) || 1,
+      parseInt(limit) || 20
+    );
+
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createRecipe,
   updateRecipe,
   deleteRecipe,
-  getRecipesByFoodId
+  getRecipesByFoodId,
+  getRecipeRecommendations
 };

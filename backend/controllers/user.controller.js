@@ -123,14 +123,28 @@ const getUser = async (req, res, next) => {
   }
 };
 
-// TODO rewrite this
 const deleteUser = async (req, res, next) => {
   try {
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: "Unauthorized: User ID missing" });
     }
 
-    const result = await userService.deleteUser(req.user.id);
+    let targetUserId = req.user.id;
+
+    // Check if ID is provided in path parameters
+    if (req.params.id) {
+      const requestedId = parseInt(req.params.id);
+
+      // If trying to delete another user, check if admin
+      if (requestedId !== req.user.id) {
+        if (!req.user.is_admin) {
+          return res.status(403).json({ message: "Access denied: Only admins can delete other users" });
+        }
+        targetUserId = requestedId;
+      }
+    }
+
+    const result = await userService.deleteUser(targetUserId);
     res.status(200).json(result);
   } catch (error) {
     if (error.statusCode) {

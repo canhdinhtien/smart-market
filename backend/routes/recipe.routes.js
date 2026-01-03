@@ -169,4 +169,67 @@ router.delete('/:id', controller.deleteRecipe);
  */
 router.get('/', controller.getRecipesByFoodId);
 
+/**
+ * @openapi
+ * /recipes/recommendations:
+ *   get:
+ *     summary: Get recipe recommendations based on fridge items
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: group_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Group ID to get recommendations for
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Items per page
+ *     responses:
+ *       200:
+ *         description: List of recommended recipes sorted by match percentage
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 recommendations:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       matchPercentage:
+ *                         type: number
+ *                         description: Percentage of matched ingredients
+ *                       matchedIngredientsCount:
+ *                         type: integer
+ *                         description: Number of ingredients available in fridge
+ *                       missingIngredientsCount:
+ *                         type: integer
+ *                       missingIngredients:
+ *                         type: array
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *       400:
+ *         description: Group ID is required
+ *       403:
+ *         description: Not a member of the group
+ */
+router.get('/recommendations', controller.getRecipeRecommendations);
+
 module.exports = router;
