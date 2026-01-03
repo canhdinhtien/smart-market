@@ -90,7 +90,12 @@ const getAllShoppingLists = async (groupId, requestingUserId, page = 1, limit = 
       {
         model: ShoppingListTask,
         as: 'tasks',
-        attributes: ['id', 'name', 'quantity', 'is_purchased']
+        attributes: ['id', 'quantity', 'is_purchased'],
+        include: [{
+          model: Food,
+          attributes: ['name'],
+          paranoid: false
+        }]
       }
     ],
     limit: limit,
@@ -249,11 +254,14 @@ const getListOfTasks = async (shoppingListId, requestingUserId, page = 1, limit 
   const offset = (page - 1) * limit;
 
   const whereClause = { shopping_list_id: shoppingListId };
-  if (name) {
-    whereClause.name = { [Op.iLike]: `%${name}%` };
-  }
+  // Name filter moved to Food include
   if (isPurchased !== null && isPurchased !== undefined) {
     whereClause.is_purchased = isPurchased === 'true'; // Convert query string to boolean
+  }
+
+  const foodWhere = {};
+  if (name) {
+    foodWhere.name = { [Op.iLike]: `%${name}%` };
   }
 
   const { count, rows } = await ShoppingListTask.findAndCountAll({
@@ -263,7 +271,9 @@ const getListOfTasks = async (shoppingListId, requestingUserId, page = 1, limit 
       {
         model: Food,
         attributes: ['id', 'name', 'image_url', 'deleted_at'],
+        where: foodWhere, // Apply name filter here
         paranoid: false,
+        required: !!name, // If filtering by name, Food is required (INNER JOIN)
         include: [
           { model: Unit, attributes: ['id', 'name', 'deleted_at'], paranoid: false },
           { model: Category, attributes: ['id', 'name', 'deleted_at'], paranoid: false }
