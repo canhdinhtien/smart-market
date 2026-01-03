@@ -12,6 +12,18 @@ const createRecipe = async (req, res, next) => {
     if (req.file) {
       data.image_url = req.file.path;
     }
+
+    // Parse ingredients if sent as string (multipart/form-data)
+    if (typeof data.ingredients === 'string') {
+      try {
+        data.ingredients = JSON.parse(data.ingredients);
+      } catch (e) {
+        const error = new Error('Invalid ingredients format');
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
     const recipe = await recipeService.createRecipe(data, req.user.id);
 
     res.status(201).json({
@@ -32,6 +44,17 @@ const updateRecipe = async (req, res, next) => {
     const data = req.body;
     if (req.file) {
       data.image_url = req.file.path;
+    }
+
+    // Parse ingredients if sent as string (multipart/form-data)
+    if (typeof data.ingredients === 'string') {
+      try {
+        data.ingredients = JSON.parse(data.ingredients);
+      } catch (e) {
+        const error = new Error('Invalid ingredients format');
+        error.statusCode = 400;
+        throw error;
+      }
     }
 
     const updatedRecipe = await recipeService.updateRecipe(id, data, req.user.id);

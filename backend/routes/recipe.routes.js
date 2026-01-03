@@ -88,6 +88,8 @@ router.post('/', upload.single('image'), controller.createRecipe);
  *                 type: string
  *               instructions:
  *                 type: string
+ *               description:
+ *                 type: string
  *               image:
  *                 type: string
  *                 format: binary
@@ -95,6 +97,13 @@ router.post('/', upload.single('image'), controller.createRecipe);
  *                 type: array
  *                 items:
  *                   type: object
+ *                   properties:
+ *                     food_id:
+ *                       type: integer
+ *                     quantity:
+ *                       type: number
+ *                     unit_id:
+ *                       type: integer
  *     responses:
  *       200:
  *         description: Recipe updated successfully
@@ -130,17 +139,23 @@ router.delete('/:id', controller.deleteRecipe);
  * @openapi
  * /recipes:
  *   get:
- *     summary: Get recipes by food ID
+ *     summary: Get recipes
  *     tags: [Recipes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
+ *         name: group_id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Group ID to filter recipes (Required if foodId not provided)
+ *       - in: query
  *         name: foodId
  *         required: false
  *         schema:
  *           type: string
- *         description: Food ID to get recipes for (Required if group_id not provided)
+ *         description: Food ID to get recipes for
  *       - in: query
  *         name: group_id
  *         required: false
