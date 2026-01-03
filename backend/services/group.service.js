@@ -148,10 +148,11 @@ const getGroupMembers = async (groupId, requestingUserId, page = 1, limit = 20, 
   const { count, rows } = await User.findAndCountAll({
     where: whereClause,
     include: [{
-      model: GroupMember,
+      model: Group,
       as: 'memberships',
-      where: { group_id: groupId },
+      where: { id: groupId },
       attributes: [],
+      through: { attributes: [] },
       required: true
     }],
     attributes: ['id', 'name', 'email'],
@@ -168,52 +169,42 @@ const getGroupMembers = async (groupId, requestingUserId, page = 1, limit = 20, 
 };
 
 const getUserGroups = async (userId, page = 1, limit = 20, name = null) => {
+  const offset = (page - 1) * limit;
+
   const whereClause = {};
   if (name) {
     whereClause.name = { [Op.iLike]: `%${name}%` };
   }
 
-  // Groups where user is admin
-  const adminGroups = await Group.findAll({
+  // Query groups where user is either admin OR a member
+  const { count, rows } = await Group.findAndCountAll({
     where: {
-      admin_user_id: userId,
-      ...whereClause
+      ...whereClause,
+      [Op.or]: [
+        { admin_user_id: userId }, // User is admin
+        { '$members.id$': userId } // User is member
+      ]
     },
-    attributes: ['id', 'name', 'admin_user_id'],
-  });
-
-  // Groups where user is a member
-  const memberGroups = await Group.findAll({
-    where: whereClause,
     include: [
       {
         model: User,
         as: 'members',
-        where: { id: userId },
         attributes: [],
-        through: { attributes: [] },
-      },
+        required: false // LEFT JOIN
+      }
     ],
-    attributes: ['id', 'name', 'admin_user_id'],
+    attributes: ['id', 'name', 'admin_user_id', 'created_at', 'updated_at'],
+    limit: limit,
+    offset: offset,
+    distinct: true,
+    subQuery: false
   });
 
-  // Combine and remove duplicates (if user is both admin and member)
-  const allGroups = [...adminGroups, ...memberGroups].reduce((acc, group) => {
-    if (!acc.find(g => g.id === group.id)) acc.push(group);
-    return acc;
-  }, []);
-
-  // Manual pagination
-  const total = allGroups.length;
-  const totalPages = Math.ceil(total / limit);
-  const startIndex = (page - 1) * limit;
-  const paginatedGroups = allGroups.slice(startIndex, startIndex + limit);
-
   return {
-    groups: paginatedGroups,
-    total: total,
+    groups: rows,
+    total: count,
     page: parseInt(page),
-    totalPages: totalPages
+    totalPages: Math.ceil(count / limit)
   };
 };
 

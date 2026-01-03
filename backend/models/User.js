@@ -87,6 +87,12 @@ User.associate = (models) => {
     foreignKey: 'admin_user_id',
     as: 'adminGroups'
   });
+  User.belongsToMany(models.Group, {
+    through: models.GroupMember,
+    as: 'memberships',
+    foreignKey: 'user_id',
+    otherKey: 'group_id'
+  });
 };
 
 module.exports = User;
