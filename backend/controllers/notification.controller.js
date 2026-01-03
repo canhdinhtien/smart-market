@@ -3,7 +3,8 @@ const NotificationService = require("../services/notification.service");
 
 
 exports.registerDevice = async (req, res) => {
-  const { user_id, fcm_token, platform, device_id } = req.body;
+  const { fcm_token, platform, device_id } = req.body;
+  const user_id = req.user.id;
 
   const [device] = await UserDevice.findOrCreate({
     where: { fcm_token },

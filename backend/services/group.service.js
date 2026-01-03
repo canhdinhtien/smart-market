@@ -242,6 +242,27 @@ const isMember = async (groupId, userId) => {
 };
 
 
+const getAllUserGroupIds = async (userId) => {
+  const memberGroups = await GroupMember.findAll({
+    where: { user_id: userId },
+    attributes: ['group_id'],
+    raw: true
+  });
+
+  const adminGroups = await Group.findAll({
+    where: { admin_user_id: userId },
+    attributes: ['id'],
+    raw: true
+  });
+
+  const groupIds = new Set([
+    ...memberGroups.map(m => m.group_id),
+    ...adminGroups.map(g => g.id)
+  ]);
+
+  return Array.from(groupIds);
+};
+
 module.exports = {
   createGroup,
   addMember,
@@ -250,4 +271,5 @@ module.exports = {
   getUserGroups,
   getGroupById,
   isMember,
+  getAllUserGroupIds,
 };

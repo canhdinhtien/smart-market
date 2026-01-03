@@ -185,6 +185,18 @@ const deleteRecipe = async (id, requestingUserId) => {
 
 const getRecipesByFoodId = async (foodId, requestingUserId, page = 1, limit = 20, groupId = null, name = null) => {
   let recipes = [];
+  let total = 0;
+
+  const includeOptions = [
+    {
+      model: RecipeIngredient,
+      paranoid: false,
+      include: [
+        { model: Food, attributes: ['id', 'name', 'image_url', 'deleted_at'], paranoid: false },
+        { model: Unit, attributes: ['id', 'name', 'deleted_at'], paranoid: false }
+      ]
+    }
+  ];
 
   // Case 1: Filter by group_id directly (general search)
   if (groupId) {
@@ -202,63 +214,100 @@ const getRecipesByFoodId = async (foodId, requestingUserId, page = 1, limit = 20
 
     const { count, rows } = await Recipe.findAndCountAll({
       where: whereClause,
+      include: includeOptions,
       limit: limit,
       offset: (page - 1) * limit,
-      order: [['created_at', 'DESC']]
+      order: [['created_at', 'DESC']],
+      distinct: true // Important for correct count with includes
     });
 
-    return {
-      recipes: rows,
-      total: count,
-      page: parseInt(page),
-      totalPages: Math.ceil(count / limit)
-    };
+    recipes = rows;
+    total = count;
+  } else {
+    // Case 2: Filter by foodId
+    // Optimization: Filter by user's groups FIRST + Index-Optimized Food Filter
+
+    // 1. Get all group IDs for the user(
+    const userGroupIds = await groupService.getAllUserGroupIds(requestingUserId);
+
+    if (userGroupIds.length === 0) {
+      return {
+        recipes: [],
+        total: 0,
+        page: parseInt(page),
+        totalPages: 0
+      };
+    }
+
+    // 2. First, find candidate Recipe IDs efficiently.
+    const matchingIngredients = await RecipeIngredient.findAll({
+      where: { food_id: foodId },
+      include: [{
+        model: Recipe,
+        attributes: [], // We don't need recipe data here
+        where: { group_id: { [Op.in]: userGroupIds } },
+        required: true
+      }],
+      attributes: ['recipe_id'],
+      raw: true
+    });
+
+    const candidateRecipeIds = [...new Set(matchingIngredients.map(i => i.recipe_id))];
+
+    if (candidateRecipeIds.length === 0) {
+      return {
+        recipes: [],
+        total: 0,
+        page: parseInt(page),
+        totalPages: 0
+      };
+    }
+
+    // 3. Fetch Full Details for these IDs
+    const { count, rows } = await Recipe.findAndCountAll({
+      where: {
+        id: { [Op.in]: candidateRecipeIds },
+        ...(name ? { name: { [Op.iLike]: `%${name}%` } } : {})
+      },
+      include: includeOptions, // Pure data fetching
+      limit: limit,
+      offset: (page - 1) * limit,
+      order: [['created_at', 'DESC']],
+      distinct: true
+    });
+
+    recipes = rows;
+    total = count;
   }
 
-  // Case 2: Filter by foodId (original behavior)
-  const ingredients = await RecipeIngredient.findAll({
-    where: { food_id: foodId },
-    include: [{ model: Recipe }]
+  // Add is_deleted flags (Post-processing)
+  const processedRecipes = recipes.map(recipe => {
+    const recipeJson = recipe.toJSON();
+    if (recipeJson.RecipeIngredients) {
+      recipeJson.RecipeIngredients = recipeJson.RecipeIngredients.map(ingredient => {
+        ingredient.is_deleted = !!ingredient.deleted_at;
+        delete ingredient.deleted_at;
+
+        if (ingredient.Food) {
+          ingredient.Food.is_deleted = !!ingredient.Food.deleted_at;
+          delete ingredient.Food.deleted_at;
+        }
+        if (ingredient.Unit) {
+          ingredient.Unit.is_deleted = !!ingredient.Unit.deleted_at;
+          delete ingredient.Unit.deleted_at;
+        }
+
+        return ingredient;
+      });
+    }
+    return recipeJson;
   });
 
-  // Filter recipes where user is a member of the group
-  for (const ing of ingredients) {
-    if (ing.Recipe) {
-      const isMember = await groupService.isMember(ing.Recipe.group_id, requestingUserId);
-      if (isMember) {
-        // If name filter applied, check it here
-        if (name) {
-          if (ing.Recipe.name.toLowerCase().includes(name.toLowerCase())) {
-            recipes.push(ing.Recipe);
-          }
-        } else {
-          recipes.push(ing.Recipe);
-        }
-      }
-    }
-  }
-
-  // Remove duplicates
-  const uniqueRecipes = [];
-  const map = new Map();
-  for (const item of recipes) {
-    if (!map.has(item.id)) {
-      map.set(item.id, true);
-      uniqueRecipes.push(item);
-    }
-  }
-
-  // Manual pagination
-  const total = uniqueRecipes.length;
-  const totalPages = Math.ceil(total / limit);
-  const startIndex = (page - 1) * limit;
-  const paginatedRecipes = uniqueRecipes.slice(startIndex, startIndex + limit);
-
   return {
-    recipes: paginatedRecipes,
+    recipes: processedRecipes,
     total: total,
     page: parseInt(page),
-    totalPages: totalPages
+    totalPages: Math.ceil(total / limit)
   };
 };
 

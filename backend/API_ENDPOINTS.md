@@ -98,6 +98,7 @@ Most endpoints require a Bearer Token.
 | `GET` | `/recipes` | 🔒 | **Get Recipes**<br>**Query Params** (either `foodId` OR `group_id` required):<br>• `foodId` (string, optional): Get recipes for specific food<br>• `group_id` (string, optional): Get recipes for group<br>• `name` (string, optional): Filter by recipe name<br>• `page` (integer, optional, default=1): Page number<br>• `limit` (integer, optional, default=20): Items per page |
 | `POST` | `/recipes` | 🔒 | **Create Recipe**<br>**Body**: `{ name, description, instructions, group_id, ingredients: [{ food_id, quantity, unit_id }] }` |
 | `GET` | `/recipes/recommendations` | 🔒 | **Get Recommendations**<br>**Query Params**:<br>• `group_id` (string, **required**): Group ID<br>• `page` (integer, optional): Page number<br>• `limit` (integer, optional): Items per page<br>**Returns**: Recipes matched with fridge items, sorted by match % then matched count |
+| `GET` | `/recipes/:id` | 🔒 | **Get Recipe by ID** |
 | `PUT` | `/recipes/:id` | 🔒 | **Update Recipe**<br>**Body**: `{ name, description, instructions, ingredients }` |
 | `DELETE` | `/recipes/:id` | 🔒 | **Delete Recipe** |
 
@@ -134,7 +135,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/notifications/register-fcm` | 🔒 | **Register Device**<br>**Body**: `{ user_id, fcm_token, platform, device_id }`<br>**Returns**: `{ message: "Device registered" }` |
+| `POST` | `/notifications/register-fcm` | 🔒 | **Register Device**<br>**Body**: `{ fcm_token, platform, device_id }`<br>**Returns**: `{ message: "Device registered" }` |
 | `POST` | `/notifications/send` | 🔒 | **Send Notification** (Dev)<br>**Body**: `{ user_id, title, body, data }`<br>**Returns**: `{ message: "Notification sent" }` |
 
 ---
