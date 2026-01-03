@@ -8,9 +8,10 @@ const NotificationService = require('./notification.service');
 const groupService = require('./group.service');
 const { validateNotDeleted } = require('../utils/validateNotDeleted');
 const { Op } = require('sequelize');
+const { deleteImage } = require('../utils/imageUtils');
 
 const createRecipe = async (data, requestingUserId) => {
-  const { name, description, instructions, group_id, ingredients } = data;
+  const { name, description, instructions, group_id, ingredients, image_url } = data;
 
   if (!name || !group_id) {
     const error = new Error('Name and Group ID are required');
@@ -42,6 +43,7 @@ const createRecipe = async (data, requestingUserId) => {
   try {
     recipe = await Recipe.create({
       name,
+      image_url,
       description,
       instructions,
       group_id
@@ -75,7 +77,7 @@ const createRecipe = async (data, requestingUserId) => {
 };
 
 const updateRecipe = async (id, data, requestingUserId) => {
-  const { name, description, instructions, ingredients } = data;
+  let { name, description, instructions, ingredients, image_url } = data;
 
   const recipe = await Recipe.findByPk(id);
   if (!recipe) {
@@ -91,11 +93,14 @@ const updateRecipe = async (id, data, requestingUserId) => {
     throw error;
   }
 
+  const oldImageUrl = recipe.image_url;
   const t = await sequelize.transaction();
 
   try {
+    image_url = image_url ? image_url : oldImageUrl;
     await recipe.update({
       name,
+      image_url,
       description,
       instructions
     }, { transaction: t });
@@ -120,6 +125,12 @@ const updateRecipe = async (id, data, requestingUserId) => {
     }
 
     await t.commit();
+
+    // Check if image needs deletion after commit
+    if (image_url && oldImageUrl && image_url !== oldImageUrl) {
+      await deleteImage(oldImageUrl);
+    }
+
   } catch (error) {
     await t.rollback();
     throw error;
@@ -151,6 +162,7 @@ const deleteRecipe = async (id, requestingUserId) => {
     throw error;
   }
 
+  const imageUrl = recipe.image_url;
   const t = await sequelize.transaction();
   try {
     // Delete ingredients first (if no cascade)
@@ -159,6 +171,11 @@ const deleteRecipe = async (id, requestingUserId) => {
     await recipe.destroy({ transaction: t });
 
     await t.commit();
+
+    if (imageUrl) {
+      await deleteImage(imageUrl);
+    }
+
     return { message: 'Recipe deleted successfully' };
   } catch (error) {
     await t.rollback();

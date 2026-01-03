@@ -3,9 +3,15 @@ const recipeService = require('../services/recipe.service');
 /**
  * Create a recipe
  */
+/**
+ * Create a recipe
+ */
 const createRecipe = async (req, res, next) => {
   try {
     const data = req.body;
+    if (req.file) {
+      data.image_url = req.file.path;
+    }
     const recipe = await recipeService.createRecipe(data, req.user.id);
 
     res.status(201).json({
@@ -24,6 +30,9 @@ const updateRecipe = async (req, res, next) => {
   try {
     const { id } = req.params;
     const data = req.body;
+    if (req.file) {
+      data.image_url = req.file.path;
+    }
 
     const updatedRecipe = await recipeService.updateRecipe(id, data, req.user.id);
 

@@ -122,9 +122,9 @@ router.get('/:id', controller.getFoodById);
  *                 type: string
  *               group_id:
  *                 type: string
- *               category:
+ *               category_id:
  *                 type: string
- *               unit:
+ *               unit_id:
  *                 type: string
  *               quantity:
  *                 type: number
@@ -163,9 +163,9 @@ router.post('/', upload.single('image'), controller.createFood);
  *             properties:
  *               name:
  *                 type: string
- *               category:
+ *               category_id:
  *                 type: string
- *               unit:
+ *               unit_id:
  *                 type: string
  *               quantity:
  *                 type: number

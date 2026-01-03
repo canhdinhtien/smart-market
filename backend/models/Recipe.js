@@ -7,6 +7,7 @@ class Recipe extends Model { }
 Recipe.init({
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false },
   name: { type: DataTypes.STRING, allowNull: false },
+  image_url: DataTypes.STRING,
   description: DataTypes.TEXT,
   instructions: DataTypes.TEXT,
   group_id: { type: DataTypes.INTEGER, allowNull: false, references: { model: 'groups', key: 'id' } },

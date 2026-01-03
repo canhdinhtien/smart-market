@@ -1,6 +1,7 @@
 const express = require('express');
 const controller = require('../controllers/recipe.controller.js');
 const { verifyUser } = require('../middleware/auth.middleware.js');
+const upload = require('../middleware/upload.middleware.js');
 
 const router = express.Router();
 
@@ -24,28 +25,42 @@ router.use(verifyUser);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
- *               - foodId
- *               - instructions
+ *               - name
+ *               - group_id
  *             properties:
- *               foodId:
+ *               name:
+ *                 type: string
+ *               group_id:
  *                 type: string
  *               instructions:
  *                 type: string
+ *               description:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
  *               ingredients:
  *                 type: array
  *                 items:
  *                   type: object
+ *                   properties:
+ *                     food_id:
+ *                       type: integer
+ *                     quantity:
+ *                       type: number
+ *                     unit_id:
+ *                       type: integer
  *     responses:
  *       201:
  *         description: Recipe created successfully
  *       400:
  *         description: Invalid input
  */
-router.post('/', controller.createRecipe);
+router.post('/', upload.single('image'), controller.createRecipe);
 
 /**
  * @openapi
@@ -65,7 +80,7 @@ router.post('/', controller.createRecipe);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -73,6 +88,9 @@ router.post('/', controller.createRecipe);
  *                 type: string
  *               instructions:
  *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
  *               ingredients:
  *                 type: array
  *                 items:
@@ -83,7 +101,7 @@ router.post('/', controller.createRecipe);
  *       404:
  *         description: Recipe not found
  */
-router.put('/:id', controller.updateRecipe);
+router.put('/:id', upload.single('image'), controller.updateRecipe);
 
 /**
  * @openapi

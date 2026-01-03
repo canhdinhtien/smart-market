@@ -8,7 +8,7 @@ const { validateNotDeleted } = require('../utils/validateNotDeleted');
 const { Op } = require('sequelize');
 
 const createFood = async (foodData, requestingUserId) => {
-  const { name, group_id, category_id, unit_id } = foodData;
+  const { name, group_id, category_id, unit_id, image_url } = foodData;
 
   const isMember = await groupService.isMember(group_id, requestingUserId);
   if (!isMember) {
@@ -67,6 +67,7 @@ const updateFood = async (id, foodData, requestingUserId) => {
   }
 
   const oldImageUrl = food.image_url;
+  foodData.image_url = foodData.image_url ? foodData.image_url : oldImageUrl;
 
   await food.update(foodData);
 
