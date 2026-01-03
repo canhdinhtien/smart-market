@@ -129,17 +129,45 @@ const getMealPlanByDate = async (groupId, startDate, endDate, requestingUserId, 
 
   const { count, rows } = await MealPlan.findAndCountAll({
     where: whereClause,
+    paranoid: false,  // Include deleted meal plans for history
     include: [
-      { model: Recipe, attributes: ['id', 'name'] },
-      { model: Food, attributes: ['id', 'name', 'image_url'] }
+      {
+        model: Recipe,
+        attributes: ['id', 'name', 'deleted_at'],
+        paranoid: false  // Include deleted recipes for historical meal plans
+      },
+      {
+        model: Food,
+        attributes: ['id', 'name', 'image_url', 'deleted_at'],
+        paranoid: false  // Include deleted foods for historical meal plans
+      }
     ],
     order: [['date', 'ASC'], ['meal_type', 'ASC']],
     limit: limit,
     offset: offset
   });
 
+  // Add is_deleted flags
+  const plansWithFlags = rows.map(plan => {
+    const planJson = plan.toJSON();
+    planJson.is_deleted = !!planJson.deleted_at;
+    delete planJson.deleted_at;
+
+    if (planJson.Recipe) {
+      planJson.Recipe.is_deleted = !!planJson.Recipe.deleted_at;
+      delete planJson.Recipe.deleted_at;
+    }
+
+    if (planJson.Food) {
+      planJson.Food.is_deleted = !!planJson.Food.deleted_at;
+      delete planJson.Food.deleted_at;
+    }
+
+    return planJson;
+  });
+
   return {
-    plans: rows,
+    plans: plansWithFlags,
     total: count,
     page: parseInt(page),
     totalPages: Math.ceil(count / limit)

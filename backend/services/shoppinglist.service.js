@@ -111,18 +111,21 @@ const getShoppingListById = async (id, requestingUserId) => {
     include: [
       {
         model: ShoppingListTask,
+        paranoid: false,  // Include deleted tasks for history
         include: [
           {
             model: Food,
-            attributes: ['id', 'name', 'image_url'],
+            attributes: ['id', 'name', 'image_url', 'deleted_at'],
+            paranoid: false,  // Include deleted foods for purchase history
             include: [
-              { model: Unit, attributes: ['id', 'name'] },
-              { model: Category, attributes: ['id', 'name'] }
+              { model: Unit, attributes: ['id', 'name', 'deleted_at'], paranoid: false },
+              { model: Category, attributes: ['id', 'name', 'deleted_at'], paranoid: false }
             ]
           },
           {
             model: User,
-            attributes: ['id', 'name', 'email']
+            attributes: ['id', 'name', 'email', 'deleted_at'],
+            paranoid: false  // Include deleted users
           }
         ]
       }
@@ -141,7 +144,38 @@ const getShoppingListById = async (id, requestingUserId) => {
     error.statusCode = 403;
     throw error;
   }
-  return list;
+
+  // Add is_deleted flags
+  const listJson = list.toJSON();
+  if (listJson.ShoppingListTasks) {
+    listJson.ShoppingListTasks = listJson.ShoppingListTasks.map(task => {
+      task.is_deleted = !!task.deleted_at;
+      delete task.deleted_at;
+
+      if (task.Food) {
+        task.Food.is_deleted = !!task.Food.deleted_at;
+        delete task.Food.deleted_at;
+
+        if (task.Food.Unit) {
+          task.Food.Unit.is_deleted = !!task.Food.Unit.deleted_at;
+          delete task.Food.Unit.deleted_at;
+        }
+        if (task.Food.Category) {
+          task.Food.Category.is_deleted = !!task.Food.Category.deleted_at;
+          delete task.Food.Category.deleted_at;
+        }
+      }
+
+      if (task.User) {
+        task.User.is_deleted = !!task.User.deleted_at;
+        delete task.User.deleted_at;
+      }
+
+      return task;
+    });
+  }
+
+  return listJson;
 };
 
 const createTasks = async (listId, tasksData, requestingUserId) => {
@@ -223,18 +257,21 @@ const getListOfTasks = async (shoppingListId, requestingUserId, page = 1, limit 
 
   const { count, rows } = await ShoppingListTask.findAndCountAll({
     where: whereClause,
+    paranoid: false,  // Include deleted tasks
     include: [
       {
         model: Food,
-        attributes: ['id', 'name', 'image_url'],
+        attributes: ['id', 'name', 'image_url', 'deleted_at'],
+        paranoid: false,
         include: [
-          { model: Unit, attributes: ['id', 'name'] },
-          { model: Category, attributes: ['id', 'name'] }
+          { model: Unit, attributes: ['id', 'name', 'deleted_at'], paranoid: false },
+          { model: Category, attributes: ['id', 'name', 'deleted_at'], paranoid: false }
         ]
       },
       {
         model: User,
-        attributes: ['id', 'name', 'email']
+        attributes: ['id', 'name', 'email', 'deleted_at'],
+        paranoid: false
       }
     ],
     limit: limit,
@@ -242,8 +279,36 @@ const getListOfTasks = async (shoppingListId, requestingUserId, page = 1, limit 
     order: [['created_at', 'ASC']]
   });
 
+  // Add is_deleted flags
+  const tasksWithFlags = rows.map(task => {
+    const taskJson = task.toJSON();
+    taskJson.is_deleted = !!taskJson.deleted_at;
+    delete taskJson.deleted_at;
+
+    if (taskJson.Food) {
+      taskJson.Food.is_deleted = !!taskJson.Food.deleted_at;
+      delete taskJson.Food.deleted_at;
+
+      if (taskJson.Food.Unit) {
+        taskJson.Food.Unit.is_deleted = !!taskJson.Food.Unit.deleted_at;
+        delete taskJson.Food.Unit.deleted_at;
+      }
+      if (taskJson.Food.Category) {
+        taskJson.Food.Category.is_deleted = !!taskJson.Food.Category.deleted_at;
+        delete taskJson.Food.Category.deleted_at;
+      }
+    }
+
+    if (taskJson.User) {
+      taskJson.User.is_deleted = !!taskJson.User.deleted_at;
+      delete taskJson.User.deleted_at;
+    }
+
+    return taskJson;
+  });
+
   return {
-    tasks: rows,
+    tasks: tasksWithFlags,
     total: count,
     page: parseInt(page),
     totalPages: Math.ceil(count / limit)

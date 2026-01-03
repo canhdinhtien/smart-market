@@ -263,9 +263,10 @@ const getRecipeById = async (id, requestingUserId) => {
     include: [
       {
         model: RecipeIngredient,
+        paranoid: false,  // Include deleted ingredients
         include: [
-          { model: Food, attributes: ['id', 'name', 'image_url'] },
-          { model: Unit, attributes: ['id', 'name'] }
+          { model: Food, attributes: ['id', 'name', 'image_url', 'deleted_at'], paranoid: false },
+          { model: Unit, attributes: ['id', 'name', 'deleted_at'], paranoid: false }
         ]
       }
     ]
@@ -284,7 +285,27 @@ const getRecipeById = async (id, requestingUserId) => {
     throw error;
   }
 
-  return recipe;
+  // Add is_deleted flags
+  const recipeJson = recipe.toJSON();
+  if (recipeJson.RecipeIngredients) {
+    recipeJson.RecipeIngredients = recipeJson.RecipeIngredients.map(ingredient => {
+      ingredient.is_deleted = !!ingredient.deleted_at;
+      delete ingredient.deleted_at;
+
+      if (ingredient.Food) {
+        ingredient.Food.is_deleted = !!ingredient.Food.deleted_at;
+        delete ingredient.Food.deleted_at;
+      }
+      if (ingredient.Unit) {
+        ingredient.Unit.is_deleted = !!ingredient.Unit.deleted_at;
+        delete ingredient.Unit.deleted_at;
+      }
+
+      return ingredient;
+    });
+  }
+
+  return recipeJson;
 };
 
 module.exports = {

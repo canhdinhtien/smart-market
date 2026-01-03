@@ -126,16 +126,30 @@ const getAllFoodsInGroup = async (groupId, requestingUserId, page = 1, limit = 2
   const { count, rows } = await Food.findAndCountAll({
     where: whereClause,
     include: [
-      { model: Unit, attributes: ['id', 'name'] },
-      { model: Category, attributes: ['id', 'name'] }
+      { model: Unit, attributes: ['id', 'name', 'deleted_at'], paranoid: false },
+      { model: Category, attributes: ['id', 'name', 'deleted_at'], paranoid: false }
     ],
     limit: limit,
     offset: offset,
     order: [['name', 'ASC']]
   });
 
+  // Add is_deleted flags
+  const foodsWithFlags = rows.map(food => {
+    const foodJson = food.toJSON();
+    if (foodJson.Unit) {
+      foodJson.Unit.is_deleted = !!foodJson.Unit.deleted_at;
+      delete foodJson.Unit.deleted_at;
+    }
+    if (foodJson.Category) {
+      foodJson.Category.is_deleted = !!foodJson.Category.deleted_at;
+      delete foodJson.Category.deleted_at;
+    }
+    return foodJson;
+  });
+
   return {
-    foods: rows,
+    foods: foodsWithFlags,
     total: count,
     page: parseInt(page),
     totalPages: Math.ceil(count / limit)
@@ -153,8 +167,8 @@ const getCategories = async () => {
 const getFoodById = async (id, requestingUserId) => {
   const food = await Food.findByPk(id, {
     include: [
-      { model: Category, attributes: ['id', 'name'] },
-      { model: Unit, attributes: ['id', 'name'] }
+      { model: Category, attributes: ['id', 'name', 'deleted_at'], paranoid: false },
+      { model: Unit, attributes: ['id', 'name', 'deleted_at'], paranoid: false }
     ]
   });
 
@@ -171,7 +185,18 @@ const getFoodById = async (id, requestingUserId) => {
     throw error;
   }
 
-  return food;
+  // Add is_deleted flags
+  const foodJson = food.toJSON();
+  if (foodJson.Category) {
+    foodJson.Category.is_deleted = !!foodJson.Category.deleted_at;
+    delete foodJson.Category.deleted_at;
+  }
+  if (foodJson.Unit) {
+    foodJson.Unit.is_deleted = !!foodJson.Unit.deleted_at;
+    delete foodJson.Unit.deleted_at;
+  }
+
+  return foodJson;
 };
 
 module.exports = {

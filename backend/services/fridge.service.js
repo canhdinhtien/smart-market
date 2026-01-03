@@ -112,10 +112,11 @@ const getAllFridgeItems = async (groupId, requestingUserId, page = 1, limit = 20
 
   const foodInclude = {
     model: Food,
-    attributes: ['id', 'name', 'image_url'],
+    attributes: ['id', 'name', 'image_url', 'deleted_at'],
+    paranoid: false,
     include: [
-      { model: Unit, attributes: ['id', 'name'] },
-      { model: Category, attributes: ['id', 'name'] }
+      { model: Unit, attributes: ['id', 'name', 'deleted_at'], paranoid: false },
+      { model: Category, attributes: ['id', 'name', 'deleted_at'], paranoid: false }
     ]
   };
 
@@ -131,8 +132,27 @@ const getAllFridgeItems = async (groupId, requestingUserId, page = 1, limit = 20
     order: [['created_at', 'DESC']]
   });
 
+  // Add is_deleted flags
+  const itemsWithFlags = rows.map(item => {
+    const itemJson = item.toJSON();
+    if (itemJson.Food) {
+      itemJson.Food.is_deleted = !!itemJson.Food.deleted_at;
+      delete itemJson.Food.deleted_at;
+
+      if (itemJson.Food.Unit) {
+        itemJson.Food.Unit.is_deleted = !!itemJson.Food.Unit.deleted_at;
+        delete itemJson.Food.Unit.deleted_at;
+      }
+      if (itemJson.Food.Category) {
+        itemJson.Food.Category.is_deleted = !!itemJson.Food.Category.deleted_at;
+        delete itemJson.Food.Category.deleted_at;
+      }
+    }
+    return itemJson;
+  });
+
   return {
-    items: rows,
+    items: itemsWithFlags,
     total: count,
     page: parseInt(page),
     totalPages: Math.ceil(count / limit)
@@ -144,10 +164,11 @@ const getFridgeItemById = async (id, requestingUserId) => {
     include: [
       {
         model: Food,
-        attributes: ['id', 'name', 'image_url'],
+        attributes: ['id', 'name', 'image_url', 'deleted_at'],
+        paranoid: false,
         include: [
-          { model: Category, attributes: ['id', 'name'] },
-          { model: Unit, attributes: ['id', 'name'] }
+          { model: Category, attributes: ['id', 'name', 'deleted_at'], paranoid: false },
+          { model: Unit, attributes: ['id', 'name', 'deleted_at'], paranoid: false }
         ]
       }
     ]
@@ -166,7 +187,23 @@ const getFridgeItemById = async (id, requestingUserId) => {
     throw error;
   }
 
-  return item;
+  // Add is_deleted flags
+  const itemJson = item.toJSON();
+  if (itemJson.Food) {
+    itemJson.Food.is_deleted = !!itemJson.Food.deleted_at;
+    delete itemJson.Food.deleted_at;
+
+    if (itemJson.Food.Category) {
+      itemJson.Food.Category.is_deleted = !!itemJson.Food.Category.deleted_at;
+      delete itemJson.Food.Category.deleted_at;
+    }
+    if (itemJson.Food.Unit) {
+      itemJson.Food.Unit.is_deleted = !!itemJson.Food.Unit.deleted_at;
+      delete itemJson.Food.Unit.deleted_at;
+    }
+  }
+
+  return itemJson;
 };
 
 module.exports = {

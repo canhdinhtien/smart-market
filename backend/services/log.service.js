@@ -34,14 +34,28 @@ const getLogs = async (page = 1, limit = 20, userId = null) => {
 
   const { count, rows } = await Log.findAndCountAll({
     where,
-    include: [{ model: User, attributes: ['id', 'name', 'email'] }],
-    order: [['created_at', 'DESC']],
+    include: [{
+      model: User,
+      attributes: ['id', 'name', 'email', 'deleted_at'],
+      paranoid: false  // Include deleted users for audit trail
+    }],
+    order: [['timestamp', 'DESC']],
     limit: limit,
     offset: offset
   });
 
+  // Add is_deleted flag to user data
+  const logsWithDeletedFlag = rows.map(log => {
+    const logJson = log.toJSON();
+    if (logJson.User) {
+      logJson.User.is_deleted = !!logJson.User.deleted_at;
+      delete logJson.User.deleted_at; // Remove timestamp, keep only flag
+    }
+    return logJson;
+  });
+
   return {
-    logs: rows,
+    logs: logsWithDeletedFlag,
     total: count,
     page: parseInt(page),
     totalPages: Math.ceil(count / limit)
