@@ -3,6 +3,8 @@ const MealPlan = require('../models/MealPlan');
 const Recipe = require('../models/Recipe');
 const Food = require('../models/Food');
 const Group = require('../models/Group');
+const FridgeItem = require('../models/FridgeItem');
+const RecipeIngredient = require('../models/RecipeIngredient');
 const NotificationService = require('./notification.service');
 const groupService = require('./group.service');
 const { validateNotDeleted } = require('../utils/validateNotDeleted');
@@ -33,10 +35,108 @@ const createMealPlan = async (data, requestingUserId) => {
   // Validate that referenced entities are not deleted
   await validateNotDeleted(Group, group_id, 'Group');
   if (recipe_id) {
-    await validateNotDeleted(Recipe, recipe_id, 'Recipe');
+    const recipe = await Recipe.findByPk(recipe_id, {
+      include: [{
+        model: RecipeIngredient,
+        include: [Food]
+      }]
+    });
+
+    if (!recipe) {
+      const error = new Error('Recipe not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (recipe.deleted_at) {
+      const error = new Error('Recipe has been deleted');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Check ingredients availability in Fridge
+    if (recipe.RecipeIngredients && recipe.RecipeIngredients.length > 0) {
+      // 1. Collect all food IDs from ingredients
+      const ingredientFoodIds = recipe.RecipeIngredients.map(ing => ing.food_id);
+
+      // 2. Batch fetch all relevant fridge items in one query
+      const allFridgeItems = await FridgeItem.findAll({
+        where: {
+          group_id: group_id,
+          food_id: {
+            [Op.in]: ingredientFoodIds
+          }
+        }
+      });
+
+      // 3. Group fridge items by food_id for easy lookup
+      // Map<food_id, FridgeItem[]>
+      const fridgeItemsMap = new Map();
+      for (const item of allFridgeItems) {
+        if (!fridgeItemsMap.has(item.food_id)) {
+          fridgeItemsMap.set(item.food_id, []);
+        }
+        fridgeItemsMap.get(item.food_id).push(item);
+      }
+
+      for (const ingredient of recipe.RecipeIngredients) {
+        // Validate Unit Consistency FIRST
+        const foodUnitId = ingredient.Food ? ingredient.Food.unit_id : null;
+
+        if (foodUnitId && ingredient.unit_id && foodUnitId !== ingredient.unit_id) {
+          const foodName = ingredient.Food ? ingredient.Food.name : `Food ID ${ingredient.food_id}`;
+          const error = new Error(`Unit mismatch for ${foodName}. Recipe requires unit ${ingredient.unit_id}, but food is stored in unit ${foodUnitId}. Automatic conversion not supported.`);
+          error.statusCode = 400;
+          throw error;
+        }
+
+        // Get matching fridge items from map
+        const fridgeItems = fridgeItemsMap.get(ingredient.food_id) || [];
+
+        // Calculate total available quantity
+        const totalAvailable = fridgeItems.reduce((sum, item) => sum + Number(item.quantity), 0);
+
+        if (totalAvailable < ingredient.quantity) {
+          const foodName = ingredient.Food ? ingredient.Food.name : `Food ID ${ingredient.food_id}`;
+          const error = new Error(`Insufficient quantity for ingredient ${foodName}. Required: ${ingredient.quantity}, Available: ${totalAvailable}`);
+          error.statusCode = 400;
+          throw error;
+        }
+      }
+    }
   }
   if (food_id) {
     await validateNotDeleted(Food, food_id, 'Food');
+
+    // Check availability in Fridge
+    const fridgeItem = await FridgeItem.findOne({
+      where: {
+        group_id: group_id,
+        food_id: food_id
+      }
+    });
+
+    if (!fridgeItem) {
+      const error = new Error('Food item not found in the group fridge');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (fridgeItem.quantity <= 0) {
+      const error = new Error('Food item in fridge is out of stock');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Optional: check if requested quantity is available if provided in data
+    // Assuming data might have a 'quantity' field for the meal plan itself? 
+    // The MealPlan model doesn't explicitly have a quantity field visible in the snippet (only note, meal_type, etc.), 
+    // but if it were passed:
+    if (data.quantity && fridgeItem.quantity < data.quantity) {
+      const error = new Error(`Insufficient quantity in fridge. Available: ${fridgeItem.quantity}`);
+      error.statusCode = 400;
+      throw error;
+    }
   }
 
   const plan = await MealPlan.create(data);

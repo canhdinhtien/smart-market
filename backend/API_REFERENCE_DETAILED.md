@@ -440,6 +440,30 @@
 
 ---
 
+---
+
+## Consumptions
+
+### Get Self Consumption Stats
+- **Name**: Get Self Consumption Stats
+- **Method**: `GET`
+- **Authorization**: Bearer Token
+- **Path**: `/consumption/my-stats`
+
+### Get Group Consumption Stats
+- **Name**: Get Group Consumption Stats
+- **Method**: `GET`
+- **Authorization**: Bearer Token
+- **Path**: `/consumption/group/:groupId/stats`
+
+### Get All Consumption Stats
+- **Name**: Get All Consumption Stats
+- **Method**: `GET`
+- **Authorization**: Bearer Token
+- **Path**: `/consumption/stats`
+
+---
+
 ## Notifications
 
 ### Register Device

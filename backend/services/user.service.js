@@ -252,15 +252,6 @@ const updateUser = async (userId, data) => {
       throw error;
     }
 
-    if (data.email && data.email !== user.email) {
-      const emailExists = await User.findOne({ where: { email: data.email } });
-      if (emailExists) {
-        const error = new Error('Email already exists');
-        error.statusCode = 409;
-        throw error;
-      }
-    }
-
     const oldImageUrl = user.image_url;
 
     const updateFields = {};

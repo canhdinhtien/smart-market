@@ -339,8 +339,6 @@ router.post('/change-password', verifyUser, controller.changeUserPassword);
  *         description: Profile updated successfully
  *       401:
  *         description: Unauthorized
- *       409:
- *         description: Email already exists
  */
 router.put('/', verifyUser, upload.single('profile_pic'), controller.editUser);
 

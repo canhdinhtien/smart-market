@@ -22,7 +22,7 @@ Most endpoints require a Bearer Token.
 | `POST` | `/users/refresh-token` | 🔓 | **Refresh Access Token**<br>**Body**: `{ refreshToken }`<br>**Returns**: `{ accessToken }` |
 | `GET` | `/users/search` | 🔒 | **Search Users**<br>**Query Params**:<br>• `q` (string, optional): Search by name or email<br>• `page` (integer, optional, default=1): Page number<br>• `limit` (integer, optional, default=20): Items per page |
 | `GET` | `/users` | 🔒 | **Get Current Profile** |
-| `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `profile_pic` (file) |
+| `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `email`, `profile_pic` (file) |
 | `DELETE` | `/users` | 🔒 | **Delete Self** |
 | `DELETE` | `/users/:id` | 🛡️ | **Delete User (Admin)** |
 | `POST` | `/users/send-verification-code` | 🔓 | **Send Email Verification**<br>**Body**: `{ email }` |
@@ -137,6 +137,18 @@ Most endpoints require a Bearer Token.
 | :--- | :--- | :--- | :--- |
 | `POST` | `/notifications/register-fcm` | 🔒 | **Register Device**<br>**Body**: `{ fcm_token, platform, device_id }`<br>**Returns**: `{ message: "Device registered" }` |
 | `POST` | `/notifications/send` | 🔒 | **Send Notification** (Dev)<br>**Body**: `{ user_id, title, body, data }`<br>**Returns**: `{ message: "Notification sent" }` |
+
+---
+
+---
+
+## 🍽️ Consumptions (`/consumption`)
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/consumption/my-stats` | 🔒 | **Get Self Consumption Stats**<br>**Returns**: List of consumed items grouped by name and unit. |
+| `GET` | `/consumption/group/:groupId/stats` | 🔒 | **Get Group Consumption Stats**<br>**Returns**: List of consumed items for the group, grouped by name and unit. |
+| `GET` | `/consumption/stats` | 🔒 | **Get All Consumption Stats**<br>**Returns**: Global consumption stats (all users/groups). |
 
 ---
 

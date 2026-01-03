@@ -23,6 +23,8 @@ router.use('/fridge', fridgeRoutes);
 router.use('/shopping', shoppinglistRoutes);
 router.use('/meals', mealplanRoutes);
 router.use('/recipes', recipeRoutes);
+router.use('/recipes', recipeRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/consumptions', require('./consumption.routes'));
 
 module.exports = router;
