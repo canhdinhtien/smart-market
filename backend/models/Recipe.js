@@ -27,6 +27,9 @@ Recipe.init({
 Recipe.associate = (models) => {
   Recipe.belongsTo(models.Group, { foreignKey: 'group_id' });
 };
+Recipe.associate = (models) => {
+  Recipe.hasMany(models.RecipeIngredient, { foreignKey: 'recipe_id' });
+};
 
 
 module.exports = Recipe;

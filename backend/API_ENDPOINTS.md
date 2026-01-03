@@ -23,7 +23,6 @@ Most endpoints require a Bearer Token.
 | `GET` | `/users/search` | 🔒 | **Search Users**<br>**Query Params**:<br>• `q` (string, optional): Search by name or email<br>• `page` (integer, optional, default=1): Page number<br>• `limit` (integer, optional, default=20): Items per page |
 | `GET` | `/users` | 🔒 | **Get Current Profile** |
 | `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `profile_pic` (file) |
-| `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `profile_pic` (file) |
 | `DELETE` | `/users` | 🔒 | **Delete Self** |
 | `DELETE` | `/users/:id` | 🛡️ | **Delete User (Admin)** |
 | `POST` | `/users/send-verification-code` | 🔓 | **Send Email Verification**<br>**Body**: `{ email }` |
@@ -97,9 +96,9 @@ Most endpoints require a Bearer Token.
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/recipes` | 🔒 | **Get Recipes**<br>**Query Params** (either `foodId` OR `group_id` required):<br>• `foodId` (string, optional): Get recipes for specific food<br>• `group_id` (string, optional): Get recipes for group<br>• `name` (string, optional): Filter by recipe name<br>• `page` (integer, optional, default=1): Page number<br>• `limit` (integer, optional, default=20): Items per page |
-| `POST` | `/recipes` | 🔒 | **Create Recipe**<br>**Body**: `{ foodId, instructions, ingredients: [{...}] }` |
+| `POST` | `/recipes` | 🔒 | **Create Recipe**<br>**Body**: `{ name, description, instructions, group_id, ingredients: [{ food_id, quantity, unit_id }] }` |
 | `GET` | `/recipes/recommendations` | 🔒 | **Get Recommendations**<br>**Query Params**:<br>• `group_id` (string, **required**): Group ID<br>• `page` (integer, optional): Page number<br>• `limit` (integer, optional): Items per page<br>**Returns**: Recipes matched with fridge items, sorted by match % then matched count |
-| `PUT` | `/recipes/:id` | 🔒 | **Update Recipe**<br>**Body**: `{ name, instructions, ingredients }` |
+| `PUT` | `/recipes/:id` | 🔒 | **Update Recipe**<br>**Body**: `{ name, description, instructions, ingredients }` |
 | `DELETE` | `/recipes/:id` | 🔒 | **Delete Recipe** |
 
 ---
@@ -124,9 +123,9 @@ Most endpoints require a Bearer Token.
 | `POST` | `/shopping` | 🔒 | **Create List**<br>**Body**: `{ name }` |
 | `PUT` | `/shopping/:id` | 🔒 | **Update List**<br>**Body**: `{ name }` |
 | `DELETE` | `/shopping/:id` | 🔒 | **Delete List** |
-| `GET` | `/shopping/:id/tasks` | 🔒 | **Get Tasks**<br>**Query Params**:<br>• `page` (integer, optional, default=1): Page number<br>• `limit` (integer, optional, default=20): Items per page<br>• `name` (string, optional): Filter by task name<br>• `is_purchased` (boolean, optional): Filter by purchase status |
-| `POST` | `/shopping/:id/tasks` | 🔒 | **Add Tasks**<br>**Body**: `{ tasks: [{ name, quantity }] }` |
-| `PUT` | `/shopping/tasks/:taskId` | 🔒 | **Update Task**<br>**Body**: `{ name, quantity, is_purchased }` |
+| `GET` | `/shopping/:id/tasks` | 🔒 | **Get Tasks**<br>**Query Params**:<br>• `page` (integer, optional, default=1): Page number<br>• `limit` (integer, optional, default=20): Items per page<br>• `name` (string, optional): Filter by food name<br>• `is_purchased` (boolean, optional): Filter by purchase status |
+| `POST` | `/shopping/:id/tasks` | 🔒 | **Add Tasks**<br>**Body**: `{ tasks: [{ food_id, quantity, unit_id, note, assign_to_user_id }] }` |
+| `PUT` | `/shopping/tasks/:taskId` | 🔒 | **Update Task**<br>**Body**: `{ quantity, is_purchased, note, assign_to_user_id }` |
 | `DELETE` | `/shopping/tasks/:taskId` | 🔒 | **Delete Task** |
 
 ---

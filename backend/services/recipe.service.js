@@ -37,9 +37,10 @@ const createRecipe = async (data, requestingUserId) => {
   }
 
   const t = await sequelize.transaction();
+  let recipe;
 
   try {
-    const recipe = await Recipe.create({
+    recipe = await Recipe.create({
       name,
       description,
       instructions,
@@ -57,20 +58,20 @@ const createRecipe = async (data, requestingUserId) => {
     }
 
     await t.commit();
-
-    NotificationService.sendToGroup(
-      group_id,
-      'New Recipe',
-      `${name} added to group recipes`,
-      { type: 'RECIPE_ADD', recipeId: recipe.id },
-      requestingUserId
-    );
-
-    return await getRecipeById(recipe.id, requestingUserId);
   } catch (error) {
     await t.rollback();
     throw error;
   }
+
+  NotificationService.sendToGroup(
+    group_id,
+    'New Recipe',
+    `${name} added to group recipes`,
+    { type: 'RECIPE_ADD', recipeId: recipe.id },
+    requestingUserId
+  );
+
+  return await getRecipeById(recipe.id, requestingUserId);
 };
 
 const updateRecipe = async (id, data, requestingUserId) => {
@@ -119,20 +120,20 @@ const updateRecipe = async (id, data, requestingUserId) => {
     }
 
     await t.commit();
-
-    NotificationService.sendToGroup(
-      recipe.group_id,
-      'Recipe Updated',
-      `${name || recipe.name} has been updated`,
-      { type: 'RECIPE_UPDATE', recipeId: id },
-      requestingUserId
-    );
-
-    return await getRecipeById(id, requestingUserId);
   } catch (error) {
     await t.rollback();
     throw error;
   }
+
+  NotificationService.sendToGroup(
+    recipe.group_id,
+    'Recipe Updated',
+    `${name || recipe.name} has been updated`,
+    { type: 'RECIPE_UPDATE', recipeId: id },
+    requestingUserId
+  );
+
+  return await getRecipeById(id, requestingUserId);
 };
 
 const deleteRecipe = async (id, requestingUserId) => {
