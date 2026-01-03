@@ -71,7 +71,7 @@
 - **Authorization**: Bearer Token
 - **Path**: `/users`
 - **Content Type**: `multipart/form-data`
-- **Body Schema**: `Form-Data: { "name": "string", "gender": "string", "email": "string", "profile_pic": "file" }`
+- **Body Schema**: `Form-Data: { "name": "string", "gender": "string", "profile_pic": "file" }`
 
 ### Delete Self
 - **Name**: Delete Account

@@ -22,7 +22,7 @@ Most endpoints require a Bearer Token.
 | `POST` | `/users/refresh-token` | 🔓 | **Refresh Access Token**<br>**Body**: `{ refreshToken }`<br>**Returns**: `{ accessToken }` |
 | `GET` | `/users/search` | 🔒 | **Search Users**<br>**Query Params**:<br>• `q` (string, optional): Search by name or email<br>• `page` (integer, optional, default=1): Page number<br>• `limit` (integer, optional, default=20): Items per page |
 | `GET` | `/users` | 🔒 | **Get Current Profile** |
-| `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `email`, `profile_pic` (file) |
+| `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `profile_pic` (file) |
 | `DELETE` | `/users` | 🔒 | **Delete Self** |
 | `DELETE` | `/users/:id` | 🛡️ | **Delete User (Admin)** |
 | `POST` | `/users/send-verification-code` | 🔓 | **Send Email Verification**<br>**Body**: `{ email }` |
