@@ -21,8 +21,6 @@ router.use(verifyUser);
  *     tags: [Groups]
  *     security:
  *       - bearerAuth: []
- *     responses:
- *       200:
  *     parameters:
  *       - in: query
  *         name: page
@@ -106,8 +104,6 @@ router.post('/', controller.createGroup);
  *         schema:
  *           type: string
  *         description: Group ID
- *     responses:
- *       200:
  *       - in: query
  *         name: page
  *         schema:

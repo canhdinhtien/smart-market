@@ -72,7 +72,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/categories` | 🔒 | **Get All Categories**<br>**Query**: `?page=1&limit=20` |
+| `GET` | `/categories` | 🔒 | **Get All Categories**<br>**Query**: `?page=1&limit=20&name=<name>` |
 | `POST` | `/categories` | 🛡️ | **Create Category**<br>**Body**: `{ name }` |
 | `PUT` | `/categories` | 🛡️ | **Update Category**<br>**Body**: `{ oldName, newName }` |
 | `DELETE` | `/categories` | 🛡️ | **Delete Category**<br>**Body**: `{ name }` |

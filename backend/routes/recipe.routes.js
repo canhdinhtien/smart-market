@@ -117,7 +117,6 @@ router.delete('/:id', controller.deleteRecipe);
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *     parameters:
  *       - in: query
  *         name: foodId
  *         required: false

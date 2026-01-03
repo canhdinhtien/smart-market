@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const { Op } = require('sequelize');
 
 const createCategory = async (categoryData) => {
   const { name } = categoryData;
@@ -12,9 +13,16 @@ const createCategory = async (categoryData) => {
   return newCategory;
 };
 
-const getAllCategories = async (page = 1, limit = 20) => {
+const getAllCategories = async (page = 1, limit = 20, name = null) => {
   const offset = (page - 1) * limit;
+
+  const whereClause = {};
+  if (name) {
+    whereClause.name = { [Op.iLike]: `%${name}%` };
+  }
+
   const { count, rows } = await Category.findAndCountAll({
+    where: whereClause,
     limit: limit,
     offset: offset,
     order: [['name', 'ASC']]

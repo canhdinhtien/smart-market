@@ -18,10 +18,10 @@ const createCategory = async (req, res, next) => {
 
 const getAllCategories = async (req, res, next) => {
   try {
-    let { page, limit } = req.query;
+    let { page, limit, name } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 20;
-    const categories = await categoryService.getAllCategories(page, limit);
+    const categories = await categoryService.getAllCategories(page, limit, name);
     res.status(200).json(categories);
   } catch (error) {
     next(error);

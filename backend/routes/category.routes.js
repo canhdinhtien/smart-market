@@ -63,6 +63,11 @@ router.post('/', verifyAdmin, controller.createCategory);
  *           type: integer
  *           default: 20
  *         description: Items per page
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by category name
  *     responses:
  *       200:
  *         description: List of categories
