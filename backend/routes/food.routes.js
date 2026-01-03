@@ -42,6 +42,16 @@ router.use(verifyUser);
  *           type: integer
  *           default: 20
  *         description: Items per page
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by food name
+ *       - in: query
+ *         name: category_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by category ID
  *     responses:
  *       200:
  *         description: List of foods in the group

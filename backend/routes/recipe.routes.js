@@ -117,12 +117,24 @@ router.delete('/:id', controller.deleteRecipe);
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *     parameters:
  *       - in: query
  *         name: foodId
- *         required: true
+ *         required: false
  *         schema:
  *           type: string
- *         description: Food ID to get recipes for
+ *         description: Food ID to get recipes for (Required if group_id not provided)
+ *       - in: query
+ *         name: group_id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Group ID to filter recipes (Required if foodId not provided)
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by recipe name
  *       - in: query
  *         name: page
  *         schema:

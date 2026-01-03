@@ -63,6 +63,11 @@ router.post('/', verifyAdmin, controller.createUnit);
  *           type: integer
  *           default: 20
  *         description: Items per page
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by unit name
  *     responses:
  *       200:
  *         description: List of units

@@ -102,7 +102,7 @@ const getGroupMembers = async (req, res, next) => {
   try {
     const groupId = req.params.id;
     const userId = req.user?.id;
-    let { page, limit } = req.query;
+    let { page, limit, name } = req.query;
 
     if (!groupId) {
       const error = new Error('Group ID is required');
@@ -119,7 +119,7 @@ const getGroupMembers = async (req, res, next) => {
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 20;
 
-    const result = await groupService.getGroupMembers(groupId, userId, page, limit);
+    const result = await groupService.getGroupMembers(groupId, userId, page, limit, name);
     res.json(result);
   } catch (err) {
     next(err);
@@ -132,7 +132,7 @@ const getGroupMembers = async (req, res, next) => {
 const getUserGroups = async (req, res, next) => {
   try {
     const userId = req.user?.id;
-    let { page, limit } = req.query;
+    let { page, limit, name } = req.query;
 
     if (!userId) {
       const error = new Error('Unauthorized: User ID missing');
@@ -143,7 +143,7 @@ const getUserGroups = async (req, res, next) => {
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 20;
 
-    const result = await groupService.getUserGroups(userId, page, limit);
+    const result = await groupService.getUserGroups(userId, page, limit, name);
     res.json(result);
   } catch (err) {
     next(err);

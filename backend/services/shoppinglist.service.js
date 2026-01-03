@@ -6,6 +6,7 @@ const Unit = require('../models/Unit');
 const Category = require('../models/Category');
 const groupService = require('./group.service');
 const NotificationService = require('./notification.service');
+const { Op } = require('sequelize');
 
 const createShoppingList = async (data, requestingUserId) => {
   const { name, group_id } = data;
@@ -63,7 +64,7 @@ const deleteShoppingList = async (id, requestingUserId) => {
   return { message: 'Shopping list deleted successfully' };
 };
 
-const getAllShoppingLists = async (groupId, requestingUserId, page = 1, limit = 20) => {
+const getAllShoppingLists = async (groupId, requestingUserId, page = 1, limit = 20, name = null) => {
   const isMember = await groupService.isMember(groupId, requestingUserId);
   if (!isMember) {
     const error = new Error('Access denied: You must be a member of the group to view shopping lists');
@@ -73,13 +74,18 @@ const getAllShoppingLists = async (groupId, requestingUserId, page = 1, limit = 
 
   const offset = (page - 1) * limit;
 
+  const whereClause = { group_id: groupId };
+  if (name) {
+    whereClause.name = { [Op.iLike]: `%${name}%` };
+  }
+
   const { count, rows } = await ShoppingList.findAndCountAll({
-    where: { group_id: groupId },
+    where: whereClause,
     include: [
       {
         model: ShoppingListTask,
         as: 'tasks',
-        attributes: ['id', 'name', 'quantity', 'is_completed']
+        attributes: ['id', 'name', 'quantity', 'is_purchased']
       }
     ],
     limit: limit,
@@ -171,7 +177,7 @@ const createTasks = async (listId, tasksData, requestingUserId) => {
   return newTasks;
 };
 
-const getListOfTasks = async (shoppingListId, requestingUserId, page = 1, limit = 20) => {
+const getListOfTasks = async (shoppingListId, requestingUserId, page = 1, limit = 20, name = null, isPurchased = null) => {
   const list = await ShoppingList.findByPk(shoppingListId);
   if (!list) {
     const error = new Error('Shopping list not found');
@@ -188,8 +194,16 @@ const getListOfTasks = async (shoppingListId, requestingUserId, page = 1, limit 
 
   const offset = (page - 1) * limit;
 
+  const whereClause = { shopping_list_id: shoppingListId };
+  if (name) {
+    whereClause.name = { [Op.iLike]: `%${name}%` };
+  }
+  if (isPurchased !== null && isPurchased !== undefined) {
+    whereClause.is_purchased = isPurchased === 'true'; // Convert query string to boolean
+  }
+
   const { count, rows } = await ShoppingListTask.findAndCountAll({
-    where: { shopping_list_id: shoppingListId },
+    where: whereClause,
     include: [
       {
         model: Food,
@@ -255,8 +269,8 @@ const updateTask = async (taskId, data, requestingUserId) => {
 
   // Notify if task is completed or important update
   // For now, we notify on any update but we could filter
-  if (data.is_completed !== undefined) {
-    const status = data.is_completed ? 'completed' : 'uncompleted';
+  if (data.is_purchased !== undefined) {
+    const status = data.is_purchased ? 'completed' : 'uncompleted';
     // We should probably fetch the Task name again or use existing if not updated
     // But task object has old data before reload? 
     // Wait, update modifies the instance in place in Sequelize? Yes usually.

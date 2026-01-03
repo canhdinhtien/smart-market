@@ -36,6 +36,11 @@ router.use(verifyUser);
  *           type: integer
  *           default: 20
  *         description: Items per page
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by group name
  *     responses:
  *       200:
  *         description: List of user's groups
@@ -115,6 +120,11 @@ router.post('/', controller.createGroup);
  *           type: integer
  *           default: 20
  *         description: Items per page
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by member name or email
  *     responses:
  *       200:
  *         description: List of group members

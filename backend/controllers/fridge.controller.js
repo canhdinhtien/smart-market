@@ -61,7 +61,7 @@ const deleteFridgeItem = async (req, res, next) => {
 const getAllFridgeItems = async (req, res, next) => {
   try {
     const { group_id } = req.query;
-    let { page, limit } = req.query;
+    let { page, limit, name } = req.query;
     const userId = req.user?.id;
 
     if (!userId) {
@@ -79,7 +79,7 @@ const getAllFridgeItems = async (req, res, next) => {
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 20;
 
-    const result = await fridgeService.getAllFridgeItems(group_id, userId, page, limit);
+    const result = await fridgeService.getAllFridgeItems(group_id, userId, page, limit, name);
     res.json(result);
   } catch (err) {
     next(err);

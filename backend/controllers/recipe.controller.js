@@ -56,10 +56,11 @@ const deleteRecipe = async (req, res, next) => {
  */
 const getRecipesByFoodId = async (req, res, next) => {
   try {
-    let { foodId, page, limit } = req.query;
+    let { foodId, group_id, name, page, limit } = req.query;
 
-    if (!foodId) {
-      const error = new Error('foodId is required');
+    // Only require one of them
+    if (!foodId && !group_id) {
+      const error = new Error('Either foodId or group_id is required');
       error.statusCode = 400;
       throw error;
     }
@@ -67,7 +68,7 @@ const getRecipesByFoodId = async (req, res, next) => {
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 20;
 
-    const result = await recipeService.getRecipesByFoodId(foodId, req.user.id, page, limit);
+    const result = await recipeService.getRecipesByFoodId(foodId, req.user.id, page, limit, group_id, name);
 
     res.status(200).json(result);
   } catch (error) {

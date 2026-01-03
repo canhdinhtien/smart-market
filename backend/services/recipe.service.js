@@ -5,6 +5,7 @@ const Unit = require('../models/Unit');
 const sequelize = require('../config/database');
 const NotificationService = require('./notification.service');
 const groupService = require('./group.service');
+const { Op } = require('sequelize');
 
 const createRecipe = async (data, requestingUserId) => {
   const { name, description, instructions, group_id, ingredients } = data;
@@ -151,19 +152,57 @@ const deleteRecipe = async (id, requestingUserId) => {
   }
 };
 
-const getRecipesByFoodId = async (foodId, requestingUserId, page = 1, limit = 20) => {
+const getRecipesByFoodId = async (foodId, requestingUserId, page = 1, limit = 20, groupId = null, name = null) => {
+  let recipes = [];
+
+  // Case 1: Filter by group_id directly (general search)
+  if (groupId) {
+    const isMember = await groupService.isMember(groupId, requestingUserId);
+    if (!isMember) {
+      const error = new Error('Access denied: You must be a member of the group to view recipes');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const whereClause = { group_id: groupId };
+    if (name) {
+      whereClause.name = { [Op.iLike]: `%${name}%` };
+    }
+
+    const { count, rows } = await Recipe.findAndCountAll({
+      where: whereClause,
+      limit: limit,
+      offset: (page - 1) * limit,
+      order: [['created_at', 'DESC']]
+    });
+
+    return {
+      recipes: rows,
+      total: count,
+      page: parseInt(page),
+      totalPages: Math.ceil(count / limit)
+    };
+  }
+
+  // Case 2: Filter by foodId (original behavior)
   const ingredients = await RecipeIngredient.findAll({
     where: { food_id: foodId },
     include: [{ model: Recipe }]
   });
 
   // Filter recipes where user is a member of the group
-  const recipes = [];
   for (const ing of ingredients) {
     if (ing.Recipe) {
       const isMember = await groupService.isMember(ing.Recipe.group_id, requestingUserId);
       if (isMember) {
-        recipes.push(ing.Recipe);
+        // If name filter applied, check it here
+        if (name) {
+          if (ing.Recipe.name.toLowerCase().includes(name.toLowerCase())) {
+            recipes.push(ing.Recipe);
+          }
+        } else {
+          recipes.push(ing.Recipe);
+        }
       }
     }
   }

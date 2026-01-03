@@ -40,6 +40,11 @@ router.use(verifyUser);
  *           type: integer
  *           default: 20
  *         description: Items per page
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by list name
  *     responses:
  *       200:
  *         description: List of shopping lists with tasks and details
@@ -236,6 +241,16 @@ router.post('/:id/tasks', controller.createTasks);
  *           type: integer
  *           default: 20
  *         description: Items per page
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by task name
+ *       - in: query
+ *         name: is_purchased
+ *         schema:
+ *           type: boolean
+ *         description: Filter by purchase status
  *     responses:
  *       200:
  *         description: List of tasks
@@ -285,7 +300,7 @@ router.get('/:id/tasks', controller.getListOfTasks);
  *                 type: string
  *               quantity:
  *                 type: number
- *               completed:
+ *               is_purchased:
  *                 type: boolean
  *     responses:
  *       200:

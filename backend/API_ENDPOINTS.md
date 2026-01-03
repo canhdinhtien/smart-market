@@ -20,6 +20,7 @@ Most endpoints require a Bearer Token.
 | `POST` | `/users/login` | 🔓 | **Login**<br>**Body**: `{ identifier, password }`<br>**Returns**: `{ user, accessToken, refreshToken }` |
 | `POST` | `/users/logout` | 🔒 | **Logout** |
 | `POST` | `/users/refresh-token` | 🔓 | **Refresh Access Token**<br>**Body**: `{ refreshToken }`<br>**Returns**: `{ accessToken }` |
+| `GET` | `/users/search` | 🔒 | **Search Users**<br>**Query**: `?q=<name_or_email>&page=1&limit=20` |
 | `GET` | `/users` | 🔒 | **Get Current Profile** |
 | `PUT` | `/users` | 🔒 | **Update Profile** (Multipart)<br>**Form-Data**: `name`, `gender`, `profile_pic` (file) |
 | `DELETE` | `/users` | 🔒 | **Delete Account** |
@@ -35,9 +36,9 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/groups` | 🔒 | **Get All Groups**<br>**Query**: `?page=1&limit=20` |
+| `GET` | `/groups` | 🔒 | **Get All Groups**<br>**Query**: `?page=1&limit=20&name=<name>` |
 | `POST` | `/groups` | 🔒 | **Create Group**<br>**Body**: `{ name }` |
-| `GET` | `/groups/:id/members` | 🔒 | **Get Group Members**<br>**Query**: `?page=1&limit=20` |
+| `GET` | `/groups/:id/members` | 🔒 | **Get Group Members**<br>**Query**: `?page=1&limit=20&name=<name_or_email>` |
 | `POST` | `/groups/:id/members` | 🔒 | **Add Member**<br>**Body**: `{ userId }` |
 | `DELETE` | `/groups/:id/members/:userId` | 🔒 | **Remove Member** |
 
@@ -47,7 +48,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/food` | 🔒 | **Get Foods in Group**<br>**Query**: `?group_id=<id>&page=1&limit=20` |
+| `GET` | `/food` | 🔒 | **Get Foods in Group**<br>**Query**: `?group_id=<id>&page=1&limit=20&name=<name>&category_id=<id>` |
 | `GET` | `/food/:id` | 🔒 | **Get Food by ID** |
 | `POST` | `/food` | 🔒 | **Create Food** (Multipart)<br>**Form-Data**: `name`, `group_id`, `category`, `unit`, `quantity`, `image` (file) |
 | `PUT` | `/food/:id` | 🔒 | **Update Food** (Multipart)<br>**Form-Data**: `name`, `category`, `unit`, `quantity`, `image` (file) |
@@ -59,7 +60,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/fridge` | 🔒 | **Get Fridge Items**<br>**Query**: `?group_id=<id>&page=1&limit=20` |
+| `GET` | `/fridge` | 🔒 | **Get Fridge Items**<br>**Query**: `?group_id=<id>&page=1&limit=20&name=<food_name>` |
 | `GET` | `/fridge/:id` | 🔒 | **Get Item by ID** |
 | `POST` | `/fridge` | 🔒 | **Add Item**<br>**Body**: `{ food_id, group_id, quantity, expiryDate (YYYY-MM-DD) }` |
 | `PUT` | `/fridge/:id` | 🔒 | **Update Item**<br>**Body**: `{ quantity, expiryDate }` |
@@ -82,7 +83,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/units` | 🔒 | **Get All Units**<br>**Query**: `?page=1&limit=20` |
+| `GET` | `/units` | 🔒 | **Get All Units**<br>**Query**: `?page=1&limit=20&name=<name>` |
 | `POST` | `/units` | 🛡️ | **Create Unit**<br>**Body**: `{ unitName }` |
 | `PUT` | `/units` | 🛡️ | **Update Unit**<br>**Body**: `{ oldName, newName }` |
 | `DELETE` | `/units` | 🛡️ | **Delete Unit**<br>**Body**: `{ unitName }` |
@@ -93,7 +94,7 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/recipes` | 🔒 | **Get Recipes**<br>**Query**: `?foodId=<id>&page=1&limit=20` |
+| `GET` | `/recipes` | 🔒 | **Get Recipes**<br>**Query**: `?foodId=<id>&page=1&limit=20` **OR** `?group_id=<id>&name=<name>` |
 | `POST` | `/recipes` | 🔒 | **Create Recipe**<br>**Body**: `{ foodId, instructions, ingredients: [{...}] }` |
 | `PUT` | `/recipes/:id` | 🔒 | **Update Recipe**<br>**Body**: `{ name, instructions, ingredients }` |
 | `DELETE` | `/recipes/:id` | 🔒 | **Delete Recipe** |
@@ -115,14 +116,14 @@ Most endpoints require a Bearer Token.
 
 | Method | Endpoint | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/shopping` | 🔒 | **Get All Lists**<br>**Query**: `?group_id=<id>&page=1&limit=20`<br>**Returns**: Lists with full task details |
+| `GET` | `/shopping` | 🔒 | **Get All Lists**<br>**Query**: `?group_id=<id>&page=1&limit=20&name=<name>`<br>**Returns**: Lists with full task details |
 | `GET` | `/shopping/:id` | 🔒 | **Get List by ID**<br>**Returns**: List with full task details |
 | `POST` | `/shopping` | 🔒 | **Create List**<br>**Body**: `{ name }` |
 | `PUT` | `/shopping/:id` | 🔒 | **Update List**<br>**Body**: `{ name }` |
 | `DELETE` | `/shopping/:id` | 🔒 | **Delete List** |
-| `GET` | `/shopping/:id/tasks` | 🔒 | **Get Tasks**<br>**Query**: `?page=1&limit=20` |
+| `GET` | `/shopping/:id/tasks` | 🔒 | **Get Tasks**<br>**Query**: `?page=1&limit=20&name=<name>&is_purchased=<boolean>` |
 | `POST` | `/shopping/:id/tasks` | 🔒 | **Add Tasks**<br>**Body**: `{ tasks: [{ name, quantity }] }` |
-| `PUT` | `/shopping/tasks/:taskId` | 🔒 | **Update Task**<br>**Body**: `{ name, quantity, completed }` |
+| `PUT` | `/shopping/tasks/:taskId` | 🔒 | **Update Task**<br>**Body**: `{ name, quantity, is_purchased }` |
 | `DELETE` | `/shopping/tasks/:taskId` | 🔒 | **Delete Task** |
 
 ---

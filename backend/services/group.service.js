@@ -2,6 +2,7 @@ const Group = require('../models/Group');
 const GroupMember = require('../models/GroupMember');
 const User = require('../models/User');
 const NotificationService = require('./notification.service');
+const { Op } = require('sequelize');
 
 /**
  * Create a new group
@@ -119,7 +120,7 @@ const deleteMember = async (groupId, targetUserId, requestingUserId) => {
  * Get all members of a group
  * @param {number} groupId
  */
-const getGroupMembers = async (groupId, requestingUserId, page = 1, limit = 20) => {
+const getGroupMembers = async (groupId, requestingUserId, page = 1, limit = 20, name = null) => {
   const offset = (page - 1) * limit;
 
   const group = await Group.findByPk(groupId);
@@ -136,7 +137,16 @@ const getGroupMembers = async (groupId, requestingUserId, page = 1, limit = 20) 
     throw error;
   }
 
+  const whereClause = {};
+  if (name) {
+    whereClause[Op.or] = [
+      { name: { [Op.iLike]: `%${name}%` } },
+      { email: { [Op.iLike]: `%${name}%` } }
+    ];
+  }
+
   const { count, rows } = await User.findAndCountAll({
+    where: whereClause,
     include: [{
       model: GroupMember,
       as: 'memberships',
@@ -157,15 +167,24 @@ const getGroupMembers = async (groupId, requestingUserId, page = 1, limit = 20) 
   };
 };
 
-const getUserGroups = async (userId, page = 1, limit = 20) => {
+const getUserGroups = async (userId, page = 1, limit = 20, name = null) => {
+  const whereClause = {};
+  if (name) {
+    whereClause.name = { [Op.iLike]: `%${name}%` };
+  }
+
   // Groups where user is admin
   const adminGroups = await Group.findAll({
-    where: { admin_user_id: userId },
+    where: {
+      admin_user_id: userId,
+      ...whereClause
+    },
     attributes: ['id', 'name', 'admin_user_id'],
   });
 
   // Groups where user is a member
   const memberGroups = await Group.findAll({
+    where: whereClause,
     include: [
       {
         model: User,

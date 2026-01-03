@@ -1,4 +1,5 @@
 const Unit = require('../models/Unit');
+const { Op } = require('sequelize');
 
 const createUnit = async (unitName) => {
   const existingUnit = await Unit.findOne({ where: { name: unitName } });
@@ -12,9 +13,16 @@ const createUnit = async (unitName) => {
   return newUnit;
 };
 
-const getAllUnits = async (page = 1, limit = 20) => {
+const getAllUnits = async (page = 1, limit = 20, name = null) => {
   const offset = (page - 1) * limit;
+
+  const whereClause = {};
+  if (name) {
+    whereClause.name = { [Op.iLike]: `%${name}%` };
+  }
+
   const { count, rows } = await Unit.findAndCountAll({
+    where: whereClause,
     limit: limit,
     offset: offset,
     order: [['name', 'ASC']]

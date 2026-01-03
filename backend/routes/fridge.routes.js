@@ -40,6 +40,11 @@ router.use(verifyUser);
  *           type: integer
  *           default: 20
  *         description: Items per page
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by food name
  *     responses:
  *       200:
  *         description: List of fridge items

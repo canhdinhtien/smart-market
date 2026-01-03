@@ -3,6 +3,7 @@ const Category = require('../models/Category');
 const Unit = require('../models/Unit');
 const groupService = require('./group.service');
 const { deleteImage } = require('../utils/imageUtils');
+const { Op } = require('sequelize');
 
 const createFood = async (foodData, requestingUserId) => {
   const { name, group_id } = foodData;
@@ -95,7 +96,7 @@ const deleteFood = async (id, requestingUserId) => {
   return { message: 'Food deleted successfully' };
 };
 
-const getAllFoodsInGroup = async (groupId, requestingUserId, page = 1, limit = 20) => {
+const getAllFoodsInGroup = async (groupId, requestingUserId, page = 1, limit = 20, name = null, categoryId = null) => {
   const isMember = await groupService.isMember(groupId, requestingUserId);
   if (!isMember) {
     const error = new Error('Access denied: You must be a member of the group to view foods');
@@ -105,8 +106,16 @@ const getAllFoodsInGroup = async (groupId, requestingUserId, page = 1, limit = 2
 
   const offset = (page - 1) * limit;
 
+  const whereClause = { group_id: groupId };
+  if (name) {
+    whereClause.name = { [Op.iLike]: `%${name}%` };
+  }
+  if (categoryId) {
+    whereClause.category_id = categoryId;
+  }
+
   const { count, rows } = await Food.findAndCountAll({
-    where: { group_id: groupId },
+    where: whereClause,
     include: [
       { model: Unit, attributes: ['id', 'name'] },
       { model: Category, attributes: ['id', 'name'] }

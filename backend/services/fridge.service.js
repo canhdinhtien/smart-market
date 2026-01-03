@@ -4,6 +4,7 @@ const Category = require('../models/Category');
 const Unit = require('../models/Unit');
 const groupService = require('./group.service');
 const NotificationService = require('./notification.service');
+const { Op } = require('sequelize');
 
 const createFridgeItem = async (data, requestingUserId) => {
   const { food_id, group_id } = data;
@@ -93,7 +94,7 @@ const deleteFridgeItem = async (id, requestingUserId) => {
   return { message: 'Fridge item deleted successfully' };
 };
 
-const getAllFridgeItems = async (groupId, requestingUserId, page = 1, limit = 20) => {
+const getAllFridgeItems = async (groupId, requestingUserId, page = 1, limit = 20, name = null) => {
   const isMember = await groupService.isMember(groupId, requestingUserId);
   if (!isMember) {
     const error = new Error('Access denied: You must be a member of the group to view fridge items');
@@ -103,18 +104,22 @@ const getAllFridgeItems = async (groupId, requestingUserId, page = 1, limit = 20
 
   const offset = (page - 1) * limit;
 
+  const foodInclude = {
+    model: Food,
+    attributes: ['id', 'name', 'image_url'],
+    include: [
+      { model: Unit, attributes: ['id', 'name'] },
+      { model: Category, attributes: ['id', 'name'] }
+    ]
+  };
+
+  if (name) {
+    foodInclude.where = { name: { [Op.iLike]: `%${name}%` } };
+  }
+
   const { count, rows } = await FridgeItem.findAndCountAll({
     where: { group_id: groupId },
-    include: [
-      {
-        model: Food,
-        attributes: ['id', 'name', 'image_url'],
-        include: [
-          { model: Unit, attributes: ['id', 'name'] },
-          { model: Category, attributes: ['id', 'name'] }
-        ]
-      }
-    ],
+    include: [foodInclude],
     limit: limit,
     offset: offset,
     order: [['created_at', 'DESC']]
