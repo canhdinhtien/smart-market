@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../family_group/providers/group_provider.dart';
 import '../../fridge/providers/fridge_provider.dart';
 import '../../recipe/providers/recipe_provider.dart';
+import '../providers/notification_provider.dart';
 
 class HomeAppBar extends StatefulWidget {
   const HomeAppBar({super.key});
@@ -161,10 +162,45 @@ class _HomeAppBarState extends State<HomeAppBar> {
               ),
               const SizedBox(width: 12),
               // Notifications
-              _buildIconButton(
-                context,
-                icon: Icons.notifications_none_rounded,
-                onTap: () {},
+              Consumer<NotificationProvider>(
+                builder: (context, provider, _) {
+                  final unreadCount = provider.unreadCount;
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _buildIconButton(
+                        context,
+                        icon: Icons.notifications_none_rounded,
+                        onTap: () => Navigator.pushNamed(context, '/notification'),
+                      ),
+                      if (unreadCount > 0)
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: AppColors.error,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
+                            child: Text(
+                              unreadCount > 9 ? '9+' : '$unreadCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(width: 8),
               // Shopping

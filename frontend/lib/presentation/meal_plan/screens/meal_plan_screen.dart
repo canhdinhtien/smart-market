@@ -73,7 +73,7 @@ class _MealPlanScreenStateV2 extends State<MealPlanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
+      backgroundColor: AppColors.background,
       body: Consumer2<MealProvider, GroupProvider>(
         builder: (context, provider, groupProv, child) {
           final groupedPlans = {
@@ -158,7 +158,7 @@ class _MealPlanScreenStateV2 extends State<MealPlanScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                      colors: [AppColors.primary, AppColors.primaryDark],
                     ),
                   ),
                 ),
@@ -230,9 +230,11 @@ class _MealPlanScreenStateV2 extends State<MealPlanScreen> {
                             ),
                             child: Row(
                               children: [
-                                _buildHeaderStat('${totalMeals}', 'Món ăn', Colors.green.shade700),
+                                _buildHeaderStat('${totalMeals}', 'Món ăn', AppColors.primary),
                                 Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
-                                _buildHeaderStat(DateFormat('dd/MM').format(_selectedDate), 'Ngày', AppColors.primary),
+                                _buildHeaderStat(DateFormat('dd/MM').format(_selectedDate), 'Ngày', Colors.blue.shade700),
+                                Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
+                                _buildGroupChip(groupProv),
                               ],
                             ),
                           ),
@@ -240,11 +242,6 @@ class _MealPlanScreenStateV2 extends State<MealPlanScreen> {
                       ),
                     ],
                   ),
-                ),
-                Positioned(
-                  right: 24,
-                  bottom: 128,
-                  child: _buildGroupChip(groupProv),
                 ),
               ],
             );
@@ -300,27 +297,26 @@ class _MealPlanScreenStateV2 extends State<MealPlanScreen> {
 
   Widget _buildFAB() {
     return Container(
+      width: 56,
+      height: 56,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF8C00), Color(0xFFFF4500)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppColors.primaryGradient,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.4),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: FloatingActionButton.extended(
-        onPressed: () => _addMealDialog(),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Thêm thực đơn', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _addMealDialog(),
+          borderRadius: BorderRadius.circular(20),
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        ),
       ),
     );
   }

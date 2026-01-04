@@ -68,7 +68,7 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
     final groupProv = Provider.of<GroupProvider>(context, listen: false);
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * 0.8,
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
@@ -96,39 +96,39 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   children: [
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 16),
                     FadeInSlide(
                       delay: 0.1,
                       child: Text(
                         isEditing ? 'Chỉnh sửa thực phẩm' : 'Thêm vào tủ lạnh',
                         style: const TextStyle(
-                          fontSize: 28,
+                          fontSize: 22,
                           fontWeight: FontWeight.w900,
                           color: Color(0xFF1A1D1E),
-                          letterSpacing: -1.2,
+                          letterSpacing: -0.8,
                           height: 1.1,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
 
                     // Food Selector
                     FadeInSlide(
                       delay: 0.2,
                       child: _buildSectionTitle('THỰC PHẨM'),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     FadeInSlide(
                       delay: 0.25,
                       child: _buildFoodCard(context),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
                     FadeInSlide(
                       delay: 0.3,
                       child: _buildSectionTitle('THÔNG TIN CHI TIẾT'),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
 
                     FadeInSlide(
                       delay: 0.35,
@@ -141,19 +141,19 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     FadeInSlide(
                       delay: 0.4,
                       child: _buildNoteField(),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
               
               // Bottom Action Button
               Padding(
-                padding: EdgeInsets.fromLTRB(24, 8, 24, MediaQuery.of(context).padding.bottom + 20),
+                padding: EdgeInsets.fromLTRB(24, 4, 24, MediaQuery.of(context).padding.bottom + 12),
                 child: FadeInSlide(
                   delay: 0.5,
                   direction: FadeInDirection.btt,
@@ -195,10 +195,10 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
       onTap: isEditing ? null : () => _pickFood(context),
       borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selectedFoodId != null 
                 ? AppColors.primary.withOpacity(0.3) 
@@ -208,16 +208,16 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 color: const Color(0xFFF7F8FA),
                 borderRadius: BorderRadius.circular(20),
@@ -286,7 +286,7 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
         ),
         const SizedBox(height: 8),
         Container(
-          height: 64,
+          height: 56,
           decoration: BoxDecoration(
             color: const Color(0xFFF7F8FA),
             borderRadius: BorderRadius.circular(22),
@@ -382,7 +382,7 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
           },
           borderRadius: BorderRadius.circular(22),
           child: Container(
-            height: 64,
+            height: 56,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: const Color(0xFFF7F8FA),
@@ -444,14 +444,14 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: const Color(0xFFF7F8FA),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: TextField(
             controller: noteController,
-            maxLines: 3,
+            maxLines: 2,
             style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1A1D1E)),
             decoration: const InputDecoration(
               hintText: 'Nhập ghi chú tại đây...',
@@ -482,24 +482,17 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           elevation: 0,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(isEditing ? Icons.check_circle_rounded : Icons.add_to_photos_rounded),
-            const SizedBox(width: 12),
-            Text(
-              isEditing ? 'CẬP NHẬT THAY ĐỔI' : 'THÊM VÀO KHO',
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 16,
-                letterSpacing: 1.0,
-              ),
-            ),
-          ],
+        child: Text(
+          isEditing ? 'CẬP NHẬT THAY ĐỔI' : 'THÊM VÀO TỦ LẠNH',
+          style: const TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: 14,
+            letterSpacing: 0.8,
+          ),
         ),
       ),
     );

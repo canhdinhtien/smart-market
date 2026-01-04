@@ -11,8 +11,21 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
   
+  // Stream for foreground messages
+  final StreamController<RemoteMessage> _messageStreamController = StreamController<RemoteMessage>.broadcast();
+  Stream<RemoteMessage> get onMessage => _messageStreamController.stream;
+  
+  // Stream for token refreshes
+  final StreamController<String> _tokenStreamController = StreamController<String>.broadcast();
+  Stream<String> get onTokenRefresh => _tokenStreamController.stream;
+  
   // Safe FCM getter
   FirebaseMessaging get _fcm => FirebaseMessaging.instance;
+
+  Future<String?> getToken() async {
+    if (kIsWeb) return null;
+    return await _fcm.getToken();
+  }
 
   Future<void> initialize() async {
     try {
@@ -29,7 +42,7 @@ class NotificationService {
 
       // 2. Platform specific setup
       if (kIsWeb) {
-        // print('NotificationService: Running on Web, FCM initialization skipped for now.');
+        // FCM setup for web can be added here if service worker is ready
         return;
       }
 
@@ -47,6 +60,9 @@ class NotificationService {
         // Setup listeners
         FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
         FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationClick);
+        FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+          _tokenStreamController.add(token);
+        });
       }
     } catch (e) {
       // print('NotificationService Error: $e');
@@ -73,6 +89,9 @@ class NotificationService {
         ),
       );
     }
+    
+    // Always add to stream for in-app handling
+    _messageStreamController.add(message);
   }
 
   void _handleNotificationClick(RemoteMessage message) {

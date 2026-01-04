@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_constants.dart';
+import '../../../data/services/notification_service.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
@@ -20,6 +21,18 @@ class AuthProvider with ChangeNotifier {
 
   AuthProvider(this._apiClient, this._prefs) {
     _checkAuth();
+    
+    // Listen for FCM token refreshes
+    NotificationService().onTokenRefresh.listen((newToken) {
+      if (_status == AuthStatus.authenticated) {
+        _syncFcmToken(newToken);
+      }
+    });
+
+    // Initial sync if already authenticated
+    if (_status == AuthStatus.authenticated) {
+      _syncFcmToken();
+    }
   }
 
   AuthStatus get status => _status;
@@ -182,6 +195,9 @@ class AuthProvider with ChangeNotifier {
           
           // Set status AFTER we have the correct is_admin value
           _status = AuthStatus.authenticated;
+          
+          // Sync FCM token to backend
+          _syncFcmToken();
           
           print('Login: About to notify - isAdmin=$_isAdmin, status=$_status');
           // CRITICAL: Only ONE notifyListeners call with all data ready
@@ -384,6 +400,23 @@ class AuthProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Synchronize FCM token with backend profile
+  Future<void> _syncFcmToken([String? token]) async {
+    try {
+      final fcmToken = token ?? await NotificationService().getToken();
+      if (fcmToken != null) {
+        print('Synchronizing FCM Token: $fcmToken');
+        // Sending to profile update endpoint
+        await _apiClient.dio.put(
+          ApiConstants.updateProfile,
+          data: {'fcm_token': fcmToken},
+        );
+      }
+    } catch (e) {
+      print('FCM Token Sync Error: $e');
     }
   }
 }

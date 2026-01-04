@@ -48,7 +48,8 @@ class FridgeProvider with ChangeNotifier {
     if (groupId == null) return;
     _isLoading = true;
     _error = null;
-    if (page == 1) _items = []; 
+    // Don't clear items on refresh to prevent flickering
+    // if (page == 1) _items = []; 
     notifyListeners();
 
     try {
@@ -89,8 +90,6 @@ class FridgeProvider with ChangeNotifier {
     required String useWithin,
     String? note,
   }) async {
-    _isLoading = true;
-    notifyListeners();
     try {
       int useWithinDays = 0;
       try {
@@ -110,14 +109,13 @@ class FridgeProvider with ChangeNotifier {
         'use_within_days': useWithinDays,
         'note': note,
       });
-      // Non-blocking refresh
-      fetchItems(groupId);
+      
+      // Fetch to get full data with relations (Food, Unit, etc)
+      await fetchItems(groupId);
     } catch (e) {
       _error = 'Lỗi thêm vào tủ lạnh: ${_parseError(e)}';
-      rethrow;
-    } finally {
-      _isLoading = false;
       notifyListeners();
+      rethrow;
     }
   }
 
@@ -129,8 +127,6 @@ class FridgeProvider with ChangeNotifier {
     String? useWithin,
     String? note,
   }) async {
-    _isLoading = true;
-    notifyListeners();
     try {
       Map<String, dynamic> data = {};
       if (foodId != null) data['food_id'] = foodId;
@@ -151,32 +147,29 @@ class FridgeProvider with ChangeNotifier {
 
       await _apiClient.dio.put(ApiConstants.fridgeDetail(id), data: data);
       
+      // Fetch to get full data with relations
       if (groupId != null) {
-        fetchItems(groupId);
+        await fetchItems(groupId);
       }
     } catch (e) {
       _error = 'Lỗi cập nhật tủ lạnh: ${_parseError(e)}';
-      rethrow;
-    } finally {
-      _isLoading = false;
       notifyListeners();
+      rethrow;
     }
   }
 
   Future<void> deleteItem(dynamic id, dynamic groupId) async {
-    _isLoading = true;
-    notifyListeners();
     try {
       await _apiClient.dio.delete(ApiConstants.fridgeDetail(id));
-      if (groupId != null) {
-        fetchItems(groupId);
-      }
+      
+      // Remove item from local state instead of fetching
+      _items.removeWhere((item) => item['id'].toString() == id.toString());
+      _totalItems--;
+      notifyListeners();
     } catch (e) {
       _error = 'Lỗi xóa khỏi tủ lạnh: ${_parseError(e)}';
-      rethrow;
-    } finally {
-      _isLoading = false;
       notifyListeners();
+      rethrow;
     }
   }
 }

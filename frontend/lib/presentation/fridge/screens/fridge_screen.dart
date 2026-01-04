@@ -79,11 +79,33 @@ class _FridgeScreenState extends State<FridgeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
-      body: Consumer<FridgeProvider>(
-        builder: (context, provider, child) {
-          // Filter logic
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          // Background Decor - matching Home screen
+          Positioned(
+            top: -size.width * 0.3,
+            right: -size.width * 0.2,
+            child: _buildBlurCircle(AppColors.primary.withOpacity(0.08), size.width * 0.8),
+          ),
+          Positioned(
+            top: size.height * 0.4,
+            left: -size.width * 0.3,
+            child: _buildBlurCircle(AppColors.secondary.withOpacity(0.05), size.width * 0.7),
+          ),
+          Positioned(
+            bottom: size.height * 0.2,
+            right: -size.width * 0.2,
+            child: _buildBlurCircle(AppColors.primary.withOpacity(0.04), size.width * 0.6),
+          ),
+          
+          // Main Content
+          Consumer<FridgeProvider>(
+            builder: (context, provider, child) {
+              // Filter logic
           var filteredItems = provider.items.where((item) {
             final food = item['Food'] ?? {};
             final foodName = food['name'] ?? item['food_name'] ?? 'Không rõ';
@@ -161,7 +183,7 @@ class _FridgeScreenState extends State<FridgeScreen> {
 
               if (provider.isLoading)
                 const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator(color: Colors.orange)),
+                  child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
                 )
               else if (filteredItems.isEmpty)
                 SliverFillRemaining(child: _buildEmptyState())
@@ -181,9 +203,22 @@ class _FridgeScreenState extends State<FridgeScreen> {
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           );
-        },
+            },
+          ),
+        ],
       ),
       floatingActionButton: _buildFAB(),
+    );
+  }
+  
+  Widget _buildBlurCircle(Color color, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
     );
   }
 
@@ -214,7 +249,7 @@ class _FridgeScreenState extends State<FridgeScreen> {
                       setState(() => _selectedCategoryId = categoryId);
                     }
                   },
-                  selectedColor: Colors.orange,
+                  selectedColor: AppColors.primary,
                   labelStyle: TextStyle(
                     color: isSelected ? Colors.white : Colors.grey.shade700,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -251,7 +286,7 @@ class _FridgeScreenState extends State<FridgeScreen> {
           icon: Icon(
             _sortAscending ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
             size: 18,
-            color: Colors.orange,
+            color: AppColors.primary,
           ),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
@@ -267,16 +302,16 @@ class _FridgeScreenState extends State<FridgeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.orange.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? Colors.orange : Colors.grey.shade200),
+          border: Border.all(color: isSelected ? AppColors.primary : Colors.grey.shade200),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected ? Colors.orange : Colors.grey.shade600,
+            color: isSelected ? AppColors.primary : Colors.grey.shade600,
           ),
         ),
       ),
@@ -287,25 +322,24 @@ class _FridgeScreenState extends State<FridgeScreen> {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Colors.orange, Colors.deepOrangeAccent],
+          colors: [AppColors.primary, AppColors.primaryDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.4),
+            color: AppColors.primary.withOpacity(0.4),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: FloatingActionButton.extended(
+      child: FloatingActionButton(
         onPressed: () => _showAddEditDialog(context),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Thêm đồ mới', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       ),
     );
   }
@@ -321,6 +355,29 @@ class _FridgeScreenState extends State<FridgeScreen> {
           elevation: 0,
           backgroundColor: Colors.white,
           surfaceTintColor: Colors.transparent,
+          iconTheme: const IconThemeData(color: Colors.white),
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+                onPressed: () => Navigator.pop(context),
+                padding: EdgeInsets.zero,
+              ),
+            ),
+          ),
           flexibleSpace: FlexibleSpaceBar(
             stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
             centerTitle: false,
@@ -331,13 +388,13 @@ class _FridgeScreenState extends State<FridgeScreen> {
                 return Stack(
                   fit: StackFit.expand,
                   children: [
-                    // Consistent Background to prevent loading flicker
+                    // Lighter gradient matching AppColors
                     Container(
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFFFF8C00), Color(0xFFFF4500)],
+                          colors: [AppColors.primary, AppColors.primaryDark],
                         ),
                       ),
                     ),
@@ -348,9 +405,9 @@ class _FridgeScreenState extends State<FridgeScreen> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withOpacity(0.4), // Darker top for status bar
+                            Colors.black.withOpacity(0.2), // Lighter overlay
                             Colors.transparent,
-                            Colors.white.withOpacity(0.95), // Solid white at bottom
+                            Colors.white.withOpacity(0.95),
                             Colors.white,
                           ],
                           stops: const [0.0, 0.3, 0.8, 1.0],
@@ -406,7 +463,9 @@ class _FridgeScreenState extends State<FridgeScreen> {
                                   children: [
                                     _buildHeaderStat('${totalItems}', 'Tất cả', AppColors.primary),
                                     Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
-                                    _buildHeaderStat('${fridgeProv.items.where((i) => _isExpiringSoon(i)).length}', 'Sắp hết hạn', Colors.orange),
+                                    _buildHeaderStat('${fridgeProv.items.where((i) => _isExpiringSoon(i)).length}', 'Sắp hết hạn', AppColors.warning),
+                                    Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
+                                    _buildGroupChip(groupProv),
                                   ],
                                 ),
                               ),
@@ -414,11 +473,6 @@ class _FridgeScreenState extends State<FridgeScreen> {
                           ),
                         ],
                       ),
-                    ),
-                    Positioned(
-                      right: 24,
-                      bottom: 128,
-                      child: _buildGroupChip(groupProv),
                     ),
                   ],
                 );
@@ -509,7 +563,7 @@ class _FridgeScreenState extends State<FridgeScreen> {
             ),
             prefixIcon: const Padding(
               padding: EdgeInsets.only(left: 12),
-              child: Icon(Icons.search_rounded, color: Color(0xFFFF5500), size: 24),
+              child: Icon(Icons.search_rounded, color: AppColors.primary, size: 24),
             ),
             suffixIcon: _searchQuery.isNotEmpty 
               ? IconButton(
@@ -523,10 +577,10 @@ class _FridgeScreenState extends State<FridgeScreen> {
                   margin: const EdgeInsets.all(8),
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF5500).withOpacity(0.1),
+                    color: AppColors.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.tune_rounded, size: 16, color: Color(0xFFFF5500)),
+                  child: const Icon(Icons.tune_rounded, size: 16, color: AppColors.primary),
                 ),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(vertical: 18),
@@ -579,14 +633,17 @@ class _FridgeScreenState extends State<FridgeScreen> {
           children: [
             const SizedBox(height: 40),
             Container(
-              padding: const EdgeInsets.all(30),
-              decoration: BoxDecoration(color: Colors.orange.shade50, shape: BoxShape.circle),
-              child: Icon(Icons.kitchen_outlined, size: 80, color: Colors.orange.shade200),
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.kitchen_outlined, size: 80, color: AppColors.primary.withOpacity(0.3)),
             ),
             const SizedBox(height: 24),
-            const Text('Tủ lạnh trống trơn!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2D3142))),
+            Text('Tủ lạnh trống trơn!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5)),
             const SizedBox(height: 8),
-            Text(_searchQuery.isEmpty ? 'Hãy thêm thực phẩm để quản lý nhé.' : 'Không tìm thấy kết quả phù hợp.', style: TextStyle(color: Colors.grey.shade500)),
+            Text(_searchQuery.isEmpty ? 'Hãy thêm thực phẩm để quản lý nhé.' : 'Không tìm thấy kết quả phù hợp.', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
             const SizedBox(height: 40),
           ],
         ),
@@ -999,7 +1056,7 @@ class _FridgeScreenState extends State<FridgeScreen> {
                 }
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
             child: const Text('Xác nhận'),
           ),
         ],
@@ -1074,17 +1131,17 @@ class _FridgeScreenState extends State<FridgeScreen> {
                                 BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8),
                               ],
                             ),
-                            child: food['image_url'] == null ? const Icon(Icons.fastfood_rounded, color: Color(0xFFFF5500), size: 24) : null,
+                            child: food['image_url'] == null ? const Icon(Icons.fastfood_rounded, color: AppColors.primary, size: 24) : null,
                           ),
                           title: Text(food['name'] ?? 'Không tên', style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF1A1D1E))),
                           subtitle: Text(food['Category']?['name'] ?? 'Chưa rõ danh mục', style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
                           trailing: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFF5500).withOpacity(0.1),
+                              color: AppColors.primary.withOpacity(0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.add_rounded, color: Color(0xFFFF5500), size: 20),
+                            child: const Icon(Icons.add_rounded, color: AppColors.primary, size: 20),
                           ),
                         ),
                       );
@@ -1115,7 +1172,7 @@ class _FridgeScreenState extends State<FridgeScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.w500),
-          prefixIcon: Icon(icon, color: const Color(0xFFFF5500), size: 22),
+          prefixIcon: Icon(icon, color: AppColors.primary, size: 22),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         ),
@@ -1134,12 +1191,12 @@ class _FridgeScreenState extends State<FridgeScreen> {
           builder: (context, child) => Theme(
              data: Theme.of(context).copyWith(
                colorScheme: const ColorScheme.light(
-                 primary: Color(0xFFFF5500), 
+                 primary: AppColors.primary, 
                  onPrimary: Colors.white, 
                  onSurface: Color(0xFF1A1D1E),
                ),
                textButtonTheme: TextButtonThemeData(
-                 style: TextButton.styleFrom(foregroundColor: const Color(0xFFFF5500)),
+                 style: TextButton.styleFrom(foregroundColor: AppColors.primary),
                ),
              ),
              child: child!,
@@ -1159,7 +1216,7 @@ class _FridgeScreenState extends State<FridgeScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFFFF5500), size: 22),
+            Icon(icon, color: AppColors.primary, size: 22),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
@@ -1239,7 +1296,7 @@ class _FridgeScreenState extends State<FridgeScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.orange : Colors.grey.shade100,
+                    color: isSelected ? AppColors.primary : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -1252,11 +1309,11 @@ class _FridgeScreenState extends State<FridgeScreen> {
                   group['name'].toString(),
                   style: TextStyle(
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? Colors.orange : AppColors.textPrimary,
+                    color: isSelected ? AppColors.primary : AppColors.textPrimary,
                   ),
                 ),
                 trailing: isSelected 
-                    ? const Icon(Icons.check_circle_rounded, color: Colors.orange) 
+                    ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) 
                     : null,
                 onTap: () {
                   Navigator.pop(context);

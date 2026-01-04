@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // Section: Expiring
                     _buildSection(
-                      title: 'Cần dùng ngay ⏰',
+                      title: 'Cần dùng ngay',
                       onSeeAll: () => Navigator.pushNamed(context, '/fridge'),
                       child: const ExpiringItemsList(),
                       delay: 0.4,
@@ -141,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // Section: Recipes
                     _buildSection(
-                      title: 'Gợi ý hôm nay 🥗',
+                      title: 'Gợi ý hôm nay',
                       onSeeAll: () => Navigator.pushNamed(context, '/recipe'),
                       child: const RecipeSuggestions(),
                       delay: 0.5,

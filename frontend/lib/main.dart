@@ -16,6 +16,7 @@ import 'presentation/profile/providers/profile_provider.dart';
 import 'presentation/admin/providers/admin_provider.dart';
 import 'presentation/food/providers/food_provider.dart';
 import 'presentation/consumption/providers/consumption_provider.dart';
+import 'presentation/home/providers/notification_provider.dart';
 import 'presentation/auth/screens/welcome_screen.dart';
 import 'presentation/auth/screens/login_screen.dart';
 import 'presentation/auth/screens/register_screen.dart';
@@ -28,6 +29,7 @@ import 'presentation/recipe/screens/recipe_list_screen.dart';
 import 'presentation/consumption/screens/consumption_screen.dart';
 import 'presentation/profile/screens/profile_screen.dart';
 import 'presentation/admin/screens/admin_screen.dart';
+import 'presentation/home/screens/notification_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,6 +70,7 @@ void main() async {
   final adminProvider = AdminProvider(apiClient);
   final foodProvider = FoodProvider(apiClient);
   final consumptionProvider = ConsumptionProvider(apiClient);
+  final notificationProvider = NotificationProvider(apiClient);
 
   // Set up logical cleanup on logout
   authProvider.onLogout = () {
@@ -80,6 +83,7 @@ void main() async {
     adminProvider.clearState();
     foodProvider.clearState();
     consumptionProvider.clearState();
+    notificationProvider.clearState();
   };
 
   runApp(
@@ -95,6 +99,7 @@ void main() async {
         ChangeNotifierProvider.value(value: adminProvider),
         ChangeNotifierProvider.value(value: foodProvider),
         ChangeNotifierProvider.value(value: consumptionProvider),
+        ChangeNotifierProvider.value(value: notificationProvider),
       ],
       child: const MyApp(),
     ),
@@ -123,6 +128,7 @@ class MyApp extends StatelessWidget {
         '/consumption': (context) => const ConsumptionScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/admin': (context) => const AdminScreen(),
+        '/notification': (context) => const NotificationScreen(),
       },
     );
   }

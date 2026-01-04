@@ -90,7 +90,7 @@ class _ConsumptionScreenState extends State<ConsumptionScreen> with SingleTicker
     final isAdmin = context.watch<AuthProvider>().isAdmin;
     
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
+      backgroundColor: AppColors.background,
       body: Consumer2<ConsumptionProvider, GroupProvider>(
         builder: (context, consumptionProv, groupProv, child) {
           return CustomScrollView(
@@ -147,7 +147,7 @@ class _ConsumptionScreenState extends State<ConsumptionScreen> with SingleTicker
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
+                      colors: [AppColors.primary, AppColors.primaryDark],
                     ),
                   ),
                 ),
@@ -202,10 +202,10 @@ class _ConsumptionScreenState extends State<ConsumptionScreen> with SingleTicker
                             ),
                             child: Row(
                               children: [
-                                _buildHeaderStat('$totalItems', 'Mặt hàng', Colors.blue.shade700),
+                                _buildHeaderStat('$totalItems', 'Mặt hàng', AppColors.primary),
                                 if (_currentTab == 1) ...[
                                   Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
-                                  _buildHeaderStat(effectiveGroupName, 'Nhóm', Colors.orange.shade700),
+                                  _buildGroupChip(groupProv),
                                 ],
                               ],
                             ),
@@ -215,12 +215,6 @@ class _ConsumptionScreenState extends State<ConsumptionScreen> with SingleTicker
                     ],
                   ),
                 ),
-                if (_currentTab == 1)
-                  Positioned(
-                    right: 24,
-                    bottom: 138,
-                    child: _buildGroupChip(groupProv),
-                  ),
               ],
             );
           },
@@ -258,11 +252,11 @@ class _ConsumptionScreenState extends State<ConsumptionScreen> with SingleTicker
   Widget _buildGroupChip(GroupProvider provider) {
     final groupName = provider.managementGroup?['name'] ?? 'Chọn nhóm';
     return GestureDetector(
-      onTapDown: (details) => _showGroupPicker(context, details.globalPosition, provider),
+      onTap: () => _showGroupPicker(context, provider),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withOpacity(0.35),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white.withOpacity(0.3)),
         ),
@@ -288,30 +282,66 @@ class _ConsumptionScreenState extends State<ConsumptionScreen> with SingleTicker
     );
   }
 
-  void _showGroupPicker(BuildContext context, Offset offset, GroupProvider provider) {
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    showMenu<Object>(
+  void _showGroupPicker(BuildContext context, GroupProvider provider) {
+    showModalBottomSheet(
       context: context,
-      position: RelativeRect.fromLTRB(offset.dx, offset.dy + 20, overlay.size.width - offset.dx, overlay.size.height - offset.dy),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 10,
-      items: <PopupMenuEntry<Object>>[
-        ...provider.groups.map<PopupMenuEntry<Object>>((g) {
-          return PopupMenuItem<Object>(
-            value: g['id'],
-            child: Row(
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.circle, size: 12, color: g['id'] == provider.managementGroup?['id'] ? AppColors.primary : Colors.transparent),
-                const SizedBox(width: 10),
-                Text(g['name'].toString()),
+                const Text('Chọn nhóm thống kê', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close_rounded),
+                ),
               ],
             ),
-          );
-        }).toList(),
-      ],
-    ).then((value) {
-      if (value != null) provider.selectManagementGroup(value);
-    });
+            const SizedBox(height: 16),
+            ...provider.groups.map((group) {
+              final isSelected = group['id'].toString() == provider.managementGroup?['id']?.toString();
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.groups_rounded,
+                    color: isSelected ? Colors.white : Colors.grey,
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  group['name'].toString(),
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                  ),
+                ),
+                trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
+                onTap: () {
+                  Navigator.pop(context);
+                  provider.selectManagementGroup(group['id']);
+                },
+              );
+            }).toList(),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildMyStatsTab() {

@@ -195,7 +195,7 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                         ),
                         child: Row(
                           children: [
-                            _buildHeaderStat('$completedTasks/$totalTasks', 'Đã mua', const Color(0xFFFF4500)),
+                            _buildHeaderStat('$completedTasks/$totalTasks', 'Đã mua', AppColors.primary),
                             Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
                             _buildHeaderStat(totalTasks > 0 ? '${(completedTasks / totalTasks * 100).toInt()}%' : '0%', 'Tiến độ', Colors.blue.shade700),
                           ],
@@ -256,7 +256,7 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
     final foodData = task['Food'] ?? 
                      foodProv.foods.firstWhere(
                        (f) => f['id'].toString() == task['food_id'].toString(), 
-                       orElse: () => null
+                       orElse: () => <String, dynamic>{}
                      );
 
     final foodName = foodData?['name'] ?? task['name'] ?? 'Món ăn #$task["food_id"]';
@@ -380,15 +380,27 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                                   ),
                                   if (task['assign_to_user_id'] != null) ...[
                                     const SizedBox(width: 8),
-                                    Icon(Icons.person_outline_rounded, size: 14, color: isPurchased ? Colors.grey.shade300 : Colors.blue),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      task['AssignedUser']?['name'] ?? 'Đã gán',
-                                      style: TextStyle(
-                                        color: isPurchased ? Colors.grey.shade400 : Colors.blue.shade700,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                    Builder(
+                                      builder: (context) {
+                                        // Try to get user data from different possible sources
+                                        final userData = task['AssignedUser'] ?? task['User'];
+                                        final avatarUrl = userData?['avatar_url'] ?? userData?['avatarUrl'];
+                                        
+                                        return CircleAvatar(
+                                          radius: 12,
+                                          backgroundColor: isPurchased ? Colors.grey.shade300 : AppColors.primary.withOpacity(0.2),
+                                          backgroundImage: avatarUrl != null 
+                                            ? NetworkImage(avatarUrl) 
+                                            : null,
+                                          child: avatarUrl == null
+                                            ? Icon(
+                                                Icons.person_rounded, 
+                                                size: 14, 
+                                                color: isPurchased ? Colors.grey.shade400 : Colors.white,
+                                              )
+                                            : null,
+                                        );
+                                      }
                                     ),
                                   ],
                                 ],
@@ -502,12 +514,12 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
       Map<String, dynamic>? selectedFood = isEditing 
           ? (task['Food'] ?? foodProv.foods.firstWhere(
               (f) => f['id'].toString() == task['food_id'].toString(), 
-              orElse: () => null
+              orElse: () => <String, dynamic>{}
             ))
           : null;
 
       Map<String, dynamic>? selectedMember = isEditing && task['assign_to_user_id'] != null
-          ? members.firstWhere((m) => m['id'].toString() == task['assign_to_user_id'].toString(), orElse: () => null)
+          ? members.firstWhere((m) => m['id'].toString() == task['assign_to_user_id'].toString(), orElse: () => <String, dynamic>{})
           : null;
 
       final quantityController = TextEditingController(text: isEditing ? task['quantity'].toString() : '1');
@@ -539,10 +551,10 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                 Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(10)))),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
                 Text(isEditing ? 'Sửa món đồ' : 'Thêm vào danh sách', 
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-                const SizedBox(height: 24),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.8)),
+                const SizedBox(height: 16),
                 
                 if (!isEditing) ...[
                   TextField(
@@ -555,9 +567,9 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   SizedBox(
-                    height: 150,
+                    height: 120,
                     child: ListView.builder(
                       itemCount: filteredFoods.length,
                       itemBuilder: (context, index) {
@@ -576,7 +588,7 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                 ],
 
                 Row(
@@ -606,8 +618,8 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                const Text('Người thực hiện', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 12),
+                const Text('Người thực hiện', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 50,
@@ -647,7 +659,7 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 TextField(
                   controller: noteController,
                   decoration: InputDecoration(
@@ -657,7 +669,7 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -691,8 +703,8 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF4500),
-                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       elevation: 0,
                     ),

@@ -98,7 +98,7 @@ class _GroupScreenState extends State<GroupScreen> {
         final bool isGroupAdmin = currentGroup?['admin_user_id']?.toString() == authProvider.userId?.toString();
 
         return Scaffold(
-          backgroundColor: const Color(0xFFFDFDFD),
+          backgroundColor: AppColors.background,
           body: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -126,85 +126,8 @@ class _GroupScreenState extends State<GroupScreen> {
                       return FadeInSlide(delay: 0.4 + (index * 0.05), child: _buildMemberCard(context, member, groupProvider, isGroupAdmin));
                     }),
                     
-                    FadeInSlide(
-                      delay: 0.6,
-                      child: GlassContainer(
-                        padding: const EdgeInsets.all(24),
-                        borderRadius: BorderRadius.circular(28),
-                        color: AppColors.primary.withOpacity(0.06),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                              child: const Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
-                            ),
-                            const SizedBox(width: 20),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Gợi ý cho bạn', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Hãy cùng mọi người cập nhật danh sách thực phẩm để nấu ăn ngon mỗi ngày nhé!',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 16),
                     
-                    FadeInSlide(
-                      delay: 0.7,
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FoodManagerScreen(
-                                groupId: currentGroup?['id'],
-                                groupName: currentGroup?['name'],
-                              ),
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(28),
-                        child: GlassContainer(
-                          padding: const EdgeInsets.all(24),
-                          borderRadius: BorderRadius.circular(28),
-                          color: Colors.orange.withOpacity(0.06),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                                child: const Icon(Icons.fastfood_rounded, color: Colors.orange),
-                              ),
-                              const SizedBox(width: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Mẫu thực phẩm', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Quản lý danh sách thực phẩm mẫu của nhóm để dùng cho Tủ lạnh và Đi chợ.',
-                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 100), // Spacing for fab or end
                   ]),
                 ),
@@ -270,6 +193,8 @@ class _GroupScreenState extends State<GroupScreen> {
 
   Widget _buildFAB(BuildContext context, GroupProvider provider) {
     return Container(
+      width: 56,
+      height: 56,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.primary, AppColors.primaryDark],
@@ -279,18 +204,19 @@ class _GroupScreenState extends State<GroupScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.4),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: FloatingActionButton.extended(
-        onPressed: () => _showAddMemberDialog(context, provider),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        icon: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white),
-        label: const Text('Thêm thành viên', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showAddMemberDialog(context, provider),
+          borderRadius: BorderRadius.circular(20),
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        ),
       ),
     );
   }
@@ -388,6 +314,8 @@ class _GroupScreenState extends State<GroupScreen> {
                                 _buildHeaderStat('$memberCount', 'Thành viên', AppColors.primary),
                                 Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
                                 _buildHeaderStat(isGroupAdmin ? 'Admin' : 'Member', 'Vai trò', Colors.blue.shade700),
+                                Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
+                                _buildGroupChip(groupProvider),
                               ],
                             ),
                           ),
@@ -395,11 +323,6 @@ class _GroupScreenState extends State<GroupScreen> {
                       ),
                     ],
                   ),
-                ),
-                Positioned(
-                  right: 24,
-                  bottom: 128,
-                  child: _buildGroupChip(groupProvider),
                 ),
               ],
             );
@@ -423,11 +346,11 @@ class _GroupScreenState extends State<GroupScreen> {
   Widget _buildGroupChip(GroupProvider provider) {
     final groupName = provider.currentGroup?['name'] ?? 'Chọn nhóm';
     return GestureDetector(
-      onTapDown: (details) => _showGroupPicker(context, details.globalPosition, provider),
+      onTap: () => _showGroupPicker(context, provider),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withOpacity(0.35),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white.withOpacity(0.3)),
         ),
@@ -786,61 +709,84 @@ class _GroupScreenState extends State<GroupScreen> {
   }
 
 
-  void _showGroupPicker(BuildContext context, Offset offset, GroupProvider provider) {
-  // Xác định vị trí hiển thị menu
-  final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-  
-  showMenu<Object>(
-    context: context,
-    // Vị trí hiển thị menu (ngay dưới chỗ người dùng chạm)
-    position: RelativeRect.fromLTRB(
-      offset.dx, 
-      offset.dy + 20, 
-      overlay.size.width - offset.dx, 
-      overlay.size.height - offset.dy
-    ),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-    elevation: 10,
-    // Ép kiểu tường minh cho List là PopupMenuEntry
-    items: <PopupMenuEntry<Object>>[
-      ...provider.groups.map<PopupMenuEntry<Object>>((g) {
-        return PopupMenuItem<Object>(
-          value: g['id'],
-          child: Row(
-            children: [
-              Icon(
-                Icons.circle, 
-                size: 12, 
-                color: g['id'] == provider.currentGroup?['id'] 
-                    ? AppColors.primary 
-                    : Colors.transparent
-              ),
-              const SizedBox(width: 10),
-              Text(g['name'].toString()),
-            ],
-          ),
-        );
-      }).toList(),
-      const PopupMenuDivider(),
-      const PopupMenuItem<Object>(
-        value: 'create',
-        child: Row(
+  void _showGroupPicker(BuildContext context, GroupProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.add_circle_outline, color: AppColors.primary),
-            SizedBox(width: 10),
-            Text('Tạo nhóm mới'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Gia đình của bạn', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...provider.groups.map((group) {
+              final isSelected = group['id'].toString() == provider.currentGroup?['id']?.toString();
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.groups_rounded,
+                    color: isSelected ? Colors.white : Colors.grey,
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  group['name'].toString(),
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                  ),
+                ),
+                trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
+                onTap: () {
+                  Navigator.pop(context);
+                  provider.selectGroup(group['id']);
+                },
+              );
+            }).toList(),
+            const Divider(height: 32),
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary, size: 20),
+              ),
+              title: const Text('Tạo nhóm mới', style: TextStyle(fontWeight: FontWeight.bold)),
+              onTap: () {
+                Navigator.pop(context);
+                _showCreateGroupDialog(context);
+              },
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
-    ],
-  ).then((value) {
-    if (value == 'create') {
-      _showCreateGroupDialog(context);
-    } else if (value != null) {
-      provider.selectGroup(value);
-    }
-  });
-}
+    );
+  }
 
   Widget _buildNoGroupView(BuildContext context) {
     return Center(

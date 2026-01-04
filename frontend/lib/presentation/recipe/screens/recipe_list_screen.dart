@@ -42,7 +42,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
+      backgroundColor: AppColors.background,
       body: Consumer2<RecipeProvider, GroupProvider>(
         builder: (context, recipeProv, groupProv, child) {
           return CustomScrollView(
@@ -60,7 +60,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.restaurant_menu_rounded, size: 80, color: Colors.orange.shade100),
+                        Icon(Icons.restaurant_menu_rounded, size: 80, color: AppColors.primary.withOpacity(0.2)),
                         const SizedBox(height: 24),
                         const Text(
                           'Chưa có công thức nào',
@@ -124,27 +124,10 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFFFF9800), Color(0xFFF57C00)],
+                      colors: [AppColors.primary, AppColors.primaryDark],
                     ),
                   ),
                 ),
-                // Positioned.fill(
-                //   top: -40 * (1 - percentage),
-                //   child: Image.network(
-                //     'https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=1200&auto=format&fit=crop',
-                //     fit: BoxFit.cover,
-                //     frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                //       if (wasSynchronouslyLoaded) return child;
-                //       return AnimatedOpacity(
-                //         opacity: frame == null ? 0 : 1,
-                //         duration: const Duration(milliseconds: 800),
-                //         curve: Curves.easeOut,
-                //         child: child,
-                //       );
-                //     },
-                //     errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-                //   ),
-                // ),
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -198,7 +181,9 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                               children: [
                                 _buildHeaderStat('${totalRecipes}', 'Tổng số', AppColors.primary),
                                 Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
-                                _buildHeaderStat('Yêu thích', 'Khám phá', Colors.pinkAccent),
+                                _buildHeaderStat('Yêu thích', 'Khám phá', Colors.blue.shade700),
+                                Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
+                                _buildGroupChip(groupProv),
                               ],
                             ),
                           ),
@@ -206,11 +191,6 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                       ),
                     ],
                   ),
-                ),
-                Positioned(
-                  right: 24,
-                  bottom: 128,
-                  child: _buildGroupChip(groupProv),
                 ),
               ],
             );
@@ -266,37 +246,36 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
 
   Widget _buildFAB() {
     return Container(
+      width: 56,
+      height: 56,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF8C00), Color(0xFFFF4500)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppColors.primaryGradient,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.4),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: FloatingActionButton.extended(
-        onPressed: () {
-          final groupId = Provider.of<GroupProvider>(context, listen: false).managementGroup?['id'];
-          if (groupId == null) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng chọn hoặc tham gia một nhóm trước.')));
-            return;
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreateRecipeScreen()),
-          ).then((_) => _fetchData());
-        },
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Tạo công thức', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            final groupId = Provider.of<GroupProvider>(context, listen: false).managementGroup?['id'];
+            if (groupId == null) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng chọn hoặc tham gia một nhóm trước.')));
+              return;
+            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CreateRecipeScreen()),
+            ).then((_) => _fetchData());
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        ),
       ),
     );
   }
@@ -392,7 +371,7 @@ class _RecipeCard extends StatelessWidget {
           ),
         ],
         border: Border.all(
-          color: Colors.orange.withOpacity(0.1),
+          color: AppColors.primary.withOpacity(0.1),
           width: 1.5,
         ),
       ),
@@ -418,7 +397,7 @@ class _RecipeCard extends StatelessWidget {
                     width: 76,
                     height: 76,
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.05),
+                      color: AppColors.primary.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(22),
                       boxShadow: [
                         BoxShadow(
@@ -445,13 +424,13 @@ class _RecipeCard extends StatelessWidget {
                               },
                               errorBuilder: (context, error, stackTrace) => const Icon(
                                 Icons.restaurant_rounded,
-                                color: Colors.orange,
+                                color: AppColors.primary,
                                 size: 32,
                               ),
                             )
                           : const Icon(
                               Icons.restaurant_rounded,
-                              color: Colors.orange,
+                              color: AppColors.primary,
                               size: 32,
                             ),
                     ),
@@ -555,7 +534,6 @@ class _RecipeCard extends StatelessWidget {
 
     if (confirm == true) {
       final provider = Provider.of<RecipeProvider>(context, listen: false);
-      final groupProv = Provider.of<GroupProvider>(context, listen: false);
       final success = await provider.deleteRecipe(recipe.id);
       if (success) {
         if (context.mounted) {

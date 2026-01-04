@@ -126,7 +126,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
+      backgroundColor: AppColors.background,
       body: Consumer<FoodProvider>(
         builder: (context, provider, child) {
           return CustomScrollView(
@@ -147,7 +147,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
 
               if (provider.isLoading && provider.foods.isEmpty)
                 const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator(color: Colors.orange)),
+                  child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
                 )
               else if (provider.foods.isEmpty)
                 SliverToBoxAdapter(child: _buildEmptyState())
@@ -171,7 +171,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Center(child: CircularProgressIndicator(color: Colors.orange, strokeWidth: 2)),
+                    child: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
                   ),
                 ),
               
@@ -185,31 +185,26 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
   }
 
   Widget _buildFAB() {
-    return FadeInSlide(
-      delay: 0.5,
-      direction: FadeInDirection.btt,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Colors.orange, Colors.deepOrangeAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showAddEditDialog(context),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.orange.withOpacity(0.4),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: FloatingActionButton.extended(
-          onPressed: () => _showAddEditDialog(context),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          icon: const Icon(Icons.add_rounded, color: Colors.white),
-          label: const Text('Thêm thực phẩm', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
         ),
       ),
     );
@@ -237,7 +232,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
           decoration: InputDecoration(
             hintText: 'Tìm kiếm thực phẩm...',
             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-            prefixIcon: const Icon(Icons.search_rounded, color: Colors.orange),
+            prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(vertical: 15),
           ),
@@ -282,7 +277,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
                       }
                     }
                   },
-                  selectedColor: Colors.orange,
+                  selectedColor: AppColors.primary,
                   labelStyle: TextStyle(
                     color: isSelected ? Colors.white : Colors.grey.shade700,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -327,25 +322,8 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Colors.orange, Colors.deepOrange],
+                          colors: [AppColors.primary, AppColors.primaryDark],
                         ),
-                      ),
-                    ),
-                    Positioned.fill(
-                      top: -40 * (1 - percentage),
-                      child: Image.network(
-                        'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop',
-                        fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded) return child;
-                          return AnimatedOpacity(
-                            opacity: frame == null ? 0 : 1,
-                            duration: const Duration(milliseconds: 800),
-                            curve: Curves.easeOut,
-                            child: child,
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                       ),
                     ),
                     Container(
@@ -399,9 +377,9 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    _buildHeaderStat('$totalFoods', 'Loại', Colors.orange.shade700),
+                                    _buildHeaderStat('$totalFoods', 'Loại', AppColors.primary),
                                     Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
-                                    _buildHeaderStat(effectiveGroupName, 'Nhóm', Colors.blue.shade700),
+                                    _buildGroupChip(groupProvider),
                                   ],
                                 ),
                               ),
@@ -409,11 +387,6 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
                           ),
                         ],
                       ),
-                    ),
-                    Positioned(
-                      right: 24,
-                      bottom: 128,
-                      child: _buildGroupChip(groupProvider),
                     ),
                   ],
                 );
@@ -439,7 +412,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
   Widget _buildGroupChip(GroupProvider provider) {
     final groupName = provider.managementGroup?['name'] ?? 'Chọn nhóm';
     return GestureDetector(
-      onTapDown: (details) => _showGroupPicker(context, details.globalPosition, provider),
+      onTap: () => _showGroupPicker(context, provider),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
@@ -469,30 +442,66 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
     );
   }
 
-  void _showGroupPicker(BuildContext context, Offset offset, GroupProvider provider) {
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    showMenu<Object>(
+  void _showGroupPicker(BuildContext context, GroupProvider provider) {
+    showModalBottomSheet(
       context: context,
-      position: RelativeRect.fromLTRB(offset.dx, offset.dy + 20, overlay.size.width - offset.dx, overlay.size.height - offset.dy),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 10,
-      items: <PopupMenuEntry<Object>>[
-        ...provider.groups.map<PopupMenuEntry<Object>>((g) {
-          return PopupMenuItem<Object>(
-            value: g['id'],
-            child: Row(
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.circle, size: 12, color: g['id'] == provider.currentGroup?['id'] ? AppColors.primary : Colors.transparent),
-                const SizedBox(width: 10),
-                Text(g['name'].toString()),
+                const Text('Chọn nhóm thực phẩm', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close_rounded),
+                ),
               ],
             ),
-          );
-        }).toList(),
-      ],
-    ).then((value) {
-      if (value != null) provider.selectManagementGroup(value);
-    });
+            const SizedBox(height: 16),
+            ...provider.groups.map((group) {
+              final isSelected = group['id'].toString() == provider.managementGroup?['id']?.toString();
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.groups_rounded,
+                    color: isSelected ? Colors.white : Colors.grey,
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  group['name'].toString(),
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                  ),
+                ),
+                trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
+                onTap: () {
+                  Navigator.pop(context);
+                  provider.selectManagementGroup(group['id']);
+                },
+              );
+            }).toList(),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildSectionHeader(String title, String subtitle) {
@@ -550,7 +559,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
     String categoryName = food['Category']?['name'] ?? food['category']?['name'] ?? 'Chưa rõ';
     String unitName = food['Unit']?['name'] ?? food['unit']?['name'] ?? 'Đơn vị';
     String? imageUrl = food['image_url'] ?? food['imageUrl'];
-    final accentColor = Colors.orange;
+    final accentColor = AppColors.primary;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -651,7 +660,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                Flexible(child: _buildMiniBadge(categoryName, Colors.blue)),
+                                Flexible(child: _buildMiniBadge(categoryName, AppColors.info)),
                                 const SizedBox(width: 8),
                                 Flexible(
                                   child: Text(
@@ -679,11 +688,11 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
                             builder: (context) => AddFridgeItemDialog(initialFood: Map<String, dynamic>.from(food)),
                           );
                         },
-                        icon: const Icon(Icons.add_box_rounded, color: Colors.orange, size: 24),
+                        icon: const Icon(Icons.add_box_rounded, color: AppColors.primary, size: 24),
                         tooltip: 'Thêm vào tủ lạnh',
                       ),
                       IconButton(
-                        icon: Icon(Icons.delete_outline_rounded, color: Colors.red.shade300, size: 22),
+                        icon: Icon(Icons.delete_outline_rounded, color: AppColors.error.withOpacity(0.6), size: 22),
                         onPressed: () => _showDeleteConfirmation(food, provider),
                       ),
                     ],
@@ -706,10 +715,10 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
           Container(
             padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
-              color: Colors.orange.shade50,
+              color: AppColors.primary.withOpacity(0.08),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.restaurant_rounded, size: 80, color: Colors.orange.shade200),
+            child: Icon(Icons.restaurant_rounded, size: 80, color: AppColors.primary.withOpacity(0.3)),
           ),
           const SizedBox(height: 24),
           const Text('Danh sách trống', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
@@ -777,7 +786,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
                           filled: true,
                           fillColor: Colors.grey.shade50,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
-                          prefixIcon: const Icon(Icons.edit_rounded, color: Colors.orange),
+                          prefixIcon: const Icon(Icons.edit_rounded, color: AppColors.primary),
                         ),
                       ),
                       const SizedBox(height: 24),

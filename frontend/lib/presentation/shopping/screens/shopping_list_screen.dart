@@ -60,7 +60,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
+      backgroundColor: AppColors.background,
       body: Consumer2<ShoppingProvider, GroupProvider>(
         builder: (context, provider, groupProv, child) {
           return CustomScrollView(
@@ -130,25 +130,24 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFF8C00), Color(0xFFFF4500)],
+          colors: [AppColors.primary, AppColors.primaryDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF4500).withOpacity(0.4),
+            color: AppColors.primary.withOpacity(0.4),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: FloatingActionButton.extended(
+      child: FloatingActionButton(
         onPressed: () => _showCreateSheet(context),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.white),
-        label: const Text('Lập danh sách', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+        child: const Icon(Icons.add_shopping_cart_rounded, color: Colors.white, size: 28),
       ),
     );
   }
@@ -177,7 +176,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFFFF8C00), Color(0xFFFF4500)],
+                  colors: [AppColors.primary, AppColors.primaryDark],
                 ),
               ),
             ),
@@ -187,7 +186,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.4),
+                    Colors.black.withOpacity(0.2),
                     Colors.transparent,
                     Colors.white.withOpacity(0.95),
                     Colors.white,
@@ -235,6 +234,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                             _buildHeaderStat('${totalLists}', 'Danh sách', const Color(0xFFFF4500)),
                             Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
                             _buildHeaderStat('${totalTasks}', 'Mặt hàng', Colors.blue.shade700),
+                            Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
+                            _buildGroupChip(groupProv),
                           ],
                         ),
                       ),
@@ -242,11 +243,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   ),
                 ],
               ),
-            ),
-            Positioned(
-              right: 24,
-              bottom: 128,
-              child: _buildGroupChip(groupProv),
             ),
           ],
         ),
@@ -383,10 +379,10 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF8C00).withOpacity(0.05),
+                color: AppColors.primary.withOpacity(0.05),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.shopping_basket_outlined, size: 80, color: const Color(0xFFFF8C00).withOpacity(0.3)),
+              child: Icon(Icons.shopping_basket_outlined, size: 80, color: AppColors.primary.withOpacity(0.3)),
             ),
             const SizedBox(height: 24),
             Text('Danh sách trống', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5)),

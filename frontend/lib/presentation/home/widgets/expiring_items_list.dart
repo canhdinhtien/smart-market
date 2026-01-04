@@ -36,10 +36,10 @@ class ExpiringItemsList extends StatelessWidget {
           children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Text(
-                'Cần dùng ngay ⏰',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
-              ),
+              // child: Text(
+              //   'Cần dùng ngay',
+              //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+              // ),
             ),
             _buildList(context, items),
           ],
@@ -98,13 +98,8 @@ class ExpiringItemsList extends StatelessWidget {
                       Text(
                         food?['name'] ?? 'Không tên',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Cần dùng sớm',
-                        style: TextStyle(fontSize: 11, color: Colors.orange.shade800, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),

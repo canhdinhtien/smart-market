@@ -31,7 +31,7 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -84,31 +84,26 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
           ),
         ],
       ),
-      floatingActionButton: FadeInSlide(
-        delay: 0.5,
-        direction: FadeInDirection.btt,
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.secondary, Color(0xFF81C784)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      floatingActionButton: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          gradient: AppColors.primaryGradient,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _showAddEditDialog(context),
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.secondary.withOpacity(0.4),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: FloatingActionButton.extended(
-            onPressed: () => _showAddEditDialog(context),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            icon: const Icon(Icons.add_rounded, color: Colors.white),
-            label: const Text('Thêm đơn vị', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
           ),
         ),
       ),
@@ -145,11 +140,7 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
           children: [
             Container(
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF66BB6A), Color(0xFF43A047)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                gradient: AppColors.primaryGradient,
               ),
             ),
             Positioned(
@@ -265,11 +256,11 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF90A4AE)),
+                  icon: const Icon(Icons.edit_note_rounded, color: AppColors.textSecondary),
                   onPressed: () => _showAddEditDialog(context, unit: item),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_sweep_rounded, color: Color(0xFFEF9A9A)),
+                  icon: const Icon(Icons.delete_sweep_rounded, color: AppColors.error),
                   onPressed: () => _showDeleteConfirmation(item, provider),
                 ),
               ],

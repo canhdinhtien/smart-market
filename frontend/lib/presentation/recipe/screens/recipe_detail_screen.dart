@@ -115,7 +115,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final missingCount = recipe.ingredients?.where((ing) => ing.inFridge == false).length ?? 0;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -210,7 +210,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                           icon: const Icon(Icons.add_shopping_cart_rounded, size: 18),
                           label: Text('Mua $missingCount nguyên liệu còn thiếu'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
+                            backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -254,7 +254,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: Colors.orange, size: 22),
+        Icon(icon, color: AppColors.primary, size: 22),
         const SizedBox(width: 12),
         Text(
           title,
@@ -285,12 +285,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: (hasInFridge ? Colors.green : Colors.orange).withOpacity(0.1),
+              color: (hasInFridge ? Colors.green : AppColors.primary).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               hasInFridge ? Icons.check_circle_rounded : Icons.info_outline_rounded,
-              color: hasInFridge ? Colors.green : Colors.orange,
+              color: hasInFridge ? Colors.green : AppColors.primary,
               size: 20,
             ),
           ),

@@ -14,53 +14,96 @@ class FloatingGlassNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double itemWidth = (MediaQuery.of(context).size.width - 48) / 4;
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-        margin: const EdgeInsets.all(24),
-        height: 70, // Fixed height for consistent look
+        margin: const EdgeInsets.only(left: 24, right: 24, bottom: 32),
+        height: 72,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: AppColors.primary.withOpacity(0.15),
               blurRadius: 30,
               offset: const Offset(0, 10),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(30),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
-              color: Colors.white.withOpacity(0.8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.5),
+                  width: 1.5,
+                ),
+              ),
+              child: Stack(
                 children: [
-                  _NavBarItem(
-                    icon: Icons.home_rounded,
-                    label: 'Trang chủ',
-                    isSelected: currentIndex == 0,
-                    onTap: () => onTap(0),
+                  // Animated Moving Pill
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 350),
+                    curve: Curves.elasticOut,
+                    left: currentIndex * itemWidth,
+                    top: 10,
+                    bottom: 10,
+                    child: Container(
+                      width: itemWidth - 8,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  _NavBarItem(
-                    icon: Icons.kitchen_rounded,
-                    label: 'Tủ lạnh',
-                    isSelected: currentIndex == 1,
-                    onTap: () => onTap(1),
-                  ),
-                  _NavBarItem(
-                    icon: Icons.shopping_basket_rounded,
-                    label: 'Đi chợ',
-                    isSelected: currentIndex == 2,
-                    onTap: () => onTap(2),
-                  ),
-                  _NavBarItem(
-                    icon: Icons.person_rounded,
-                    label: 'Tài khoản',
-                    isSelected: currentIndex == 3,
-                    onTap: () => onTap(3),
+                  
+                  // Navigation Items
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _NavBarItem(
+                        icon: Icons.home_rounded,
+                        label: 'Home',
+                        isSelected: currentIndex == 0,
+                        onTap: () => onTap(0),
+                      ),
+                      _NavBarItem(
+                        icon: Icons.kitchen_rounded,
+                        label: 'Fridge',
+                        isSelected: currentIndex == 1,
+                        onTap: () => onTap(1),
+                      ),
+                      _NavBarItem(
+                        icon: Icons.shopping_bag_rounded,
+                        label: 'Shop',
+                        isSelected: currentIndex == 2,
+                        onTap: () => onTap(2),
+                      ),
+                      _NavBarItem(
+                        icon: Icons.person_rounded,
+                        label: 'Me',
+                        isSelected: currentIndex == 3,
+                        onTap: () => onTap(3),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -87,38 +130,42 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primary.withOpacity(0.1)
-                  : Colors.transparent,
-              shape: BoxShape.circle,
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedScale(
+              duration: const Duration(milliseconds: 200),
+              scale: isSelected ? 1.2 : 1.0,
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.white : AppColors.textSecondary.withOpacity(0.6),
+                size: 26,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
-              size: 24,
+            if (isSelected)
+              const SizedBox(height: 2)
+            else
+              const SizedBox(height: 0),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: isSelected ? 1.0 : 0.0,
+              child: isSelected 
+                ? Container(
+                    width: 4,
+                    height: 4,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  )
+                : const SizedBox.shrink(),
             ),
-          ),
-          // Optional: Label can be hidden for cleaner look or shown
-          // if (isSelected)
-          //   Text(
-          //     label,
-          //     style: const TextStyle(
-          //       fontSize: 10,
-          //       fontWeight: FontWeight.bold,
-          //       color: AppColors.primary,
-          //     ),
-          //   ),
-        ],
+          ],
+        ),
       ),
     );
   }

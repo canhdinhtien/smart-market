@@ -29,10 +29,10 @@ class RecipeSuggestions extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Gợi ý hôm nay 🥗',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
-                  ),
+                  // const Text(
+                  //   'Gợi ý hôm nay',
+                  //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+                  // ),
                 ],
               ),
             ),
@@ -117,7 +117,7 @@ class RecipeSuggestions extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.timer_outlined, size: 14, color: Colors.grey[600]),
+                                Icon(Icons.timer_outlined, size: 14, color: AppColors.primary),
                                 const SizedBox(width: 4),
                                 Text(
                                   '30m', // Dummy for now, or use cooking_time if exists

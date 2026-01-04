@@ -97,8 +97,8 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), shape: BoxShape.circle),
-            child: Icon(icon, color: Colors.orange, size: 32),
+            decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), shape: BoxShape.circle),
+            child: Icon(icon, color: AppColors.primary, size: 32),
           ),
           const SizedBox(height: 8),
           Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -185,7 +185,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
           widget.recipeToEdit != null ? 'Chỉnh sửa' : 'Tạo món mới',
@@ -245,7 +245,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                                  child: const Icon(Icons.edit_rounded, size: 20, color: Colors.orange),
+                                  child: const Icon(Icons.edit_rounded, size: 20, color: AppColors.primary),
                                 ),
                               ),
                             ],
@@ -283,7 +283,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
                   ),
                   IconButton(
                     onPressed: _addIngredient,
-                    icon: const Icon(Icons.add_circle_rounded, color: Colors.orange, size: 28),
+                    icon: const Icon(Icons.add_circle_rounded, color: AppColors.primary, size: 28),
                   ),
                 ],
               ),
@@ -506,11 +506,11 @@ class _AddIngredientSheetState extends State<_AddIngredientSheet> {
                                   borderRadius: BorderRadius.circular(12),
                                   image: img != null ? DecorationImage(image: NetworkImage(img), fit: BoxFit.cover) : null,
                                 ),
-                                child: img == null ? const Icon(Icons.fastfood_rounded, color: Colors.orange, size: 24) : null,
+                                child: img == null ? const Icon(Icons.fastfood_rounded, color: AppColors.primary, size: 24) : null,
                               ),
                               title: Text(food['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
                               subtitle: Text('Đơn vị mặc định: ${food['unit_name'] ?? 'Cái'}'),
-                              trailing: const Icon(Icons.add_circle_outline_rounded, color: Colors.orange),
+                              trailing: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
                               onTap: () {
                                 setState(() {
                                   _selectedFood = food;
@@ -528,7 +528,7 @@ class _AddIngredientSheetState extends State<_AddIngredientSheet> {
                Container(
                  padding: const EdgeInsets.all(16),
                  decoration: BoxDecoration(
-                   color: Colors.orange.withOpacity(0.05),
+                   color: AppColors.primary.withOpacity(0.05),
                    borderRadius: BorderRadius.circular(20),
                  ),
                  child: Row(
@@ -542,7 +542,7 @@ class _AddIngredientSheetState extends State<_AddIngredientSheet> {
                              ? DecorationImage(image: NetworkImage(_selectedFood!['image_url']), fit: BoxFit.cover) : null,
                        ),
                        child: _selectedFood!['image_url'] == null 
-                           ? const Icon(Icons.fastfood_rounded, color: Colors.orange) : null,
+                           ? const Icon(Icons.fastfood_rounded, color: AppColors.primary) : null,
                      ),
                      const SizedBox(width: 16),
                      Expanded(
