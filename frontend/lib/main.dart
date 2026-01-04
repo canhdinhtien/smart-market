@@ -1,122 +1,160 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'data/services/notification_service.dart';
+import 'core/theme/app_theme.dart';
+import 'core/network/api_client.dart';
+import 'presentation/auth/providers/auth_provider.dart';
+import 'presentation/family_group/providers/group_provider.dart';
+import 'presentation/fridge/providers/fridge_provider.dart';
+import 'presentation/shopping/providers/shopping_provider.dart';
+import 'presentation/meal_plan/providers/meal_provider.dart';
+import 'presentation/recipe/providers/recipe_provider.dart';
+import 'presentation/profile/providers/profile_provider.dart';
+import 'presentation/admin/providers/admin_provider.dart';
+import 'presentation/food/providers/food_provider.dart';
+import 'presentation/consumption/providers/consumption_provider.dart';
+import 'presentation/auth/screens/welcome_screen.dart';
+import 'presentation/auth/screens/login_screen.dart';
+import 'presentation/auth/screens/register_screen.dart';
+import 'presentation/home/screens/home_screen.dart';
+import 'presentation/family_group/screens/group_screen.dart';
+import 'presentation/fridge/screens/fridge_screen.dart';
+import 'presentation/shopping/screens/shopping_list_screen.dart';
+import 'presentation/meal_plan/screens/meal_plan_screen.dart';
+import 'presentation/recipe/screens/recipe_list_screen.dart';
+import 'presentation/consumption/screens/consumption_screen.dart';
+import 'presentation/profile/screens/profile_screen.dart';
+import 'presentation/admin/screens/admin_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase safely
+  try {
+    // We use a late initialization or check for options to prevent crash if file is missing
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('Firebase Initialized successfully');
+  } catch (e) {
+    print('Firebase Initialization skipped or failed: $e');
+    print('Note: This is expected if firebase_options.dart is missing.');
+  }
+
+  // Initialize Notification Service
+  final notificationService = NotificationService();
+  try {
+    await notificationService.initialize();
+  } catch (e) {
+    print('Notification Init Error: $e');
+  }
+  final prefs = await SharedPreferences.getInstance();
+  final apiClient = ApiClient(prefs);
+
+  final authProvider = AuthProvider(apiClient, prefs);
+  apiClient.onUnauthorized = authProvider.handleUnauthorized;
+  apiClient.onTokenRefreshed = authProvider.updateToken;
+
+  // Instantiate all providers to enable cross-provider communication for cleanup
+  final groupProvider = GroupProvider(apiClient);
+  final fridgeProvider = FridgeProvider(apiClient);
+  final shoppingProvider = ShoppingProvider(apiClient);
+  final mealProvider = MealProvider(apiClient);
+  final recipeProvider = RecipeProvider(apiClient);
+  final profileProvider = ProfileProvider(apiClient, authProvider: authProvider);
+  final adminProvider = AdminProvider(apiClient);
+  final foodProvider = FoodProvider(apiClient);
+  final consumptionProvider = ConsumptionProvider(apiClient);
+
+  // Set up logical cleanup on logout
+  authProvider.onLogout = () {
+    groupProvider.clearState();
+    fridgeProvider.clearState();
+    shoppingProvider.clearState();
+    mealProvider.clearState();
+    recipeProvider.clearState();
+    profileProvider.clearState();
+    adminProvider.clearState();
+    foodProvider.clearState();
+    consumptionProvider.clearState();
+  };
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: authProvider),
+        ChangeNotifierProvider.value(value: groupProvider),
+        ChangeNotifierProvider.value(value: fridgeProvider),
+        ChangeNotifierProvider.value(value: shoppingProvider),
+        ChangeNotifierProvider.value(value: mealProvider),
+        ChangeNotifierProvider.value(value: recipeProvider),
+        ChangeNotifierProvider.value(value: profileProvider),
+        ChangeNotifierProvider.value(value: adminProvider),
+        ChangeNotifierProvider.value(value: foodProvider),
+        ChangeNotifierProvider.value(value: consumptionProvider),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Đi Chợ Tiện Lợi',
+      theme: AppTheme.theme,
+      home: const AuthWrapper(),
+      routes: {
+        '/welcome': (context) => const WelcomeScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/group': (context) => const GroupScreen(),
+        '/fridge': (context) => const FridgeScreen(),
+        '/shopping': (context) => const ShoppingListScreen(),
+        '/meal-plan': (context) => const MealPlanScreen(),
+        '/recipe': (context) => const RecipeListScreen(),
+        '/consumption': (context) => const ConsumptionScreen(),
+        '/profile': (context) => const ProfileScreen(),
+        '/admin': (context) => const AdminScreen(),
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        // Debug: Print current auth state
+        print('AuthWrapper rebuild - Status: ${auth.status}, isAdmin: ${auth.isAdmin}, isLoading: ${auth.isLoading}');
+        
+        // Show loading if auth is loading (e.g., during login)
+        if (auth.isLoading) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+        
+        switch (auth.status) {
+          case AuthStatus.authenticated:
+            final screen = auth.isAdmin ? const AdminScreen() : const HomeScreen();
+            print('Navigating to: ${auth.isAdmin ? "AdminScreen" : "HomeScreen"}');
+            return screen;
+          case AuthStatus.unauthenticated:
+            return const WelcomeScreen();
+          case AuthStatus.unknown:
+          default:
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+      },
     );
   }
 }
