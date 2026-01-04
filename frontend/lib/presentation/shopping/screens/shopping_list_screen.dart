@@ -630,111 +630,113 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             top: 24, bottom: MediaQuery.of(context).viewInsets.bottom + 32,
             left: 24, right: 24,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(10)))),
-              const SizedBox(height: 32),
-              Text(isEditing ? 'Sửa danh sách' : 'Lập danh sách mua sắm', 
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-              const SizedBox(height: 24),
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Tên danh sách',
-                  hintText: 'VD: Đi siêu thị tuần này',
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
-                  prefixIcon: Icon(Icons.edit_rounded, color: AppColors.primary),
-                ),
-              ),
-              const SizedBox(height: 16),
-              InkWell(
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: selectedDate,
-                    firstDate: DateTime.now().subtract(const Duration(days: 30)),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  );
-                  if (picked != null) setState(() => selectedDate = picked);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_today_rounded, color: Colors.blue),
-                      const SizedBox(width: 16),
-                      Text('Ngày: ${DateFormat('dd/MM/yyyy').format(selectedDate)}', 
-                          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                      const Spacer(),
-                      const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.grey),
-                    ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(10)))),
+                const SizedBox(height: 32),
+                Text(isEditing ? 'Sửa danh sách' : 'Lập danh sách mua sắm', 
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Tên danh sách',
+                    hintText: 'VD: Đi siêu thị tuần này',
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                    prefixIcon: Icon(Icons.edit_rounded, color: AppColors.primary),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: noteController,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  labelText: 'Ghi chú thêm',
-                  hintText: 'Nhớ mua đồ tươi...',
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
-                  prefixIcon: const Icon(Icons.notes_rounded, color: Colors.orange),
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (nameController.text.trim().isEmpty) return;
-                    final groupProv = Provider.of<GroupProvider>(context, listen: false);
-                    final groupId = groupProv.homeGroup?['id'];
-                    if (groupId == null) return;
-
-                    final shoppingProv = Provider.of<ShoppingProvider>(context, listen: false);
-                    try {
-                      if (isEditing) {
-                        await shoppingProv.updateShoppingList(list!['id'].toString(), {
-                          'name': nameController.text.trim(),
-                          'date': selectedDate.toIso8601String().split('T')[0],
-                          'note': noteController.text.trim(),
-                        });
-                      } else {
-                        await shoppingProv.createShoppingList(
-                          name: nameController.text.trim(),
-                          groupId: groupId,
-                          date: selectedDate.toIso8601String().split('T')[0],
-                          note: noteController.text.trim(),
-                        );
-                      }
-                      if (context.mounted) Navigator.pop(context);
-                      _fetchLists();
-                    } catch (e) {
-                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
-                    }
+                const SizedBox(height: 16),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (picked != null) setState(() => selectedDate = picked);
                   },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF4500),
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      elevation: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(isEditing ? 'Lưu thay đổi' : 'Tạo danh sách', 
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_today_rounded, color: Colors.blue),
+                        const SizedBox(width: 16),
+                        Text('Ngày: ${DateFormat('dd/MM/yyyy').format(selectedDate)}', 
+                            style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                        const Spacer(),
+                        const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.grey),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                TextField(
+                  controller: noteController,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    labelText: 'Ghi chú thêm',
+                    hintText: 'Nhớ mua đồ tươi...',
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                    prefixIcon: const Icon(Icons.notes_rounded, color: Colors.orange),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (nameController.text.trim().isEmpty) return;
+                      final groupProv = Provider.of<GroupProvider>(context, listen: false);
+                      final groupId = groupProv.homeGroup?['id'];
+                      if (groupId == null) return;
+  
+                      final shoppingProv = Provider.of<ShoppingProvider>(context, listen: false);
+                      try {
+                        if (isEditing) {
+                          await shoppingProv.updateShoppingList(list!['id'].toString(), {
+                            'name': nameController.text.trim(),
+                            'date': selectedDate.toIso8601String().split('T')[0],
+                            'note': noteController.text.trim(),
+                          });
+                        } else {
+                          await shoppingProv.createShoppingList(
+                            name: nameController.text.trim(),
+                            groupId: groupId,
+                            date: selectedDate.toIso8601String().split('T')[0],
+                            note: noteController.text.trim(),
+                          );
+                        }
+                        if (context.mounted) Navigator.pop(context);
+                        _fetchLists();
+                      } catch (e) {
+                        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+                      }
+                    },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF4500),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        elevation: 0,
+                      ),
+                      child: Text(isEditing ? 'Lưu thay đổi' : 'Tạo danh sách', 
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

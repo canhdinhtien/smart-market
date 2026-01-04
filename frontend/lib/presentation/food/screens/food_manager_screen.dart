@@ -375,13 +375,14 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
                                   border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.2),
                                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
                                 ),
-                                child: Row(
-                                  children: [
-                                    _buildHeaderStat('$totalFoods', 'Loại', AppColors.primary),
-                                    Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
-                                    _buildGroupChip(groupProvider),
-                                  ],
-                                ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(child: _buildHeaderStat('$totalFoods', 'Loại', AppColors.primary)),
+                                      Container(width: 1, height: 16, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 12)),
+                                      Flexible(child: _buildGroupChip(groupProvider)),
+                                    ],
+                                  ),
                               ),
                             ),
                           ),
@@ -403,8 +404,8 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(count, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16, height: 1)),
-        Text(label.toUpperCase(), style: TextStyle(color: AppColors.textPrimary.withOpacity(0.6), fontWeight: FontWeight.w800, fontSize: 8, letterSpacing: 0.5)),
+        Text(count, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16, height: 1), overflow: TextOverflow.ellipsis, maxLines: 1),
+        Text(label.toUpperCase(), style: TextStyle(color: AppColors.textPrimary.withOpacity(0.6), fontWeight: FontWeight.w800, fontSize: 8, letterSpacing: 0.5), overflow: TextOverflow.ellipsis, maxLines: 1),
       ],
     );
   }
@@ -425,13 +426,17 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
           children: [
             const Icon(Icons.groups_rounded, color: Colors.white, size: 18),
             const SizedBox(width: 8),
-            Text(
-              groupName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                shadows: [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1))],
+            Flexible(
+              child: Text(
+                groupName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  shadows: [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1))],
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
             const SizedBox(width: 4),
@@ -994,6 +999,7 @@ class _FoodManagerScreenState extends State<FoodManagerScreen> {
           value: value,
           items: items,
           onChanged: onChanged,
+          isExpanded: true,
           decoration: InputDecoration(
             border: InputBorder.none,
             labelText: label,
