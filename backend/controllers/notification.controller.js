@@ -14,13 +14,16 @@ exports.registerDevice = async (req, res) => {
   }
 };
 
-
-
 exports.sendToUser = async (req, res) => {
-  const { user_id, title, body, data } = req.body;
+  const { title, body, data } = req.body;
+  const userId = req.body.userId || req.body.user_id;
+
+  if (!userId) {
+    return res.status(400).json({ message: "userId is required" });
+  }
 
   try {
-    await NotificationService.sendToUser(user_id, title, body, data);
+    await NotificationService.sendToUser(userId, title, body, data);
     res.json({ message: "Notification sent" });
   } catch (error) {
     console.error(error);

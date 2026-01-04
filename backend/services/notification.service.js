@@ -11,6 +11,11 @@ const { Op } = require("sequelize");
  */
 const sendToUser = async (userId, title, body, data = {}) => {
     try {
+        if (!userId) {
+            console.error("sendToUser called with missing userId");
+            return;
+        }
+
         const devices = await UserDevice.findAll({
             where: {
                 user_id: userId,
@@ -34,7 +39,8 @@ const sendToUser = async (userId, title, body, data = {}) => {
                 if (!resp.success) {
                     const errCode = resp.error.code;
                     if (errCode === "messaging/registration-token-not-registered" ||
-                        errCode === "messaging/invalid-registration-token") {
+                        errCode === "messaging/invalid-registration-token" ||
+                        errCode === "messaging/mismatched-credential") {
                         failedTokens.push(tokens[idx]);
                     } else {
                         console.error(`Failed to send to user ${userId} device:`, resp.error);
@@ -122,7 +128,8 @@ const sendToGroup = async (groupId, title, body, data = {}, excludeUserId = null
                     if (!resp.success) {
                         const errCode = resp.error.code;
                         if (errCode === "messaging/registration-token-not-registered" ||
-                            errCode === "messaging/invalid-registration-token") {
+                            errCode === "messaging/invalid-registration-token" ||
+                            errCode === "messaging/mismatched-credential") { // Handle mismatched sender ID
                             failedTokens.push(batchTokens[idx]);
                         }
                     }
