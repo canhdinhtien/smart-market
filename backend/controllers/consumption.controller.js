@@ -1,5 +1,5 @@
 const consumptionService = require('../services/consumption.service');
-const Group = require('../models/Group');
+const groupService = require('../services/group.service');
 
 exports.getMyStats = async (req, res) => {
     try {
@@ -16,11 +16,11 @@ exports.getGroupStats = async (req, res) => {
     try {
         const userId = req.user.id;
         const groupId = parseInt(req.params.groupId);
-        
-        const group = await Group.findByPk(groupId, { include: ['members'] });
+
+        const group = await groupService.getGroupById(groupId);
         if (!group) return res.status(404).json({ message: 'Group not found' });
 
-        const isMember = group.members.some(m => m.id === userId);
+        const isMember = await groupService.isMember(groupId, userId);
         if (!isMember && !req.user.is_admin) {
             return res.status(403).json({ message: 'Access denied' });
         }

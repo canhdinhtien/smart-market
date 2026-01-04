@@ -1,4 +1,3 @@
-const { UserDevice } = require("../models");
 const NotificationService = require("../services/notification.service");
 
 
@@ -6,23 +5,13 @@ exports.registerDevice = async (req, res) => {
   const { fcm_token, platform, device_id } = req.body;
   const user_id = req.user.id;
 
-  const [device] = await UserDevice.findOrCreate({
-    where: { fcm_token },
-    defaults: {
-      user_id,
-      platform,
-      device_id,
-    },
-  });
-
-  // nếu token đã tồn tại nhưng user khác → update
-  if (device.user_id !== user_id) {
-    device.user_id = user_id;
-    device.is_active = true;
-    await device.save();
+  try {
+    await NotificationService.registerDevice(user_id, fcm_token, platform, device_id);
+    res.json({ message: "Device registered" });
+  } catch (error) {
+    console.error('Error registering device:', error);
+    res.status(500).json({ message: "Error registering device" });
   }
-
-  res.json({ message: "Device registered" });
 };
 
 

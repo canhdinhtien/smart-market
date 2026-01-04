@@ -7,11 +7,17 @@
  * @throws {Error} If entity not found or is deleted
  */
 const validateNotDeleted = async (model, id, entityName) => {
+    if (!id) {
+        const error = new Error(`${entityName} ID is required`);
+        error.statusCode = 400;
+        throw error;
+    }
+
     // Query with paranoid: false to check if entity exists at all
     const entity = await model.findByPk(id, { paranoid: false });
 
     if (!entity) {
-        const error = new Error(`${entityName} not found`);
+        const error = new Error(`${entityName} with ID ${id} not found`);
         error.statusCode = 404;
         throw error;
     }

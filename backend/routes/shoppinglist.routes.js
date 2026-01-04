@@ -302,10 +302,10 @@ router.get('/:id/tasks', controller.getListOfTasks);
  *                 type: number
  *               is_purchased:
  *                 type: boolean
-              note:
-                type: string
-              assign_to_user_id:
-                type: integer
+ *               note:
+ *                 type: string
+ *               assign_to_user_id:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Task updated successfully

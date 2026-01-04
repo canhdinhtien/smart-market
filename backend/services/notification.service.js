@@ -142,7 +142,36 @@ const sendToGroup = async (groupId, title, body, data = {}, excludeUserId = null
     }
 };
 
+
+/**
+ * Register or update a user device for push notifications
+ * @param {number} userId 
+ * @param {string} token 
+ * @param {string} platform 
+ * @param {string} deviceId 
+ */
+const registerDevice = async (userId, token, platform, deviceId) => {
+    const [device] = await UserDevice.findOrCreate({
+        where: { fcm_token: token },
+        defaults: {
+            user_id: userId,
+            platform,
+            device_id: deviceId,
+        },
+    });
+
+    // If token exists but for a different user, update it
+    if (device.user_id !== userId) {
+        device.user_id = userId;
+        device.is_active = true;
+        await device.save();
+    }
+
+    return device;
+};
+
 module.exports = {
     sendToUser,
     sendToGroup,
+    registerDevice,
 };

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const consumptionController = require('../controllers/consumption.controller');
-const { verifyUser } = require('../middleware/auth.middleware');
+const { verifyUser, verifyAdmin } = require('../middleware/auth.middleware');
 
 router.use(verifyUser);
 
@@ -14,7 +14,7 @@ router.use(verifyUser);
 
 /**
  * @openapi
- * /consumption/my-stats:
+ * /consumptions/my-stats:
  *   get:
  *     summary: Get self consumption stats
  *     tags: [Consumption]
@@ -23,6 +23,25 @@ router.use(verifyUser);
  *     responses:
  *       200:
  *         description: List of consumed items grouped by name and unit
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     description: Name of the food item
+ *                   unit:
+ *                     type: string
+ *                     description: Unit of measurement (e.g., kg, liters)
+ *                   image_url:
+ *                     type: string
+ *                     description: URL to the food image
+ *                   total_quantity:
+ *                     type: number
+ *                     description: Total aggregated quantity consumed
  *       401:
  *         description: Unauthorized
  */
@@ -30,7 +49,7 @@ router.get('/my-stats', consumptionController.getMyStats);
 
 /**
  * @openapi
- * /consumption/group/{groupId}/stats:
+ * /consumptions/group/{groupId}/stats:
  *   get:
  *     summary: Get group consumption stats
  *     tags: [Consumption]
@@ -46,6 +65,25 @@ router.get('/my-stats', consumptionController.getMyStats);
  *     responses:
  *       200:
  *         description: List of consumed items for the group
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     description: Name of the food item
+ *                   unit:
+ *                     type: string
+ *                     description: Unit of measurement (e.g., kg, liters)
+ *                   image_url:
+ *                     type: string
+ *                     description: URL to the food image
+ *                   total_quantity:
+ *                     type: number
+ *                     description: Total aggregated quantity consumed
  *       403:
  *         description: Access denied (Not a member)
  *       404:
@@ -55,7 +93,7 @@ router.get('/group/:groupId/stats', consumptionController.getGroupStats);
 
 /**
  * @openapi
- * /consumption/stats:
+ * /consumptions/stats:
  *   get:
  *     summary: Get all consumption stats (Admin only)
  *     tags: [Consumption]
@@ -63,10 +101,29 @@ router.get('/group/:groupId/stats', consumptionController.getGroupStats);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Global consumption stats
+ *         description: List of consumed items grouped by name and unit
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     description: Name of the food item
+ *                   unit:
+ *                     type: string
+ *                     description: Unit of measurement (e.g., kg, liters)
+ *                   image_url:
+ *                     type: string
+ *                     description: URL to the food image
+ *                   total_quantity:
+ *                     type: number
+ *                     description: Total aggregated quantity consumed
  *       403:
  *         description: Access denied (Admin only)
  */
-router.get('/stats', consumptionController.getAllStats);
+router.get('/stats', verifyAdmin, consumptionController.getAllStats);
 
 module.exports = router;
