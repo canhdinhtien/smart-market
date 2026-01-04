@@ -30,58 +30,57 @@ class _CategoryManagerScreenState extends State<CategoryManagerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AdminProvider>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           _buildSliverAppBar(),
-          SliverToBoxAdapter(
-            child: Consumer<AdminProvider>(
-              builder: (context, provider, child) {
-                if (provider.error != null && provider.categories.isEmpty) {
-                  return _buildErrorState(provider.error!);
-                }
-                
-                if (provider.isLoading && provider.categories.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(100.0),
-                    child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
-                  );
-                }
-
-                if (provider.categories.isEmpty && !_isSearching) {
-                  return _buildEmptyState();
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                  child: Column(
-                    children: [
-                      if (_isSearching)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          child: CustomTextField(
-                            label: 'Tìm danh mục',
-                            controller: _searchController,
-                            hint: 'Nhập tên danh mục...',
-                            prefixIcon: Icons.search,
-                            onChanged: (val) => provider.fetchCategories(name: val),
-                          ),
+          if (provider.isLoading && provider.categories.isEmpty)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+            )
+          else if (provider.error != null && provider.categories.isEmpty)
+            SliverFillRemaining(child: _buildErrorState(provider.error!))
+          else if (provider.categories.isEmpty && !_isSearching)
+            SliverFillRemaining(hasScrollBody: false, child: _buildEmptyState())
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (_isSearching && index == 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: CustomTextField(
+                          label: 'Tìm danh mục',
+                          controller: _searchController,
+                          hint: 'Nhập tên danh mục...',
+                          prefixIcon: Icons.search,
+                          onChanged: (val) => provider.fetchCategories(name: val),
                         ),
-                      ...provider.categories.asMap().entries.map((entry) {
-                        return FadeInSlide(
-                          delay: 0.1 + (entry.key * 0.05),
-                          child: _buildCategoryCard(entry.value, provider),
-                        );
-                      }),
-                      const SizedBox(height: 100),
-                    ],
-                  ),
-                );
-              },
+                      );
+                    }
+                    
+                    final categoryIndex = _isSearching ? index - 1 : index;
+                    
+                    if (categoryIndex >= provider.categories.length) {
+                      return const SizedBox(height: 100);
+                    }
+
+                    final category = provider.categories[categoryIndex];
+                    return FadeInSlide(
+                      delay: 0.1 + (categoryIndex * 0.05),
+                      child: _buildCategoryCard(category, provider),
+                    );
+                  },
+                  childCount: provider.categories.isEmpty && _isSearching ? 1 : provider.categories.length + (_isSearching ? 1 : 0) + 1,
+                ),
+              ),
             ),
-          ),
         ],
       ),
       floatingActionButton: Container(

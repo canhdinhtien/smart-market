@@ -30,58 +30,57 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AdminProvider>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           _buildSliverAppBar(),
-          SliverToBoxAdapter(
-            child: Consumer<AdminProvider>(
-              builder: (context, provider, child) {
-                if (provider.error != null && provider.units.isEmpty) {
-                  return _buildErrorState(provider.error!);
-                }
-                
-                if (provider.isLoading && provider.units.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(100.0),
-                    child: Center(child: CircularProgressIndicator(color: AppColors.secondary)),
-                  );
-                }
-
-                if (provider.units.isEmpty && !_isSearching) {
-                  return _buildEmptyState();
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                  child: Column(
-                    children: [
-                      if (_isSearching)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          child: CustomTextField(
-                            label: 'Tìm đơn vị',
-                            controller: _searchController,
-                            hint: 'Nhập tên đơn vị...',
-                            prefixIcon: Icons.search,
-                            onChanged: (val) => provider.fetchUnits(name: val),
-                          ),
+          if (provider.isLoading && provider.units.isEmpty)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator(color: AppColors.secondary)),
+            )
+          else if (provider.error != null && provider.units.isEmpty)
+            SliverFillRemaining(child: _buildErrorState(provider.error!))
+          else if (provider.units.isEmpty && !_isSearching)
+            SliverFillRemaining(hasScrollBody: false, child: _buildEmptyState())
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (_isSearching && index == 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: CustomTextField(
+                          label: 'Tìm đơn vị',
+                          controller: _searchController,
+                          hint: 'Nhập tên đơn vị...',
+                          prefixIcon: Icons.search,
+                          onChanged: (val) => provider.fetchUnits(name: val),
                         ),
-                      ...provider.units.asMap().entries.map((entry) {
-                        return FadeInSlide(
-                          delay: 0.1 + (entry.key * 0.05),
-                          child: _buildUnitCard(entry.value, provider),
-                        );
-                      }),
-                      const SizedBox(height: 100),
-                    ],
-                  ),
-                );
-              },
+                      );
+                    }
+                    
+                    final unitIndex = _isSearching ? index - 1 : index;
+                    
+                    if (unitIndex >= provider.units.length) {
+                      return const SizedBox(height: 100);
+                    }
+
+                    final unit = provider.units[unitIndex];
+                    return FadeInSlide(
+                      delay: 0.1 + (unitIndex * 0.05),
+                      child: _buildUnitCard(unit, provider),
+                    );
+                  },
+                  childCount: provider.units.isEmpty && _isSearching ? 1 : provider.units.length + (_isSearching ? 1 : 0) + 1,
+                ),
+              ),
             ),
-          ),
         ],
       ),
       floatingActionButton: Container(

@@ -77,7 +77,7 @@ class _AdminScreenState extends State<AdminScreen> {
                   crossAxisCount: 2,
                   mainAxisSpacing: 20,
                   crossAxisSpacing: 20,
-                  childAspectRatio: 0.9,
+                  childAspectRatio: 0.82,
                 ),
                 delegate: SliverChildListDelegate([
                   _buildAdminCard(
@@ -196,16 +196,20 @@ class _AdminScreenState extends State<AdminScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
           ),
           const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildStatItem('Người dùng', (admin.usersCount > 0 ? admin.usersCount - 1 : 0).toString(), Icons.person_rounded, Colors.blue),
-                _buildStatItem('Danh mục', admin.categoriesCount.toString(), Icons.grid_view_rounded, Colors.green),
-                _buildStatItem('Đơn vị', admin.unitsCount.toString(), Icons.scale_rounded, Colors.purple),
-                _buildStatItem('Hoạt động', admin.logsCount.toString(), Icons.history_rounded, Colors.orange),
-              ],
-            ),
+          // 4 stats in a 2x2 grid to avoid overflow and horizontal scrolling
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 2.15,
+            children: [
+              _buildStatItem('Người dùng', (admin.usersCount > 0 ? admin.usersCount - 1 : 0).toString(), Icons.person_rounded, Colors.blue),
+              _buildStatItem('Danh mục', admin.categoriesCount.toString(), Icons.grid_view_rounded, Colors.green),
+              _buildStatItem('Đơn vị', admin.unitsCount.toString(), Icons.scale_rounded, Colors.purple),
+              _buildStatItem('Hoạt động', admin.logsCount.toString(), Icons.history_rounded, Colors.orange),
+            ],
           ),
         ],
       ),
@@ -214,30 +218,40 @@ class _AdminScreenState extends State<AdminScreen> {
 
   Widget _buildStatItem(String label, String value, IconData icon, Color color) {
     return Container(
-      margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.1), width: 1.5),
+        border: Border.all(color: color.withOpacity(0.08), width: 1.5),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: color.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4)),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-              Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
-            ],
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  value, 
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  label, 
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade600, fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -273,34 +287,37 @@ class _AdminScreenState extends State<AdminScreen> {
             child: InkWell(
               onTap: onTap,
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [color.withOpacity(0.2), color.withOpacity(0.05)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(icon, color: color, size: 30),
+                      child: Icon(icon, color: color, size: 28),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 12),
                     Text(
                       title, 
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
                       textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       subtitle, 
                       style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.center,
                       maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

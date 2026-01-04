@@ -135,33 +135,18 @@ class _LogManagerScreenState extends State<LogManagerScreen> {
               child: _buildEmptyState(),
             )
           else
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Card(
-                  elevation: 0,
-                  clipBehavior: Clip.antiAlias,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      headingRowColor: MaterialStateProperty.all(Colors.grey.shade50),
-                      columnSpacing: 24,
-                      horizontalMargin: 20,
-                      columns: const [
-                        DataColumn(label: Text('Thời gian', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Hành động', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Người thực hiện', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Chi tiết', style: TextStyle(fontWeight: FontWeight.bold))),
-                      ],
-                      rows: filteredLogs.map((log) {
-                        return _buildDataRow(log);
-                      }).toList(),
-                    ),
-                  ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final log = filteredLogs[index];
+                    return FadeInSlide(
+                      delay: 0.05 * index,
+                      child: _buildLogCard(log),
+                    );
+                  },
+                  childCount: filteredLogs.length,
                 ),
               ),
             ),
@@ -270,10 +255,18 @@ class _LogManagerScreenState extends State<LogManagerScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Tổng quan hoạt động', 
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-              Text('(Dựa trên dữ liệu đã tải)', 
-                style: TextStyle(fontSize: 10, color: Colors.grey.shade400, fontStyle: FontStyle.italic)),
+              const Expanded(
+                child: Text('Tổng quan hoạt động', 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text('(Dựa trên dữ liệu đã tải)', 
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade400, fontStyle: FontStyle.italic),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -326,8 +319,8 @@ class _LogManagerScreenState extends State<LogManagerScreen> {
     );
   }
 
-  DataRow _buildDataRow(dynamic logData) {
-    if (logData is! Map) return const DataRow(cells: [DataCell(Text('Lỗi dữ liệu')), DataCell(Text('')), DataCell(Text('')), DataCell(Text(''))]);
+  Widget _buildLogCard(dynamic logData) {
+    if (logData is! Map) return const SizedBox.shrink();
     
     final Map<String, dynamic> log = Map<String, dynamic>.from(logData);
     final DateTime timestamp = DateTime.tryParse(log['timestamp']?.toString() ?? '') ?? DateTime.now();
@@ -343,30 +336,56 @@ class _LogManagerScreenState extends State<LogManagerScreen> {
       uName = userData.toString();
     }
 
-    return DataRow(
-      cells: [
-        DataCell(Text(timeStr, style: const TextStyle(fontSize: 12, color: Colors.grey))),
-        DataCell(
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: _getActionColor(action).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
+    final actionColor = _getActionColor(action);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: actionColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    action.toUpperCase(),
+                    style: TextStyle(color: actionColor, fontWeight: FontWeight.bold, fontSize: 10),
+                  ),
+                ),
+                Text(timeStr, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+              ],
             ),
-            child: Text(
-              action.toUpperCase(),
-              style: TextStyle(color: _getActionColor(action), fontWeight: FontWeight.bold, fontSize: 10),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.person_outline_rounded, size: 14, color: AppColors.textSecondary),
+                const SizedBox(width: 6),
+                Text(uName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
+              ],
             ),
-          ),
+            const SizedBox(height: 8),
+            Text(
+              details, 
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade700, height: 1.4),
+            ),
+          ],
         ),
-        DataCell(Text(uName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
-        DataCell(
-          SizedBox(
-            width: 350,
-            child: Text(details, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)),
-          )
-        ),
-      ],
+      ),
     );
   }
 

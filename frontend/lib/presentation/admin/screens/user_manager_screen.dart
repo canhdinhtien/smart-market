@@ -35,43 +35,19 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
     final profileUser = context.watch<ProfileProvider>().user;
     final String? currentUserId = profileUser?['id']?.toString() ?? profileUser?['userId']?.toString();
 
+    final displayUsers = adminProvider.users.where((u) {
+      final uId = u['id']?.toString();
+      final String email = u['email']?.toString().toLowerCase().trim() ?? '';
+      if (email == 'canhva20047@gmail.com') return false;
+      return uId != currentUserId;
+    }).toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          SliverAppBar(
-            expandedHeight: 180.0,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: AppColors.primary,
-            iconTheme: const IconThemeData(color: Colors.white),
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: false,
-              title: const Text('Quản lý người dùng', 
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5)),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppColors.primary, AppColors.primaryDark],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: -30,
-                    top: -30,
-                    child: Icon(Icons.people_alt_rounded, size: 180, color: Colors.white.withOpacity(0.12)),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildSliverAppBar(),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
@@ -81,65 +57,69 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
                 hint: 'Nhập tên hoặc email...',
                 prefixIcon: Icons.search_rounded,
                 onChanged: (val) {
-                  adminProvider.fetchUsers(query: val); // No more filtering
+                  adminProvider.fetchUsers(query: val);
                 },
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                adminProvider.isLoading && adminProvider.users.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.only(top: 100),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () {
-                          return adminProvider.fetchUsers(
-                            query: _searchController.text,
-                          );
-                        },
-                        child: adminProvider.users.isEmpty
-                            ? Padding(
-                                padding: const EdgeInsets.only(top: 100),
-                                child: _buildEmptyState(),
-                              )
-                            : Builder(
-                                builder: (context) {
-                                  final displayUsers = adminProvider.users.where((u) {
-                                    final uId = u['id']?.toString();
-                                    final String email = u['email']?.toString().toLowerCase().trim() ?? '';
-                                    
-                                    // 1. Hide specific account for evaluation purposes
-                                    if (email == 'canhva20047@gmail.com') return false;
-                                    
-                                    // 2. Hide current admin self
-                                    return uId != currentUserId;
-                                  }).toList();
-                                  
-                                  if (displayUsers.isEmpty) return _buildEmptyState();
-
-                                  return ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    padding: const EdgeInsets.all(24),
-                                    itemCount: displayUsers.length,
-                                    itemBuilder: (context, index) {
-                                      final user = displayUsers[index];
-                                      return FadeInSlide(
-                                        delay: 0.1 * index,
-                                        child: _buildUserCard(user),
-                                      );
-                                    },
-                                  );
-                                }
-                              ),
-                      ),
-              ],
+          if (adminProvider.isLoading && adminProvider.users.isEmpty)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (displayUsers.isEmpty)
+            SliverFillRemaining(hasScrollBody: false, child: _buildEmptyState())
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final user = displayUsers[index];
+                    return FadeInSlide(
+                      delay: 0.05 * index,
+                      child: _buildUserCard(user),
+                    );
+                  },
+                  childCount: displayUsers.length,
+                ),
+              ),
             ),
-          ),
         ],
+      ),
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 180.0,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: AppColors.primary,
+      iconTheme: const IconThemeData(color: Colors.white),
+      flexibleSpace: FlexibleSpaceBar(
+        centerTitle: false,
+        title: const Text('Quản lý người dùng',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5)),
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            Positioned(
+              right: -30,
+              top: -30,
+              child: Icon(Icons.people_alt_rounded, size: 180, color: Colors.white.withOpacity(0.12)),
+            ),
+          ],
+        ),
       ),
     );
   }
