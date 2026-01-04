@@ -94,7 +94,7 @@
 | **CronService** | |
 | :--- | :--- |
 | **Responsibilities** | **Collaborators** |
-| - Các tác vụ nền được lên lịch (Kiểm tra hết hạn, Xử lý tiêu thụ).<br>- Kiểm tra hàng ngày các món sắp hết hạn và thông báo.<br>- Tự động xử lý tiêu thụ hàng ngày dựa trên Kế hoạch bữa ăn đã qua (trừ tồn kho tủ lạnh, tạo bản ghi tiêu thụ). | - **FridgeItem** Model: Quản lý tồn kho.<br>- **MealPlan** Model: Lấy kế hoạch đã qua.<br>- **Consumption** Model: Tạo bản ghi tiêu thụ.<br>- **NotificationService**: Gửi cảnh báo.<br>- **Recipe/Ingredient**: Tính toán nguyên liệu cần trừ. |
+| - Các tác vụ nền được lên lịch (Kiểm tra hết hạn, Xử lý tiêu thụ).<br>- Kiểm tra hàng ngày các món sắp hết hạn và thông báo.<br>- Tự động xử lý tiêu thụ hàng ngày dựa trên Kế hoạch bữa ăn đã qua (trừ tồn kho tủ lạnh, tạo bản ghi tiêu thụ). | - **FridgeItem** Model: Quản lý tồn kho.<br>- **Food** Model: Lấy chi tiết thực phẩm.<br>- **MealPlan** Model: Lấy kế hoạch đã qua.<br>- **Consumption** Model: Tạo bản ghi tiêu thụ.<br>- **Recipe**, **RecipeIngredient** Models: Tính toán nguyên liệu.<br>- **Group** Model: Lấy thông tin nhóm.<br>- **User** Model: Lấy thông tin admin/thành viên.<br>- **NotificationService**: Gửi cảnh báo. |
 
 | **FoodService** | |
 | :--- | :--- |
@@ -104,7 +104,7 @@
 | **FridgeService** | |
 | :--- | :--- |
 | **Responsibilities** | **Collaborators** |
-| - Quản lý các món trong tủ lạnh (Thêm, Cập nhật, Xóa).<br>- Kiểm tra quyền truy cập.<br>- Kích hoạt thông báo khi có thay đổi. | - **FridgeItem** Model: Truy cập CSDL.<br>- **Food** Model: Lấy dữ liệu.<br>- **GroupService**: Xác minh thành viên.<br>- **NotificationService**: Gửi cập nhật cho nhóm. |
+| - Quản lý các món trong tủ lạnh (Thêm, Cập nhật, Xóa).<br>- Kiểm tra quyền truy cập.<br>- Kích hoạt thông báo khi có thay đổi. | - **FridgeItem** Model: Truy cập CSDL.<br>- **Food** Model: Lấy dữ liệu.<br>- **Category** Model: Lấy dữ liệu.<br>- **Unit** Model: Lấy dữ liệu.<br>- **Group** Model: Xác thực.<br>- **GroupService**: Xác minh thành viên.<br>- **NotificationService**: Gửi cập nhật cho nhóm. |
 
 | **GroupService** | |
 | :--- | :--- |
@@ -119,7 +119,7 @@
 | **MealPlanService** | |
 | :--- | :--- |
 | **Responsibilities** | **Collaborators** |
-| - Quản lý kế hoạch bữa ăn (Tạo, Cập nhật, Xóa).<br>- Xác thực loại bữa ăn và ngày tháng.<br>- Kiểm tra tồn kho tủ lạnh trước khi tạo kế hoạch (Đủ số lượng nguyên liệu).<br>- Kiểm tra tính nhất quán của đơn vị đo lường.<br>- Thông báo cho nhóm khi kế hoạch thay đổi. | - **MealPlan** Model: Truy cập CSDL.<br>- **FridgeItem** Model: Kiểm tra tồn kho.<br>- **Recipe** Model: Lấy nguyên liệu.<br>- **NotificationService**: Gửi cập nhật. |
+| - Quản lý kế hoạch bữa ăn (Tạo, Cập nhật, Xóa).<br>- Xác thực loại bữa ăn và ngày tháng.<br>- Kiểm tra tồn kho tủ lạnh trước khi tạo kế hoạch (Đủ số lượng nguyên liệu).<br>- Kiểm tra tính nhất quán của đơn vị đo lường.<br>- Thông báo cho nhóm khi kế hoạch thay đổi. | - **MealPlan** Model: Truy cập CSDL.<br>- **Group** Model: Xác thực.<br>- **Food** Model: Xác thực.<br>- **FridgeItem** Model: Kiểm tra tồn kho.<br>- **Recipe** Model: Lấy nguyên liệu.<br>- **NotificationService**: Gửi cập nhật. |
 
 | **NotificationService** | |
 | :--- | :--- |
@@ -129,12 +129,12 @@
 | **RecipeService** | |
 | :--- | :--- |
 | **Responsibilities** | **Collaborators** |
-| - Quản lý công thức và nguyên liệu (Có giao dịch).<br>- Xử lý hình ảnh công thức (Tải lên, Cập nhật, Xóa).<br>- Thuật toán gợi ý công thức dựa trên đồ trong tủ lạnh.<br>- Thông báo cho nhóm khi công thức thay đổi. | - **Recipe** Model: Truy cập CSDL.<br>- **RecipeIngredient** Model: Quản lý nguyên liệu.<br>- **FridgeItem** Model: Logic gợi ý.<br>- **ImageUtils**: Xử lý hình ảnh.<br>- **NotificationService**: Gửi cập nhật. |
+| - Quản lý công thức và nguyên liệu (Có giao dịch).<br>- Xử lý hình ảnh công thức (Tải lên, Cập nhật, Xóa).<br>- Thuật toán gợi ý công thức dựa trên đồ trong tủ lạnh.<br>- Thông báo cho nhóm khi công thức thay đổi. | - **Recipe** Model: Truy cập CSDL.<br>- **RecipeIngredient** Model: Quản lý nguyên liệu.<br>- **Food** Model: Xác thực/Tra cứu.<br>- **Unit** Model: Xác thực.<br>- **Group** Model: Xác thực.<br>- **FridgeItem** Model: Logic gợi ý.<br>- **GroupService**: Xác minh thành viên.<br>- **ImageUtils**: Xử lý hình ảnh.<br>- **NotificationService**: Gửi cập nhật. |
 
 | **ShoppingListService** | |
 | :--- | :--- |
 | **Responsibilities** | **Collaborators** |
-| - Quản lý danh sách mua sắm và các nhiệm vụ.<br>- Tạo/Cập nhật/Xóa danh sách và nhiệm vụ.<br>- Kiểm tra quyền truy cập.<br>- Thông báo cho nhóm khi cập nhật danh sách/nhiệm vụ. | - **ShoppingList** Model: Truy cập CSDL.<br>- **ShoppingListTask** Model: Quản lý nhiệm vụ.<br>- **Food** Model: Xác thực.<br>- **User** Model: Xác thực người được giao.<br>- **GroupService**: Xác minh thành viên.<br>- **NotificationService**: Gửi cập nhật. |
+| - Quản lý danh sách mua sắm và các nhiệm vụ.<br>- Tạo/Cập nhật/Xóa danh sách và nhiệm vụ.<br>- Kiểm tra quyền truy cập.<br>- Thông báo cho nhóm khi cập nhật danh sách/nhiệm vụ. | - **ShoppingList** Model: Truy cập CSDL.<br>- **ShoppingListTask** Model: Quản lý nhiệm vụ.<br>- **Food** Model: Xác thực.<br>- **Unit** Model: Dữ liệu liên quan.<br>- **Category** Model: Dữ liệu liên quan.<br>- **Group** Model: Xác thực.<br>- **User** Model: Xác thực người được giao.<br>- **GroupService**: Xác minh thành viên.<br>- **NotificationService**: Gửi cập nhật. |
 
 | **UnitService** | |
 | :--- | :--- |
