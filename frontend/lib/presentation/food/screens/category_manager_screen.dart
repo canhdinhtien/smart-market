@@ -278,73 +278,125 @@ class _CategoryManagerScreenState extends State<CategoryManagerScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(isEditing ? 'Cập nhật danh mục' : 'Thêm danh mục mới', 
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-              const SizedBox(height: 24),
-              TextField(
-                controller: controller, 
-                decoration: InputDecoration(
-                  labelText: 'Tên danh mục',
-                  hintText: 'ví dụ: Trái cây, Hải sản...',
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                  prefixIcon: const Icon(Icons.create_rounded, color: AppColors.primary),
-                ),
-                autofocus: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          String? errorMessage;
+          bool isLoading = false;
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
               ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (controller.text.isEmpty) return;
-                    final provider = Provider.of<AdminProvider>(context, listen: false);
-                    try {
-                      if (isEditing) {
-                        await provider.updateCategory(category['name'], controller.text.trim());
-                      } else {
-                        await provider.addCategory(controller.text.trim());
-                      }
-                      Navigator.pop(context);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(isEditing ? 'Cập nhật danh mục thành công!' : 'Đã thêm danh mục mới!'), backgroundColor: Colors.green),
-                        );
-                      }
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(e.toString().contains('403') ? 'Lỗi: Chỉ Admin mới có quyền sửa/thêm.' : e.toString()),
-                          backgroundColor: Colors.redAccent,
-                        )
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(isEditing ? 'Cập nhật danh mục' : 'Thêm danh mục mới', 
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+                      if (isLoading)
+                        const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+                    ],
                   ),
-                  child: Text(isEditing ? 'Lưu thay đổi' : 'Tạo danh mục', 
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: controller, 
+                    decoration: InputDecoration(
+                      labelText: 'Tên danh mục',
+                      hintText: 'ví dụ: Trái cây, Hải sản...',
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                      prefixIcon: const Icon(Icons.create_rounded, color: AppColors.primary),
+                    ),
+                    autofocus: true,
+                    onChanged: (_) {
+                      if (errorMessage != null) {
+                        setModalState(() => errorMessage = null);
+                      }
+                    },
+                  ),
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline_rounded, color: Colors.red.shade700, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: TextStyle(color: Colors.red.shade700, fontSize: 13, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : () async {
+                        if (controller.text.trim().isEmpty) {
+                          setModalState(() => errorMessage = 'Vui lòng nhập tên danh mục');
+                          return;
+                        }
+
+                        setModalState(() {
+                          isLoading = true;
+                          errorMessage = null;
+                        });
+
+                        final provider = Provider.of<AdminProvider>(context, listen: false);
+                        try {
+                          if (isEditing) {
+                            await provider.updateCategory(category['name'], controller.text.trim());
+                          } else {
+                            await provider.addCategory(controller.text.trim());
+                          }
+                          
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(isEditing ? 'Cập nhật danh mục thành công!' : 'Đã thêm danh mục mới!'), backgroundColor: Colors.green),
+                            );
+                            Navigator.pop(context);
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            setModalState(() {
+                              errorMessage = e.toString();
+                              isLoading = false;
+                            });
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: Text(isEditing ? 'Lưu thay đổi' : 'Tạo danh mục', 
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        }
       ),
     );
   }
@@ -369,12 +421,14 @@ class _CategoryManagerScreenState extends State<CategoryManagerScreen> {
                   );
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(e.toString().contains('403') ? 'Lỗi: Chỉ Admin mới có quyền xóa.' : e.toString()),
-                    backgroundColor: Colors.redAccent,
-                  )
-                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: Colors.redAccent,
+                    )
+                  );
+                }
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),

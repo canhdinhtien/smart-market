@@ -16,6 +16,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String? _tempLocalPath;
+
   @override
   void initState() {
     super.initState();
@@ -52,7 +54,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Expanded(
                   child: Consumer<ProfileProvider>(
                     builder: (context, provider, child) {
-                      if (provider.isLoading) {
+                      // Only show full-screen loading on initial fetch (when user data is null)
+                      if (provider.isLoading && provider.user == null) {
                         return const Center(child: CircularProgressIndicator());
                       }
 
@@ -274,15 +277,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: GestureDetector(
                 onTap: () => _showAvatarDialog(context, user['avatar']),
-                child: CircleAvatar(
-                  radius: 54,
-                  backgroundColor: Colors.white,
-                  backgroundImage: (user['avatar'] ?? user['profile_pic'] ?? user['image_url']) != null
-                      ? NetworkImage(user['avatar'] ?? user['profile_pic'] ?? user['image_url'])
-                      : null,
-                  child: (user['avatar'] ?? user['profile_pic'] ?? user['image_url']) == null
-                      ? const Icon(Icons.person_rounded, size: 54, color: AppColors.textSecondary)
-                      : null,
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 54,
+                      backgroundColor: Colors.white,
+                      backgroundImage: _tempLocalPath != null
+                          ? FileImage(File(_tempLocalPath!)) as ImageProvider
+                          : (user['avatar'] ?? user['profile_pic'] ?? user['image_url']) != null
+                              ? NetworkImage(user['avatar'] ?? user['profile_pic'] ?? user['image_url'])
+                              : null,
+                      child: (_tempLocalPath == null && (user['avatar'] ?? user['profile_pic'] ?? user['image_url']) == null)
+                          ? const Icon(Icons.person_rounded, size: 54, color: AppColors.textSecondary)
+                          : null,
+                    ),
+                    if (context.watch<ProfileProvider>().isLoading && _tempLocalPath != null)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: const BoxDecoration(color: Colors.black26, shape: BoxShape.circle),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 32,
+                              height: 32,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -824,9 +846,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(source: source);
+    // Optimization: Compress at picking time
+    final XFile? pickedFile = await picker.pickImage(
+      source: source,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 75,
+    );
 
     if (pickedFile != null) {
+      setState(() => _tempLocalPath = pickedFile.path);
+      
       if (!mounted) return;
       
       try {
@@ -837,6 +867,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .uploadAvatar(bytes, fileName);
         
         if (mounted) {
+          setState(() => _tempLocalPath = null);
            ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Cập nhật ảnh đại diện thành công'),
@@ -847,6 +878,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       } catch (e) {
         if (mounted) {
+          setState(() => _tempLocalPath = null);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Lỗi: $e'),

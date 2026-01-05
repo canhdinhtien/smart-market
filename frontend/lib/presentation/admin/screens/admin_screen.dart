@@ -82,35 +82,11 @@ class _AdminScreenState extends State<AdminScreen> {
                 delegate: SliverChildListDelegate([
                   _buildAdminCard(
                     context,
-                    title: 'Danh mục',
-                    subtitle: 'Phân loại thực phẩm',
-                    icon: Icons.category_rounded,
-                    color: Colors.blue,
-                    delay: 0.5,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const CategoryManagerScreen(groupName: 'Hệ thống')),
-                    ),
-                  ),
-                  _buildAdminCard(
-                    context,
-                    title: 'Đơn vị tính',
-                    subtitle: 'QL Đơn vị đo lường',
-                    icon: Icons.straighten_rounded,
-                    color: Colors.green,
-                    delay: 0.6,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const UnitManagerScreen(groupName: 'Hệ thống')),
-                    ),
-                  ),
-                  _buildAdminCard(
-                    context,
                     title: 'Người dùng',
                     subtitle: 'QL Tài khoản & Quyền',
                     icon: Icons.people_rounded,
-                    color: Colors.purple,
-                    delay: 0.7,
+                    color: AppColors.primary,
+                    delay: 0.5,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const UserManagerScreen()),
@@ -118,10 +94,34 @@ class _AdminScreenState extends State<AdminScreen> {
                   ),
                   _buildAdminCard(
                     context,
-                    title: 'Lịch sử',
-                    subtitle: 'Nhật ký hoạt động',
+                    title: 'Đơn vị tính',
+                    subtitle: 'Quy chuẩn thực phẩm',
+                    icon: Icons.scale_rounded,
+                    color: AppColors.primary,
+                    delay: 0.6,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const UnitManagerScreen()),
+                    ),
+                  ),
+                  _buildAdminCard(
+                    context,
+                    title: 'Danh mục',
+                    subtitle: 'Phân loại hệ thống',
+                    icon: Icons.grid_view_rounded,
+                    color: AppColors.primary,
+                    delay: 0.7,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CategoryManagerScreen()),
+                    ),
+                  ),
+                  _buildAdminCard(
+                    context,
+                    title: 'Hoạt động',
+                    subtitle: 'Nhật ký hệ thống',
                     icon: Icons.history_rounded,
-                    color: Colors.orange,
+                    color: AppColors.primary,
                     delay: 0.8,
                     onTap: () => Navigator.push(
                       context,
@@ -205,10 +205,8 @@ class _AdminScreenState extends State<AdminScreen> {
             crossAxisSpacing: 16,
             childAspectRatio: 2.15,
             children: [
-              _buildStatItem('Người dùng', (admin.usersCount > 0 ? admin.usersCount - 1 : 0).toString(), Icons.person_rounded, Colors.blue),
-              _buildStatItem('Danh mục', admin.categoriesCount.toString(), Icons.grid_view_rounded, Colors.green),
-              _buildStatItem('Đơn vị', admin.unitsCount.toString(), Icons.scale_rounded, Colors.purple),
-              _buildStatItem('Hoạt động', admin.logsCount.toString(), Icons.history_rounded, Colors.orange),
+              _buildStatItem('Người dùng', (admin.usersCount > 0 ? admin.usersCount - 1 : 0).toString(), Icons.person_rounded, AppColors.primary),
+              _buildStatItem('Hoạt động', admin.logsCount.toString(), Icons.history_rounded, AppColors.primaryDark),
             ],
           ),
         ],

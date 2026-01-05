@@ -86,12 +86,18 @@ class _GroupScreenState extends State<GroupScreen> {
 
     return Consumer<GroupProvider>(
       builder: (context, groupProvider, child) {
-        if (groupProvider.isLoading) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primary)));
+        if (groupProvider.isLoading && groupProvider.groups.isEmpty) {
+          return const Scaffold(
+            backgroundColor: AppColors.background,
+            body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          );
         }
 
         if (groupProvider.groups.isEmpty) {
-          return _buildNoGroupView(context);
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: _buildNoGroupView(context),
+          );
         }
 
         final currentGroup = groupProvider.currentGroup;
@@ -795,20 +801,30 @@ class _GroupScreenState extends State<GroupScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // FadeInSlide(
-            //   child: Image.network(
-            //     'https://cdn-icons-png.flaticon.com/512/7487/7487102.png', // Thay bằng asset local nếu có
-            //     height: 200,
-            //     errorBuilder: (context, error, stackTrace) => const Icon(Icons.groups_3_rounded, size: 100, color: AppColors.primary),
-            //   ),
-            // ),
+            Container(
+              padding: const EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.groups_3_rounded, size: 80, color: AppColors.primary),
+            ),
             const SizedBox(height: 32),
-            const Text('Gần như đơn độc...', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+            const Text(
+              'Gần như đơn độc...', 
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary)
+            ),
             const SizedBox(height: 12),
-            const Text('Hãy tạo nhóm để cùng người thân quản lý thực phẩm thông minh hơn mỗi ngày.', 
-              textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, height: 1.5)),
+            const Text(
+              'Hãy tạo nhóm để cùng người thân quản lý thực phẩm thông minh hơn mỗi ngày.', 
+              textAlign: TextAlign.center, 
+              style: TextStyle(color: Colors.grey, height: 1.5, fontSize: 14)
+            ),
             const SizedBox(height: 40),
-            PrimaryButton(text: 'Bắt đầu tạo nhóm', onPressed: () => _showCreateGroupDialog(context)),
+            PrimaryButton(
+              text: 'Bắt đầu tạo nhóm', 
+              onPressed: () => _showCreateGroupDialog(context)
+            ),
           ],
         ),
       ),

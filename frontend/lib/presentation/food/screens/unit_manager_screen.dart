@@ -40,7 +40,7 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
           _buildSliverAppBar(),
           if (provider.isLoading && provider.units.isEmpty)
             const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator(color: AppColors.secondary)),
+              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
             )
           else if (provider.error != null && provider.units.isEmpty)
             SliverFillRemaining(child: _buildErrorState(provider.error!))
@@ -115,7 +115,7 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
       floating: false,
       pinned: true,
       elevation: 0,
-      backgroundColor: AppColors.secondary,
+      backgroundColor: AppColors.primary,
       iconTheme: const IconThemeData(color: Colors.white),
       actions: [
         IconButton(
@@ -243,10 +243,10 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
             leading: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.secondary.withOpacity(0.08),
+                color: AppColors.primary.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.scale_rounded, color: AppColors.secondary, size: 24),
+              child: const Icon(Icons.scale_rounded, color: AppColors.primary, size: 24),
             ),
             title: Text(item['name'] ?? '', 
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textPrimary)),
@@ -278,77 +278,128 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(isEditing ? 'Cập nhật đơn vị' : 'Thêm đơn vị mới', 
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-              const SizedBox(height: 24),
-              TextField(
-                controller: controller, 
-                decoration: InputDecoration(
-                  labelText: 'Tên đơn vị',
-                  hintText: 'ví dụ: kg, cái, hộp...',
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                  prefixIcon: const Icon(Icons.straighten_rounded, color: AppColors.secondary),
-                ),
-                autofocus: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          String? errorMessage;
+          bool isLoading = false;
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
               ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (controller.text.isEmpty) return;
-                    final provider = Provider.of<AdminProvider>(context, listen: false);
-                    try {
-                      if (isEditing) {
-                        await provider.updateUnitByName(unit['name'], controller.text.trim());
-                      } else {
-                        await provider.addUnit(controller.text.trim());
-                      }
-                      await provider.fetchUnits();
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(isEditing ? 'Đã cập nhật đơn vị thành công!' : 'Đã thêm đơn vị mới thành công!'),
-                            backgroundColor: Colors.green,
-                          )
-                        );
-                      }
-                      Navigator.pop(context);
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(e.toString().contains('403') ? 'Lỗi: Chỉ Admin mới có quyền sửa/thêm.' : e.toString()),
-                          backgroundColor: Colors.redAccent,
-                        )
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(isEditing ? 'Cập nhật đơn vị' : 'Thêm đơn vị mới', 
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+                      if (isLoading)
+                        const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+                    ],
                   ),
-                  child: Text(isEditing ? 'Lưu thay đổi' : 'Tạo đơn vị', 
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: controller, 
+                    decoration: InputDecoration(
+                      labelText: 'Tên đơn vị',
+                      hintText: 'ví dụ: kg, cái, hộp...',
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                      prefixIcon: const Icon(Icons.straighten_rounded, color: AppColors.primary),
+                    ),
+                    autofocus: true,
+                    onChanged: (_) {
+                      if (errorMessage != null) {
+                        setModalState(() => errorMessage = null);
+                      }
+                    },
+                  ),
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline_rounded, color: Colors.red.shade700, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: TextStyle(color: Colors.red.shade700, fontSize: 13, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : () async {
+                        if (controller.text.trim().isEmpty) {
+                          setModalState(() => errorMessage = 'Vui lòng nhập tên đơn vị');
+                          return;
+                        }
+                        
+                        setModalState(() {
+                          isLoading = true;
+                          errorMessage = null;
+                        });
+
+                        final provider = Provider.of<AdminProvider>(context, listen: false);
+                        try {
+                          if (isEditing) {
+                            await provider.updateUnitByName(unit['name'], controller.text.trim());
+                          } else {
+                            await provider.addUnit(controller.text.trim());
+                          }
+                          await provider.fetchUnits();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(isEditing ? 'Đã cập nhật đơn vị thành công!' : 'Đã thêm đơn vị mới thành công!'),
+                                backgroundColor: Colors.green,
+                              )
+                            );
+                            Navigator.pop(context);
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            setModalState(() {
+                              errorMessage = e.toString();
+                              isLoading = false;
+                            });
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: Text(isEditing ? 'Lưu thay đổi' : 'Tạo đơn vị', 
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        }
       ),
     );
   }
@@ -376,12 +427,14 @@ class _UnitManagerScreenState extends State<UnitManagerScreen> {
                 }
                 Navigator.pop(context);
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(e.toString().contains('403') ? 'Lỗi: Chỉ Admin mới có quyền xóa.' : e.toString()),
-                    backgroundColor: Colors.redAccent,
-                  )
-                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: Colors.redAccent,
+                    )
+                  );
+                }
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),

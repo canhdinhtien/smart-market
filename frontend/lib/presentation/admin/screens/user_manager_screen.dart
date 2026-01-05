@@ -64,7 +64,7 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
           ),
           if (adminProvider.isLoading && adminProvider.users.isEmpty)
             const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
             )
           else if (displayUsers.isEmpty)
             SliverFillRemaining(hasScrollBody: false, child: _buildEmptyState())
@@ -181,7 +181,7 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isAdmin ? Colors.purple.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                      color: isAdmin ? AppColors.primary.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -189,7 +189,7 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: isAdmin ? Colors.purple : Colors.blue,
+                        color: isAdmin ? AppColors.primary : AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -213,7 +213,7 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
 
   void _showDeleteUserDialog(BuildContext context, dynamic user) {
     final String userName = user['name'] ?? 'người dùng này';
-    final String userId = user['id']?.toString() ?? '';
+    final String userId = user['id']?.toString() ?? user['_id']?.toString() ?? '';
 
     if (userId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -227,7 +227,7 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
             Icon(Icons.warning_rounded, color: Colors.red.shade700, size: 28),
@@ -287,7 +287,7 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
@@ -297,20 +297,22 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () async {
-              Navigator.pop(context); // Close dialog
+              Navigator.of(dialogContext).pop(); // Close confirm dialog
               
-              // Show loading
+              // Show loading using the outer context
+              if (!context.mounted) return;
+              
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => const Center(
+                builder: (loadingContext) => const Center(
                   child: Card(
                     child: Padding(
                       padding: EdgeInsets.all(24.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircularProgressIndicator(),
+                          CircularProgressIndicator(color: AppColors.primary),
                           SizedBox(height: 16),
                           Text('Đang xóa người dùng...'),
                         ],
@@ -324,10 +326,10 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
                 await context.read<AdminProvider>().deleteUser(userId);
                 
                 if (context.mounted) {
-                  Navigator.pop(context); // Close loading dialog
+                  Navigator.of(context).pop(); // Close loading dialog
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Đã xóa tài khoản $userName thành công'),
+                      content: Text('Đă xóa tài khoản $userName thành công'),
                       backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -335,7 +337,7 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
                 }
               } catch (e) {
                 if (context.mounted) {
-                  Navigator.pop(context); // Close loading dialog
+                  Navigator.of(context).pop(); // Close loading dialog
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Lỗi: $e'),

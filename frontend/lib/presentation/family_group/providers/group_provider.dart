@@ -156,34 +156,38 @@ class GroupProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _fetchGroupMembersQuietly(groupId);
+    } finally {
+      _isMembersLoading = false;
+      notifyListeners();
+    }
+  }
+  // Internal helper for background sync
+  Future<void> _fetchGroupMembersQuietly(dynamic groupId) async {
+    if (groupId == null) return;
+    try {
       final response = await _apiClient.dio.get(ApiConstants.groupMembers(groupId));
-      
       if (response.statusCode == 200) {
         final data = response.data;
         List<dynamic>? memberList;
-        
         if (data is List) {
           memberList = data;
         } else if (data is Map) {
           memberList = data['members'] ?? data['users'] ?? data['data'];
         }
-
         if (memberList != null) {
-          final bool isManagement = _managementGroup != null && _managementGroup!['id'].toString() == groupId.toString();
-          if (isManagement) {
-            _managementGroup!['members'] = memberList.map((m) => Map<String, dynamic>.from(m)).toList();
+          final mappedMembers = memberList.map((m) => Map<String, dynamic>.from(m)).toList();
+          if (_managementGroup != null && _managementGroup!['id'].toString() == groupId.toString()) {
+            _managementGroup!['members'] = mappedMembers;
           }
-          final bool isHome = _homeGroup != null && _homeGroup!['id'].toString() == groupId.toString();
-          if (isHome) {
-            _homeGroup!['members'] = memberList.map((m) => Map<String, dynamic>.from(m)).toList();
+          if (_homeGroup != null && _homeGroup!['id'].toString() == groupId.toString()) {
+            _homeGroup!['members'] = mappedMembers;
           }
-        } 
+          notifyListeners();
+        }
       }
-    } on DioException catch (e) {
-      _membersError = e.response?.data['message'] ?? 'Không thể tải danh sách thành viên';
-    } finally {
-      _isMembersLoading = false;
-      notifyListeners();
+    } catch (e) {
+      debugPrint('Quiet fetch error: $e');
     }
   }
 
@@ -260,10 +264,12 @@ class GroupProvider with ChangeNotifier {
 
         _searchResults = users.where((u) {
           final String uid = u['id'].toString();
+          final String email = u['email']?.toString() ?? '';
           final bool isAlreadyMember = existingMemberIds.contains(uid);
           final bool isSelf = (currentUserId != null && uid == currentUserId.toString()) || (adminId != null && uid == adminId);
+          final bool isReservedAdmin = email == 'canhva20047@gmail.com';
           
-          return !isAlreadyMember && !isSelf;
+          return !isAlreadyMember && !isSelf && !isReservedAdmin;
         }).map((u) => Map<String, dynamic>.from(u)).toList();
       }
     } on DioException catch (e) {
@@ -312,44 +318,40 @@ class GroupProvider with ChangeNotifier {
 
   Future<void> addMember(dynamic userId) async {
     if (_managementGroup == null) return;
-    _isLoading = true;
     _error = null;
-    notifyListeners();
-
+    // Note: We don't set _isLoading here to avoid global spinners
+    
     try {
       final response = await _apiClient.dio.post(
         ApiConstants.groupMembers(_managementGroup!['id']),
         data: {'userId': userId}
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
-        await fetchGroupMembers(_managementGroup!['id']);
+        // Sync in background immediately
+        await _fetchGroupMembersQuietly(_managementGroup!['id']);
       }
     } on DioException catch (e) {
       _error = e.response?.data['message'] ?? 'Lỗi khi thêm thành viên';
       rethrow;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
     }
   }
 
   Future<void> removeMember(dynamic userId) async {
     if (_managementGroup == null) return;
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
     try {
       final response = await _apiClient.dio.delete(ApiConstants.groupMember(_managementGroup!['id'], userId));
       if (response.statusCode == 200) {
-        await fetchGroupMembers(_managementGroup!['id']);
+        // Locally remove to provide instant feedback
+        if (_managementGroup != null && _managementGroup!['members'] is List) {
+          (_managementGroup!['members'] as List).removeWhere((m) => m['id'].toString() == userId.toString());
+          notifyListeners();
+        }
+        // Then sync with server quietly
+        _fetchGroupMembersQuietly(_managementGroup!['id']);
       }
     } on DioException catch (e) {
       _error = e.response?.data['message'] ?? 'Lỗi khi xóa thành viên';
       rethrow;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
     }
   }
 }

@@ -8,8 +8,8 @@ class AdminProvider with ChangeNotifier {
   List<dynamic> _categories = [];
   List<dynamic> _units = [];
   List<dynamic> _users = [];
-  int _totalUsers = 0; // matching search results
-  int _absoluteTotalUsers = 0; // full system total
+  int _totalUsers = 0; 
+  int _absoluteTotalUsers = 0; 
   int _totalUnits = 0;
   List<dynamic> _logs = [];
   int _totalLogs = 0;
@@ -117,11 +117,28 @@ class AdminProvider with ChangeNotifier {
 
   String _parseError(dynamic e) {
     if (e is DioException) {
-      final data = e.response?.data;
-      if (data is Map) {
-        return data['message']?.toString() ?? 'Lỗi hệ thống (${e.response?.statusCode})';
+      if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
+        return 'Kết nối máy chủ bị quá hạn. Vui lòng thử lại sau.';
       }
-      return 'Lỗi Server (${e.response?.statusCode}): ${data?.toString() ?? "Nội dung lỗi không xác định"}';
+      if (e.type == DioExceptionType.connectionError) {
+        return 'Không thể kết nối với máy chủ. Vui lòng kiểm tra internet.';
+      }
+      
+      final statusCode = e.response?.statusCode;
+      final data = e.response?.data;
+      
+      if (statusCode == 409) {
+        return 'Dữ liệu đã tồn tại trong hệ thống (Tên bị trùng).';
+      }
+      
+      if (statusCode == 403) {
+        return 'Bạn không có quyền thực hiện hành động này (Chỉ Admin).';
+      }
+
+      if (data is Map) {
+        return data['message']?.toString() ?? 'Lỗi hệ thống (Mã: $statusCode)';
+      }
+      return 'Lỗi hệ thống ($statusCode)';
     }
     return e.toString();
   }
@@ -177,7 +194,7 @@ class AdminProvider with ChangeNotifier {
       await fetchCategories();
     } catch (e) {
       _error = _parseError(e);
-      rethrow;
+      throw _error!;
     }
   }
 
@@ -191,7 +208,7 @@ class AdminProvider with ChangeNotifier {
       await fetchCategories();
     } catch (e) {
       _error = _parseError(e);
-      rethrow;
+      throw _error!;
     }
   }
 
@@ -202,7 +219,7 @@ class AdminProvider with ChangeNotifier {
       await fetchCategories();
     } catch (e) {
       _error = _parseError(e);
-      rethrow;
+      throw _error!;
     }
   }
 
@@ -242,7 +259,7 @@ class AdminProvider with ChangeNotifier {
       await fetchUnits();
     } catch (e) {
       _error = _parseError(e);
-      rethrow;
+      throw _error!;
     }
   }
 
@@ -256,7 +273,7 @@ class AdminProvider with ChangeNotifier {
       await fetchUnits();
     } catch (e) {
       _error = _parseError(e);
-      rethrow;
+      throw _error!;
     }
   }
 
@@ -267,7 +284,7 @@ class AdminProvider with ChangeNotifier {
       await fetchUnits();
     } catch (e) {
       _error = _parseError(e);
-      rethrow;
+      throw _error!;
     }
   }
 
@@ -317,7 +334,7 @@ class AdminProvider with ChangeNotifier {
       await fetchUsers();
     } catch (e) {
       _error = _parseError(e);
-      rethrow;
+      throw _error!;
     }
   }
 
@@ -325,10 +342,16 @@ class AdminProvider with ChangeNotifier {
     _error = null;
     try {
       await _apiClient.dio.delete(ApiConstants.userDetail(userId));
-      await fetchUsers(); // Refresh user list
+      // Try to refresh user list, but don't fail if refresh fails
+      try {
+        await fetchUsers();
+      } catch (refreshError) {
+        // Log refresh error but don't rethrow - deletion was successful
+        print('Warning: Failed to refresh user list after deletion: $refreshError');
+      }
     } catch (e) {
       _error = _parseError(e);
-      rethrow;
+      throw _error!;
     }
   }
 }
