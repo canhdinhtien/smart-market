@@ -3,66 +3,17 @@ const { Op } = require('sequelize');
 const FridgeItem = require('../models/FridgeItem');
 const Food = require('../models/Food');
 const NotificationService = require('./notification.service');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const initCronJobs = () => {
     // Schedule task to run every day at 8:00 AM
-    cron.schedule('0 8 * * *', async () => {
+    cron.schedule(process.env.EXPIRY_CHECK_TIME, async () => {
         console.log('Running daily food expiry check...');
-        try {
-            const today = new Date();
-            const threeDaysLater = new Date();
-            threeDaysLater.setDate(today.getDate() + 3);
-
-            // Find items expiring within the next 3 days
-            const expiringItems = await FridgeItem.findAll({
-                where: {
-                    expiry_date: {
-                        [Op.between]: [today, threeDaysLater]
-                    }
-                },
-                include: [
-                    { model: Food, attributes: ['name'] }
-                ]
-            });
-
-            if (expiringItems.length === 0) {
-                console.log('No expiring items found.');
-                return;
-            }
-
-            // Group items by group_id to send batched notifications
-            const itemsByGroup = {};
-            expiringItems.forEach(item => {
-                if (!itemsByGroup[item.group_id]) {
-                    itemsByGroup[item.group_id] = [];
-                }
-                itemsByGroup[item.group_id].push(item);
-            });
-
-            // Send notifications for each group
-            for (const groupId in itemsByGroup) {
-                const items = itemsByGroup[groupId];
-                const itemNames = items.slice(0, 3).map(i => i.Food ? i.Food.name : 'Unknown Item').join(', ');
-                const count = items.length;
-                const remaining = count > 3 ? ` and ${count - 3} others` : '';
-
-                const title = 'Food Expiry Warning';
-                const body = `You have ${count} item(s) expiring soon: ${itemNames}${remaining}. Check your fridge!`;
-
-                await NotificationService.sendToGroup(
-                    parseInt(groupId),
-                    title,
-                    body,
-                    { type: 'FOOD_EXPIRY', count: count }
-                );
-            }
-
-            console.log(`Sent expiry notifications to ${Object.keys(itemsByGroup).length} groups.`);
-
-        } catch (error) {
-            console.error('Error running food expiry check:', error);
-        }
+        await checkExpiringItems();
     });
+
+    // Schedule task to run every day at 00:01 AM for consumption processing
 
     // Schedule task to run every day at 00:01 AM for consumption processing
     cron.schedule('1 0 * * *', async () => {
@@ -236,4 +187,96 @@ const processDailyConsumptions = async () => {
     }
 };
 
-module.exports = { initCronJobs, processDailyConsumptions };
+
+const checkExpiringItems = async () => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const endOfToday = new Date(today);
+        endOfToday.setHours(23, 59, 59, 999);
+
+        const startOfTomorrow = new Date(today);
+        startOfTomorrow.setDate(today.getDate() + 1);
+
+        const threeDaysLater = new Date(today);
+        threeDaysLater.setDate(today.getDate() + 3);
+        threeDaysLater.setHours(23, 59, 59, 999);
+
+        console.log(`Checking expiry for Today: ${today.toISOString()} - ${endOfToday.toISOString()}`);
+        console.log(`Checking expiry for Soon: ${startOfTomorrow.toISOString()} - ${threeDaysLater.toISOString()}`);
+
+        // 1. Check for items expiring TODAY (Urgent)
+        const expiringToday = await FridgeItem.findAll({
+            where: {
+                expiry_date: {
+                    [Op.between]: [today, endOfToday]
+                },
+                quantity: { [Op.gt]: 0 } // Only check items with quantity > 0
+            },
+            include: [{ model: Food, attributes: ['name'] }]
+        });
+
+        // 2. Check for items expiring SOON (Tomorrow -> 3 days)
+        const expiringSoon = await FridgeItem.findAll({
+            where: {
+                expiry_date: {
+                    [Op.between]: [startOfTomorrow, threeDaysLater]
+                },
+                quantity: { [Op.gt]: 0 }
+            },
+            include: [{ model: Food, attributes: ['name'] }]
+        });
+
+        // Helper to group and send
+        const processAndSend = async (items, type) => {
+            if (items.length === 0) return;
+
+            const itemsByGroup = {};
+            items.forEach(item => {
+                if (!itemsByGroup[item.group_id]) {
+                    itemsByGroup[item.group_id] = [];
+                }
+                itemsByGroup[item.group_id].push(item);
+            });
+
+            for (const groupId in itemsByGroup) {
+                const groupItems = itemsByGroup[groupId];
+                const itemNames = groupItems.slice(0, 3).map(i => i.Food ? i.Food.name : 'Unknown Item').join(', ');
+                const count = groupItems.length;
+                const remaining = count > 3 ? ` and ${count - 3} others` : '';
+
+                let title = '';
+                let body = '';
+
+                if (type === 'TODAY') {
+                    title = '🚨 Urgent: Food Expiring Today!';
+                    body = `Hurry! ${count} item(s) are expiring TODAY: ${itemNames}${remaining}. Use them now!`;
+                } else {
+                    title = '⚠️ Food Expiry Warning';
+                    body = `Heads up: ${count} item(s) are expiring soon: ${itemNames}${remaining}. Plan your meals!`;
+                }
+
+                await NotificationService.sendToGroup(
+                    parseInt(groupId),
+                    title,
+                    body,
+                    { type: 'FOOD_EXPIRY', subtype: type, count: count }
+                );
+            }
+            console.log(`Sent ${type} expiry notifications to ${Object.keys(itemsByGroup).length} groups.`);
+        };
+
+        if (expiringToday.length === 0 && expiringSoon.length === 0) {
+            console.log('No expiring items found.');
+        } else {
+            await processAndSend(expiringToday, 'TODAY');
+            await processAndSend(expiringSoon, 'SOON');
+        }
+
+    } catch (error) {
+        console.error('Error in checkExpiringItems:', error);
+    }
+};
+
+module.exports = { initCronJobs, processDailyConsumptions, checkExpiringItems };

@@ -6,15 +6,16 @@ class ApiConstants {
   static const String getProfile = '/api/users';
   static const String deleteAccount = '/api/users';
   static const String updateProfile = '/api/users';
-  static const String login = "/api/users/login"; 
+  static const String login = "/api/users/login";
   static const String logout = '/api/users/logout';
-  static const String sendVerificationCode = '/api/users/send-verification-code';
+  static const String sendVerificationCode =
+      '/api/users/send-verification-code';
   static const String verifyEmail = '/api/users/verify-email';
   static const String changePassword = '/api/users/change-password';
   static const String forgotPassword = '/api/users/forgot-password';
   static const String resetPassword = '/api/users/reset-password';
   static const String refreshToken = '/api/users/refresh-token';
-  static const String allUsers = '/api/users/all'; 
+  static const String allUsers = '/api/users/all';
   static String userRole(dynamic id) => '/api/users/$id/role';
   static String userDetail(dynamic id) => '/api/users/$id';
 
@@ -22,8 +23,12 @@ class ApiConstants {
   static const String groups = '/api/groups';
   static const String group = '/api/groups';
   static String groupMembers(dynamic id) => '/api/groups/$id/members';
-  static String groupMember(dynamic groupId, dynamic userId) => '/api/groups/$groupId/members/$userId';
+  static String groupMember(dynamic groupId, dynamic userId) =>
+      '/api/groups/$groupId/members/$userId';
   static String searchUsers(String query) => '/api/users/search?q=$query';
+
+  // Notifications
+  static const String registerDevice = '/api/notifications/register-fcm';
 
   // Fridge
   static const String fridge = '/api/fridge';
@@ -33,7 +38,8 @@ class ApiConstants {
   static const String shopping = '/api/shopping';
   static String shoppingDetail(dynamic id) => '/api/shopping/$id';
   static String shoppingTasks(dynamic id) => '/api/shopping/$id/tasks';
-  static String shoppingTaskDetail(dynamic taskId) => '/api/shopping/tasks/$taskId';
+  static String shoppingTaskDetail(dynamic taskId) =>
+      '/api/shopping/tasks/$taskId';
 
   // Meal
   static const String meals = '/api/meals';
@@ -58,7 +64,8 @@ class ApiConstants {
 
   // Consumption
   static const String myConsumptionStats = '/api/consumptions/my-stats';
-  static String groupConsumptionStats(dynamic groupId) => '/api/consumptions/group/$groupId/stats';
+  static String groupConsumptionStats(dynamic groupId) =>
+      '/api/consumptions/group/$groupId/stats';
   static const String allConsumptionStats = '/api/consumptions/stats';
 
   static const String adminLogs = '/api/logs';
