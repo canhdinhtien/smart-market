@@ -209,11 +209,20 @@ class FoodProvider with ChangeNotifier {
 
       final response = await _apiClient.dio.post(ApiConstants.food, data: formData);
       
-      // Refresh in background to return quickly
-      if (groupId != null) {
-        fetchFoodsInGroup(groupId);
-      } else {
-        fetchFoods();
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final newFood = Map<String, dynamic>.from(response.data);
+        
+        // Patch relations if missing (using current lists)
+        if (newFood['Category'] == null && categoryId != null) {
+          newFood['Category'] = _categories.firstWhere((c) => c['id'].toString() == categoryId.toString(), orElse: () => null);
+        }
+        if (newFood['Unit'] == null && unitId != null) {
+          newFood['Unit'] = _units.firstWhere((u) => u['id'].toString() == unitId.toString(), orElse: () => null);
+        }
+
+        _foods.insert(0, newFood);
+        _totalFoods++;
+        notifyListeners();
       }
       return response.data;
     } catch (e) {
@@ -260,11 +269,20 @@ class FoodProvider with ChangeNotifier {
 
       final response = await _apiClient.dio.put(ApiConstants.foodDetail(id), data: formData);
       
-      // Refresh in background to return quickly
-      if (groupId != null) {
-        fetchFoodsInGroup(groupId);
-      } else {
-        fetchFoods();
+      if (response.statusCode == 200) {
+        final updatedFood = Map<String, dynamic>.from(response.data);
+        final index = _foods.indexWhere((food) => food['id'].toString() == id.toString());
+        if (index != -1) {
+          // Preserve relations
+          if (updatedFood['Category'] == null) {
+            updatedFood['Category'] = _foods[index]['Category'];
+          }
+          if (updatedFood['Unit'] == null) {
+            updatedFood['Unit'] = _foods[index]['Unit'];
+          }
+          _foods[index] = updatedFood;
+          notifyListeners();
+        }
       }
       return response.data;
     } catch (e) {
@@ -283,8 +301,14 @@ class FoodProvider with ChangeNotifier {
 
     try {
       await _apiClient.dio.delete(ApiConstants.foodDetail(id));
+      
+      // Remove from local state
+      _foods.removeWhere((food) => food['id'].toString() == id.toString());
+      _totalFoods--;
+      notifyListeners();
     } catch (e) {
       _error = 'Lỗi xóa thực phẩm: ${_parseError(e)}';
+      notifyListeners(); // Ensure error is notified
       rethrow;
     } finally {
       _isLoading = false;

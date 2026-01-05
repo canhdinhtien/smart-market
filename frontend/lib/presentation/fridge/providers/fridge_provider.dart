@@ -89,6 +89,7 @@ class FridgeProvider with ChangeNotifier {
     required double quantity,
     required String useWithin,
     String? note,
+    Map? foodMap,
   }) async {
     try {
       int useWithinDays = 0;
@@ -101,7 +102,7 @@ class FridgeProvider with ChangeNotifier {
         if (useWithinDays < 0) useWithinDays = 0;
       } catch (_) {}
 
-      await _apiClient.dio.post(ApiConstants.fridge, data: {
+      final response = await _apiClient.dio.post(ApiConstants.fridge, data: {
         'food_id': foodId,
         'group_id': groupId,
         'quantity': quantity,
@@ -110,8 +111,21 @@ class FridgeProvider with ChangeNotifier {
         'note': note,
       });
       
-      // Fetch to get full data with relations (Food, Unit, etc)
-      await fetchItems(groupId);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final newItem = Map<String, dynamic>.from(response.data);
+        
+        // Patch missing relation if provided
+        if (newItem['Food'] == null && foodMap != null) {
+          newItem['Food'] = foodMap;
+        }
+        
+        _items.insert(0, newItem);
+        _totalItems++;
+        notifyListeners();
+      } else {
+        // Fallback if something is weird
+        await fetchItems(groupId);
+      }
     } catch (e) {
       _error = 'Lỗi thêm vào tủ lạnh: ${_parseError(e)}';
       notifyListeners();
@@ -126,6 +140,7 @@ class FridgeProvider with ChangeNotifier {
     double? quantity,
     String? useWithin,
     String? note,
+    Map? foodMap,
   }) async {
     try {
       Map<String, dynamic> data = {};
@@ -145,11 +160,26 @@ class FridgeProvider with ChangeNotifier {
       }
       if (note != null) data['note'] = note;
 
-      await _apiClient.dio.put(ApiConstants.fridgeDetail(id), data: data);
+      final response = await _apiClient.dio.put(ApiConstants.fridgeDetail(id), data: data);
       
-      // Fetch to get full data with relations
-      if (groupId != null) {
-        await fetchItems(groupId);
+      if (response.statusCode == 200) {
+        final updatedItem = Map<String, dynamic>.from(response.data);
+        final index = _items.indexWhere((item) => item['id'].toString() == id.toString());
+        if (index != -1) {
+          // Keep old Food relation if backend didn't return it
+          if (updatedItem['Food'] == null) {
+            if (foodMap != null) {
+              updatedItem['Food'] = foodMap;
+            } else {
+              updatedItem['Food'] = _items[index]['Food'];
+            }
+          }
+          _items[index] = updatedItem;
+          notifyListeners();
+        } else {
+          // If for some reason not in list, fetch
+          if (groupId != null) await fetchItems(groupId);
+        }
       }
     } catch (e) {
       _error = 'Lỗi cập nhật tủ lạnh: ${_parseError(e)}';

@@ -214,19 +214,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleNavigation(int index) {
-    // Không cần setState ở đây vì đã gọi ở onTap
     switch (index) {
       case 0:
-        // Đang ở Home, có thể cuộn lên đầu trang
+        // Already at Home
         break;
       case 1:
-        Navigator.pushNamed(context, '/fridge');
+        Navigator.pushNamed(context, '/fridge').then((_) {
+          if (mounted) setState(() => _selectedIndex = 0);
+        });
         break;
       case 2:
-        Navigator.pushNamed(context, '/shopping');
+        Navigator.pushNamed(context, '/shopping').then((_) {
+          if (mounted) setState(() => _selectedIndex = 0);
+        });
         break;
       case 3:
-        Navigator.pushNamed(context, '/profile');
+        Navigator.pushNamed(context, '/profile').then((_) {
+          if (mounted) setState(() => _selectedIndex = 0);
+        });
         break;
     }
   }

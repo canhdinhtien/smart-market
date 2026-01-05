@@ -515,6 +515,7 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
           quantity: double.tryParse(quantityController.text),
           useWithin: useWithinController.text,
           note: noteController.text,
+          foodMap: selectedFoodItem,
         );
       } else {
         await provider.addItem(
@@ -523,6 +524,7 @@ class _AddFridgeItemDialogState extends State<AddFridgeItemDialog> {
           quantity: double.tryParse(quantityController.text) ?? 1,
           useWithin: useWithinController.text,
           note: noteController.text,
+          foodMap: selectedFoodItem,
         );
       }
       if (context.mounted) Navigator.pop(context);

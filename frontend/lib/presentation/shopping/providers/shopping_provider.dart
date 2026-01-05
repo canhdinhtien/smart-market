@@ -109,10 +109,28 @@ class ShoppingProvider with ChangeNotifier {
 
   Future<void> addTask(dynamic listId, Map<String, dynamic> taskData) async {
     try {
-      await _apiClient.dio.post(
+      final response = await _apiClient.dio.post(
         ApiConstants.shoppingTasks(listId.toString()), 
         data: taskData,
       );
+      
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final newTask = response.data;
+        
+        // Update current tasks list if it belongs to this list
+        _tasks.add(newTask);
+        
+        // Update shopping list progress
+        final listIndex = _shoppingLists.indexWhere((l) => l['id'].toString() == listId.toString());
+        if (listIndex != -1) {
+          final list = Map<String, dynamic>.from(_shoppingLists[listIndex]);
+          final tasks = List<dynamic>.from(list['shopping_list_tasks'] ?? []);
+          tasks.add(newTask);
+          list['shopping_list_tasks'] = tasks;
+          _shoppingLists[listIndex] = list;
+        }
+        notifyListeners();
+      }
     } catch (e) {
       rethrow;
     }
@@ -120,7 +138,31 @@ class ShoppingProvider with ChangeNotifier {
 
   Future<void> updateTask(dynamic taskId, Map<String, dynamic> data) async {
     try {
-      await _apiClient.dio.put(ApiConstants.shoppingTaskDetail(taskId.toString()), data: data);
+      final response = await _apiClient.dio.put(ApiConstants.shoppingTaskDetail(taskId.toString()), data: data);
+      
+      if (response.statusCode == 200) {
+        final updatedTask = response.data;
+        
+        // Update current tasks list
+        final taskIndex = _tasks.indexWhere((t) => t['id'].toString() == taskId.toString());
+        if (taskIndex != -1) {
+          _tasks[taskIndex] = updatedTask;
+        }
+        
+        // Update shopping list progress
+        for (int i = 0; i < _shoppingLists.length; i++) {
+          final list = Map<String, dynamic>.from(_shoppingLists[i]);
+          final listTasks = List<dynamic>.from(list['shopping_list_tasks'] ?? []);
+          final idx = listTasks.indexWhere((t) => t['id'].toString() == taskId.toString());
+          if (idx != -1) {
+            listTasks[idx] = updatedTask;
+            list['shopping_list_tasks'] = listTasks;
+            _shoppingLists[i] = list;
+            break;
+          }
+        }
+        notifyListeners();
+      }
     } catch (e) {
       rethrow;
     }
@@ -129,6 +171,23 @@ class ShoppingProvider with ChangeNotifier {
   Future<void> deleteTask(dynamic taskId) async {
     try {
       await _apiClient.dio.delete(ApiConstants.shoppingTaskDetail(taskId.toString()));
+      
+      // Update current tasks list
+      _tasks.removeWhere((t) => t['id'].toString() == taskId.toString());
+      
+      // Update shopping list progress
+      for (int i = 0; i < _shoppingLists.length; i++) {
+        final list = Map<String, dynamic>.from(_shoppingLists[i]);
+        final listTasks = List<dynamic>.from(list['shopping_list_tasks'] ?? []);
+        final idx = listTasks.indexWhere((t) => t['id'].toString() == taskId.toString());
+        if (idx != -1) {
+          listTasks.removeAt(idx);
+          list['shopping_list_tasks'] = listTasks;
+          _shoppingLists[i] = list;
+          break;
+        }
+      }
+      notifyListeners();
     } catch (e) {
       rethrow;
     }

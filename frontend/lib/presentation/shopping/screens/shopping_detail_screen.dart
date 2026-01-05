@@ -426,6 +426,7 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
     await Provider.of<ShoppingProvider>(context, listen: false).updateTask(task['id'].toString(), {'is_purchased': val});
     
     // UI feedback or side effects
+    // UI Feedback or side effects
     if (val == true && task['food_id'] != null && mounted) {
       // Auto add to fridge
       final fridgeProv = Provider.of<FridgeProvider>(context, listen: false);
@@ -447,11 +448,6 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
           )
         );
       }
-    }
-    
-    // Refresh tasks
-    if (mounted) {
-      Provider.of<ShoppingProvider>(context, listen: false).fetchTasks(widget.listId);
     }
   }
 
@@ -696,7 +692,6 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                         }
                         if (mounted) {
                           Navigator.pop(context);
-                          shoppingProv.fetchTasks(widget.listId);
                         }
                       } catch (e) {
                         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
@@ -740,7 +735,6 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
               await Provider.of<ShoppingProvider>(context, listen: false).deleteTask(task['id'].toString());
               if (mounted) {
                 Navigator.pop(context);
-                Provider.of<ShoppingProvider>(context, listen: false).fetchTasks(widget.listId);
               }
             },
             child: const Text('Xóa ngay', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w900)),
