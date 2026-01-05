@@ -337,4 +337,48 @@ router.put('/tasks/:taskId', controller.updateTask);
  */
 router.delete('/tasks/:taskId', controller.deleteTask);
 
+/**
+ * @openapi
+ * /shopping/group/{groupId}/stats:
+ *   get:
+ *     summary: Get group shopping stats
+ *     tags: [ShoppingLists]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Group ID
+ *     responses:
+ *       200:
+ *         description: List of purchased items for the group
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     description: Name of the food item
+ *                   unit:
+ *                     type: string
+ *                     description: Unit of measurement
+ *                   image_url:
+ *                     type: string
+ *                     description: URL to the food image
+ *                   total_quantity:
+ *                     type: number
+ *                     description: Total aggregated quantity purchased
+ *       403:
+ *         description: Access denied (Not a member)
+ *       404:
+ *         description: Group not found
+ */
+router.get('/group/:groupId/stats', controller.getGroupStats);
+
 module.exports = router;

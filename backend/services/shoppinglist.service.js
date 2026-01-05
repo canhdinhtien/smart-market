@@ -9,6 +9,7 @@ const groupService = require('./group.service');
 const NotificationService = require('./notification.service');
 const { validateNotDeleted } = require('../utils/validateNotDeleted');
 const { Op } = require('sequelize');
+const sequelize = require('../config/database');
 
 const createShoppingList = async (data, requestingUserId) => {
   const { name, group_id } = data;
@@ -381,6 +382,54 @@ const updateTask = async (taskId, data, requestingUserId) => {
   return task;
 };
 
+const getGroupShoppingStats = async (groupId) => {
+  const stats = await ShoppingListTask.findAll({
+    attributes: [
+      'food_id',
+      [sequelize.fn('SUM', sequelize.col('quantity')), 'total_quantity']
+    ],
+    where: {
+      is_purchased: true
+    },
+    include: [
+      {
+        model: ShoppingList,
+        attributes: [],
+        where: { group_id: groupId }
+      },
+      {
+        model: Food,
+        attributes: ['name', 'image_url'],
+        paranoid: false,
+        include: [{ model: Unit, attributes: ['name'], paranoid: false }]
+      }
+    ],
+    group: ['food_id', 'Food.id', 'Food.Unit.id'],
+    order: [[sequelize.fn('SUM', sequelize.col('quantity')), 'DESC']]
+  });
+
+  const aggregated = {};
+  stats.forEach(stat => {
+    const food = stat.Food;
+    if (food) {
+      const unitName = food.Unit ? food.Unit.name : 'Unknown';
+      const key = `${food.name}_${unitName}`;
+
+      if (!aggregated[key]) {
+        aggregated[key] = {
+          name: food.name,
+          unit: unitName,
+          image_url: food.image_url,
+          total_quantity: 0
+        };
+      }
+      aggregated[key].total_quantity += parseFloat(stat.dataValues.total_quantity);
+    }
+  });
+
+  return Object.values(aggregated).sort((a, b) => b.total_quantity - a.total_quantity);
+};
+
 module.exports = {
   createShoppingList,
   updateShoppingList,
@@ -391,4 +440,5 @@ module.exports = {
   getListOfTasks,
   deleteTask,
   updateTask,
+  getGroupShoppingStats,
 };

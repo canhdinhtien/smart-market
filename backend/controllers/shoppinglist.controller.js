@@ -1,4 +1,5 @@
 const shoppinglistService = require('../services/shoppinglist.service');
+const groupService = require('../services/group.service');
 
 const createShoppingList = async (req, res, next) => {
   try {
@@ -141,6 +142,27 @@ const updateTask = async (req, res, next) => {
   }
 };
 
+const getGroupStats = async (req, res, next) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user?.id;
+
+    const group = await groupService.getGroupById(groupId);
+    if (!group) return res.status(404).json({ message: 'Group not found' });
+
+    const isMember = await groupService.isMember(groupId, userId);
+    if (!isMember && !req.user.is_admin) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const stats = await shoppinglistService.getGroupShoppingStats(groupId);
+    res.status(200).json(stats);
+  } catch (error) {
+    if (error.statusCode) return res.status(error.statusCode).json({ message: error.message });
+    next(error);
+  }
+};
+
 module.exports = {
   createShoppingList,
   updateShoppingList,
@@ -151,4 +173,7 @@ module.exports = {
   getListOfTasks,
   deleteTask,
   updateTask,
+  getGroupStats,
 };
+
+
