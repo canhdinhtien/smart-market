@@ -405,12 +405,12 @@ class _FridgeScreenState extends State<FridgeScreen> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withOpacity(0.2), // Lighter overlay
+                            Colors.white.withOpacity(0.1), // Bright overlay
                             Colors.transparent,
-                            Colors.white.withOpacity(0.95),
+                            Colors.white.withOpacity(0.1),
                             Colors.white,
                           ],
-                          stops: const [0.0, 0.3, 0.8, 1.0],
+                          stops: const [0.0, 0.4, 0.85, 1.0],
                         ),
                       ),
                     ),
@@ -433,12 +433,8 @@ class _FridgeScreenState extends State<FridgeScreen> {
                               shadows: [
                                 Shadow(
                                   color: Colors.white,
-                                  blurRadius: 15,
+                                  blurRadius: 10,
                                   offset: const Offset(0, 0),
-                                ),
-                                Shadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  blurRadius: 30,
                                 ),
                               ],
                             ),

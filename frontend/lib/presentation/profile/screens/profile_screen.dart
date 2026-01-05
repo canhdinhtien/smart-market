@@ -31,234 +31,248 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          // 1. Background Decor (Đồng bộ với các màn hình Auth)
-          Positioned(
-            top: -size.width * 0.3,
-            right: -size.width * 0.2,
-            child: _buildBlurCircle(AppColors.primary.withOpacity(0.12), size.width * 0.7),
-          ),
-          Positioned(
-            bottom: -size.width * 0.4,
-            left: -size.width * 0.3,
-            child: _buildBlurCircle(AppColors.primary.withOpacity(0.08), size.width * 0.8),
-          ),
+      body: Consumer<ProfileProvider>(
+        builder: (context, provider, child) {
+          // Only show full-screen loading on initial fetch (when user data is null)
+          if (provider.isLoading && provider.user == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          SafeArea(
-            child: Column(
-              children: [
-                // Custom AppBar
-                _buildAppBar(context),
-
-                Expanded(
-                  child: Consumer<ProfileProvider>(
-                    builder: (context, provider, child) {
-                      // Only show full-screen loading on initial fetch (when user data is null)
-                      if (provider.isLoading && provider.user == null) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      if (provider.error != null) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.error_outline_rounded, size: 64, color: AppColors.error.withOpacity(0.5)),
-                              const SizedBox(height: 16),
-                              Text(provider.error!, style: TextStyle(color: AppColors.textSecondary)),
-                              TextButton(
-                                onPressed: () => provider.fetchProfile(),
-                                child: const Text('Thử lại'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      final user = provider.user;
-                      if (user == null) {
-                        return const Center(child: Text('Không thể tải thông tin'));
-                      }
-
-                      return SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 20),
-                            
-                            // Avatar Section
-                            FadeInSlide(
-                              delay: 0.1,
-                              child: _buildAvatarSection(context, user),
-                            ),
-
-                            const SizedBox(height: 40),
-
-                            // Profile Actions Group
-                            FadeInSlide(
-                              delay: 0.2,
-                              child: _buildProfileCard(
-                                children: [
-                                  _buildProfileItem(
-                                    icon: Icons.person_outline_rounded,
-                                    title: 'Chỉnh sửa thông tin',
-                                    subtitle: 'Tên, giới tính, email...',
-                                    onTap: () => _showEditProfileBottomSheet(context, user),
-                                  ),
-                                  _buildDivider(),
-                                  _buildProfileItem(
-                                    icon: Icons.lock_outline_rounded,
-                                    title: 'Đổi mật khẩu',
-                                    subtitle: 'Bảo mật tài khoản của bạn',
-                                    onTap: () => _showChangePasswordDialog(context),
-                                  ),
-                                  _buildDivider(),
-                                  _buildProfileItem(
-                                    icon: Icons.notifications_none_rounded,
-                                    title: 'Thông báo',
-                                    subtitle: 'Quản lý cài đặt thông báo',
-                                    onTap: () => _showNotImplementedSnackBar(),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Secondary Actions
-                            FadeInSlide(
-                              delay: 0.3,
-                              child: _buildProfileCard(
-                                children: [
-                                  _buildProfileItem(
-                                    icon: Icons.help_outline_rounded,
-                                    title: 'Trợ giúp & Hỗ trợ',
-                                    onTap: () => _showNotImplementedSnackBar(),
-                                  ),
-                                  _buildDivider(),
-                                  _buildProfileItem(
-                                    icon: Icons.info_outline_rounded,
-                                    title: 'Về chúng tôi',
-                                    onTap: () => _showNotImplementedSnackBar(),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Delete Account Button
-                            FadeInSlide(
-                              delay: 0.35,
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Colors.red.shade50,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.red.shade200),
-                                ),
-                                child: InkWell(
-                                  onTap: () => _showDeleteAccountDialog(context),
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.delete_forever_rounded, color: Colors.red.shade700, size: 20),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          'Xóa tài khoản',
-                                          style: TextStyle(
-                                            color: Colors.red.shade700,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // Logout Button
-                            FadeInSlide(
-                              delay: 0.4,
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Colors.red.shade50,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.red.shade100),
-                                ),
-                                child: InkWell(
-                                  onTap: () => _handleLogout(context),
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.logout_rounded, color: Colors.red.shade700, size: 20),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          'Đăng xuất',
-                                          style: TextStyle(
-                                            color: Colors.red.shade700,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 40),
-                          ],
-                        ),
-                      );
-                    },
+          if (provider.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline_rounded, size: 64, color: AppColors.error.withOpacity(0.5)),
+                  const SizedBox(height: 16),
+                  Text(provider.error!, style: TextStyle(color: AppColors.textSecondary)),
+                  TextButton(
+                    onPressed: () => provider.fetchProfile(),
+                    child: const Text('Thử lại'),
                   ),
+                ],
+              ),
+            );
+          }
+
+          final user = provider.user;
+          if (user == null) {
+            return const Center(child: Text('Không thể tải thông tin'));
+          }
+
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              _buildSliverAppBar(context, user),
+              
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: 40),
+
+                    // Profile Actions Group
+                    FadeInSlide(
+                      delay: 0.1,
+                      child: _buildProfileCard(
+                        children: [
+                          _buildProfileItem(
+                            icon: Icons.person_outline_rounded,
+                            title: 'Chỉnh sửa thông tin',
+                            subtitle: 'Tên, giới tính, email...',
+                            onTap: () => _showEditProfileBottomSheet(context, user),
+                          ),
+                          _buildDivider(),
+                          _buildProfileItem(
+                            icon: Icons.lock_outline_rounded,
+                            title: 'Đổi mật khẩu',
+                            subtitle: 'Bảo mật tài khoản của bạn',
+                            onTap: () => _showChangePasswordDialog(context),
+                          ),
+                          _buildDivider(),
+                          _buildProfileItem(
+                            icon: Icons.notifications_none_rounded,
+                            title: 'Thông báo',
+                            subtitle: 'Quản lý cài đặt thông báo',
+                            onTap: () => _showNotImplementedSnackBar(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Secondary Actions
+                    FadeInSlide(
+                      delay: 0.2,
+                      child: _buildProfileCard(
+                        children: [
+                          _buildProfileItem(
+                            icon: Icons.help_outline_rounded,
+                            title: 'Trợ giúp & Hỗ trợ',
+                            onTap: () => _showNotImplementedSnackBar(),
+                          ),
+                          _buildDivider(),
+                          _buildProfileItem(
+                            icon: Icons.info_outline_rounded,
+                            title: 'Về chúng tôi',
+                            onTap: () => _showNotImplementedSnackBar(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Delete Account Button
+                    FadeInSlide(
+                      delay: 0.3,
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.red.shade200),
+                        ),
+                        child: InkWell(
+                          onTap: () => _showDeleteAccountDialog(context),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.delete_forever_rounded, color: Colors.red.shade700, size: 20),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Xóa tài khoản',
+                                  style: TextStyle(
+                                    color: Colors.red.shade700,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Logout Button
+                    FadeInSlide(
+                      delay: 0.4,
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.red.shade100),
+                        ),
+                        child: InkWell(
+                          onTap: () => _handleLogout(context),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.logout_rounded, color: Colors.red.shade700, size: 20),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Đăng xuất',
+                                  style: TextStyle(
+                                    color: Colors.red.shade700,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 40),
+                  ]),
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
+  Widget _buildSliverAppBar(BuildContext context, Map<String, dynamic> user) {
+    return SliverAppBar(
+      expandedHeight: 280.0,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 18),
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.white,
-              padding: const EdgeInsets.all(12),
-            ),
+            padding: EdgeInsets.zero,
           ),
-          Text(
-            'Hồ sơ của bạn',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+        ),
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primary, AppColors.primaryDark],
                 ),
-          ),
-          const SizedBox(width: 48), // Spacer for balance
-        ],
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withOpacity(0.1),
+                    Colors.transparent,
+                    Colors.white.withOpacity(0.1),
+                    Colors.white,
+                  ],
+                  stops: const [0.0, 0.4, 0.85, 1.0],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 40,
+              child: _buildAvatarSection(context, user),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -272,7 +286,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primary, width: 2),
+                border: Border.all(color: Colors.white, width: 3),
                 boxShadow: AppColors.shadowLg,
               ),
               child: GestureDetector(
@@ -314,10 +328,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: const BoxDecoration(
-                  color: AppColors.primary,
+                  color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.camera_alt_rounded, size: 16, color: Colors.white),
+                child: const Icon(Icons.camera_alt_rounded, size: 16, color: AppColors.primary),
               ),
             ),
           ],

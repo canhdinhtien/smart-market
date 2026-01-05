@@ -141,12 +141,15 @@ class ShoppingProvider with ChangeNotifier {
       final response = await _apiClient.dio.put(ApiConstants.shoppingTaskDetail(taskId.toString()), data: data);
       
       if (response.statusCode == 200) {
-        final updatedTask = response.data;
+        final updatedData = response.data;
         
         // Update current tasks list
         final taskIndex = _tasks.indexWhere((t) => t['id'].toString() == taskId.toString());
         if (taskIndex != -1) {
-          _tasks[taskIndex] = updatedTask;
+          _tasks[taskIndex] = <String, dynamic>{
+            ...Map<String, dynamic>.from(_tasks[taskIndex]),
+            ...Map<String, dynamic>.from(updatedData),
+          };
         }
         
         // Update shopping list progress
@@ -155,7 +158,10 @@ class ShoppingProvider with ChangeNotifier {
           final listTasks = List<dynamic>.from(list['shopping_list_tasks'] ?? []);
           final idx = listTasks.indexWhere((t) => t['id'].toString() == taskId.toString());
           if (idx != -1) {
-            listTasks[idx] = updatedTask;
+            listTasks[idx] = <String, dynamic>{
+              ...Map<String, dynamic>.from(listTasks[idx]),
+              ...Map<String, dynamic>.from(updatedData),
+            };
             list['shopping_list_tasks'] = listTasks;
             _shoppingLists[i] = list;
             break;

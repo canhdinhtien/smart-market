@@ -62,4 +62,8 @@ class ApiConstants {
   static const String allConsumptionStats = '/api/consumptions/stats';
 
   static const String adminLogs = '/api/logs';
+
+  // Notifications
+  static const String registerFcm = '/api/notifications/register-fcm';
+  static const String sendNotification = '/api/notifications/send';
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
@@ -403,16 +404,28 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  /// Synchronize FCM token with backend profile
+  /// Synchronize FCM token with backend
   Future<void> _syncFcmToken([String? token]) async {
     try {
-      final fcmToken = token ?? await NotificationService().getToken();
+      final notificationService = NotificationService();
+      final fcmToken = token ?? await notificationService.getToken();
+      
       if (fcmToken != null) {
-        print('Synchronizing FCM Token: $fcmToken');
-        // Sending to profile update endpoint
-        await _apiClient.dio.put(
-          ApiConstants.updateProfile,
-          data: {'fcm_token': fcmToken},
+        final deviceId = await notificationService.getDeviceId();
+        
+        String platformStr = 'unknown';
+        if (defaultTargetPlatform == TargetPlatform.android) platformStr = 'android';
+        else if (defaultTargetPlatform == TargetPlatform.iOS) platformStr = 'ios';
+        
+        print('Registering FCM Token: $fcmToken for device: $deviceId, platform: $platformStr');
+        
+        await _apiClient.dio.post(
+          ApiConstants.registerFcm,
+          data: {
+            'fcm_token': fcmToken,
+            'platform': platformStr,
+            'device_id': deviceId,
+          },
         );
       }
     } catch (e) {

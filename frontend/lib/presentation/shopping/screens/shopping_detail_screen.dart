@@ -89,14 +89,14 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFF8C00), Color(0xFFFF4500)],
+          colors: [AppColors.primary, AppColors.primaryDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF4500).withOpacity(0.4),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -137,28 +137,28 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
           children: [
             Container(
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFFFF8C00), Color(0xFFFF4500)],
+                  colors: [AppColors.primary, AppColors.primaryDark],
                 ),
               ),
             ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.4),
-                    Colors.transparent,
-                    Colors.white.withOpacity(0.95),
-                    Colors.white,
-                  ],
-                  stops: const [0.0, 0.3, 0.8, 1.0],
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withOpacity(0.1),
+                        Colors.transparent,
+                        Colors.white.withOpacity(0.1),
+                        Colors.white,
+                      ],
+                      stops: const [0.0, 0.4, 0.8, 1.0],
+                    ),
+                  ),
                 ),
-              ),
-            ),
             Positioned(
               left: 24,
               bottom: 50,
@@ -175,8 +175,7 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                       letterSpacing: -1.5,
                       height: 1.1,
                       shadows: [
-                        Shadow(color: Colors.white, blurRadius: 15),
-                        Shadow(color: Colors.white.withOpacity(0.8), blurRadius: 30),
+                        Shadow(color: Colors.white, blurRadius: 10),
                       ],
                     ),
                   ),
@@ -233,10 +232,10 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF8C00).withOpacity(0.05),
+                color: AppColors.primary.withOpacity(0.05),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.assignment_turned_in_outlined, size: 80, color: const Color(0xFFFF8C00).withOpacity(0.3)),
+              child: Icon(Icons.assignment_turned_in_outlined, size: 80, color: AppColors.primary.withOpacity(0.3)),
             ),
             const SizedBox(height: 24),
             Text('Danh sách trống', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5)),
@@ -259,7 +258,7 @@ class _ShoppingDetailScreenState extends State<ShoppingDetailScreen> {
                        orElse: () => <String, dynamic>{}
                      );
 
-    final foodName = foodData?['name'] ?? task['name'] ?? 'Món ăn #$task["food_id"]';
+    final foodName = foodData?['name'] ?? task['name'] ?? 'Món ăn #${task['food_id'] ?? '??'}';
     final imageUrl = foodData?['image_url'] ?? foodData?['imageUrl'];
     final isPurchased = task['is_purchased'] == true;
     final quantity = task['quantity'] ?? 1;

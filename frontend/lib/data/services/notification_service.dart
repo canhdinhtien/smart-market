@@ -3,6 +3,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform;
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -25,6 +27,18 @@ class NotificationService {
   Future<String?> getToken() async {
     if (kIsWeb) return null;
     return await _fcm.getToken();
+  }
+
+  Future<String> getDeviceId() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? deviceId = prefs.getString('fcm_device_id');
+    
+    if (deviceId == null) {
+      deviceId = const Uuid().v4();
+      await prefs.setString('fcm_device_id', deviceId);
+    }
+    
+    return deviceId;
   }
 
   Future<void> initialize() async {
