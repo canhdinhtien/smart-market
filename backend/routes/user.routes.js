@@ -1,0 +1,405 @@
+const express = require('express');
+const controller = require('../controllers/user.controller.js');
+const { verifyUser } = require('../middleware/auth.middleware.js');
+const upload = require('../middleware/upload.middleware.js');
+
+const router = express.Router();
+
+/**
+ * @openapi
+ * tags:
+ *   name: Users
+ *   description: User authentication and management
+ */
+
+/**
+ * @openapi
+ * /users:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *               name:
+ *                 type: string
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Invalid input or email already exists
+ */
+router.post('/', controller.registerUser);
+
+/**
+ * @openapi
+ * /users/login:
+ *   post:
+ *     summary: Login user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - identifier
+ *               - password
+ *             properties:
+ *               identifier:
+ *                 type: string
+ *                 description: Email
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful, returns accessToken and refreshToken
+ *       401:
+ *         description: Invalid credentials
+ */
+router.post('/login', controller.loginUser);
+
+/**
+ * @openapi
+ * /users/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ */
+router.post('/logout', controller.logoutUser);
+
+/**
+ * @openapi
+ * /users/refresh-token:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: New access token returned
+ *       401:
+ *         description: Invalid or expired token
+ */
+router.post('/refresh-token', controller.refreshToken);
+
+/**
+ * @openapi
+ * /users/send-verification-code:
+ *   post:
+ *     summary: Send email verification code
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Verification code sent
+ *       404:
+ *         description: User not found
+ */
+router.post('/send-verification-code', controller.sendVerificationCode);
+
+/**
+ * @openapi
+ * /users/search:
+ *   get:
+ *     summary: Search users by name or email
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Search query string (optional)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Items per page
+ *     responses:
+ *       200:
+ *         description: Paginated list of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/search', verifyUser, controller.searchUsers);
+
+
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Get current user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile data
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/', verifyUser, controller.getUser);
+
+/**
+ * @openapi
+ * /users:
+ *   delete:
+ *     summary: Delete current user account
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Account deleted successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.delete('/', verifyUser, controller.deleteUser);
+
+/**
+ * @openapi
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete specific user account (Admin only)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user to delete
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: User not found
+ */
+router.delete('/:id', verifyUser, controller.deleteUser);
+
+/**
+ * @openapi
+ * /users/verify-email:
+ *   post:
+ *     summary: Verify email with verification code
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *               - token
+ *             properties:
+ *               code:
+ *                 type: string
+ *               token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Invalid verification code
+ */
+router.post('/verify-email', controller.verifyEmail);
+
+/**
+ * @openapi
+ * /users/change-password:
+ *   post:
+ *     summary: Change user password
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - oldPassword
+ *               - newPassword
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Current password is incorrect
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/change-password', verifyUser, controller.changeUserPassword);
+
+/**
+ * @openapi
+ * /users:
+ *   put:
+ *     summary: Update user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               gender:
+ *                 type: string
+
+ *               profile_pic:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.put('/', verifyUser, upload.single('profile_pic'), controller.editUser);
+
+/**
+ * @openapi
+ * /users/forgot-password:
+ *   post:
+ *     summary: Request password reset
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Reset code sent if account exists
+ *       400:
+ *         description: Email is required
+ */
+router.post('/forgot-password', controller.requestPasswordReset);
+
+/**
+ * @openapi
+ * /users/reset-password:
+ *   post:
+ *     summary: Reset password with code
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *               - token
+ *               - newPassword
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 description: 6-digit code from email
+ *               token:
+ *                 type: string
+ *                 description: Reset token from forgot-password response
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Invalid code, token, or password
+ */
+router.post('/reset-password', controller.resetPassword);
+
+module.exports = router;

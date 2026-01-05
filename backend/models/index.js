@@ -1,0 +1,35 @@
+const fs = require('fs');
+const path = require('path');
+const Sequelize = require('sequelize');
+const basename = path.basename(__filename);
+const sequelize = require('../config/database');
+const { addLoggingHooks } = require('../utils/loggingHooks');
+
+const db = {};
+
+fs
+    .readdirSync(__dirname)
+    .filter(file => {
+        return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
+    })
+    .forEach(file => {
+        const model = require(path.join(__dirname, file));
+        if (model.name) {
+            db[model.name] = model;
+        }
+    });
+
+Object.keys(db).forEach(modelName => {
+    if (db[modelName].associate) {
+        db[modelName].associate(db);
+    }
+    // Apply automated logging hooks to all models EXCEPT Log model to avoid infinite recursion
+    if (modelName !== 'Log') {
+        addLoggingHooks(db[modelName], modelName);
+    }
+});
+
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+module.exports = db;

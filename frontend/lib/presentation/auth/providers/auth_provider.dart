@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
@@ -21,7 +23,7 @@ class AuthProvider with ChangeNotifier {
 
   AuthProvider(this._apiClient, this._prefs) {
     _checkAuth();
-    
+
     // Listen for FCM token refreshes
     NotificationService().onTokenRefresh.listen((newToken) {
       if (_status == AuthStatus.authenticated) {
@@ -51,7 +53,7 @@ class AuthProvider with ChangeNotifier {
     _userId = _prefs.getString('user_id');
     final authToken = _prefs.getString('auth_token');
     _isAdmin = _prefs.getBool('is_admin') ?? false;
-    
+
     if (authToken != null) {
       _token = authToken;
       _status = AuthStatus.authenticated;
@@ -89,7 +91,7 @@ class AuthProvider with ChangeNotifier {
     _verifyToken = null;
     _pendingVerificationEmail = null;
     _status = AuthStatus.unauthenticated;
-    
+
     // Trigger external cleanup
     onLogout?.call();
     notifyListeners();
@@ -122,37 +124,50 @@ class AuthProvider with ChangeNotifier {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = response.data;
-        final userData = responseData['curUser'] ?? responseData['user'] ?? responseData['data'];
+        final userData =
+            responseData['curUser'] ??
+            responseData['user'] ??
+            responseData['data'];
         final accessToken = response.data['accessToken'];
         final refreshToken = response.data['refreshToken'];
-        
+
         // Robust check for admin flag
         dynamic adminValue;
         if (userData != null) {
-          adminValue = userData['is_admin'] ?? 
-                       userData['isAdmin'] ?? 
-                       userData['role'];
+          adminValue =
+              userData['is_admin'] ?? userData['isAdmin'] ?? userData['role'];
         }
-        
+
         // Fallback to top-level access
-        adminValue ??= responseData['is_admin'] ?? 
-                       responseData['isAdmin'] ?? 
-                       responseData['role'] ??
-                       responseData['admin'];
+        adminValue ??=
+            responseData['is_admin'] ??
+            responseData['isAdmin'] ??
+            responseData['role'] ??
+            responseData['admin'];
 
         print('Login response - userData: $userData');
-        print('Login response - adminValue extracted: $adminValue (type: ${adminValue.runtimeType})');
-        
+        print(
+          'Login response - adminValue extracted: $adminValue (type: ${adminValue.runtimeType})',
+        );
+
         // CRITICAL: Set ALL data in memory FIRST before any status change
         // This ensures AuthWrapper sees the correct values immediately
-        _isAdmin = adminValue is bool ? adminValue :
-                   adminValue is int ? (adminValue == 1) :
-                   adminValue is String ? (['true', '1', 'admin', 'administrator'].contains(adminValue.toLowerCase())) :
-                   false;
-        
+        _isAdmin = adminValue is bool
+            ? adminValue
+            : adminValue is int
+            ? (adminValue == 1)
+            : adminValue is String
+            ? ([
+                'true',
+                '1',
+                'admin',
+                'administrator',
+              ].contains(adminValue.toLowerCase()))
+            : false;
+
         print('Login: Setting isAdmin = $_isAdmin (from login response)');
-        
-        await _prefs.setBool('is_admin', _isAdmin); 
+
+        await _prefs.setBool('is_admin', _isAdmin);
 
         if (accessToken != null) {
           if (userData != null) {
@@ -162,7 +177,9 @@ class AuthProvider with ChangeNotifier {
             await _prefs.setString('user_email', userData['email'] ?? '');
           } else {
             // If userData is null, try to get ID from top level
-            _userId = responseData['id']?.toString() ?? responseData['userId']?.toString();
+            _userId =
+                responseData['id']?.toString() ??
+                responseData['userId']?.toString();
             if (_userId != null) await _prefs.setString('user_id', _userId!);
           }
 
@@ -172,18 +189,24 @@ class AuthProvider with ChangeNotifier {
           }
 
           _token = accessToken;
-          
+
           // WORKAROUND: If backend doesn't return is_admin in login response,
           // fetch profile to get the correct value BEFORE setting authenticated status
           if (adminValue == null) {
             print('Backend did not return is_admin, fetching profile...');
             try {
-              final profileResponse = await _apiClient.dio.get(ApiConstants.getProfile);
+              final profileResponse = await _apiClient.dio.get(
+                ApiConstants.getProfile,
+              );
               if (profileResponse.statusCode == 200) {
-                final profileData = profileResponse.data['user'] ?? profileResponse.data;
-                final profileAdmin = profileData['is_admin'] ?? profileData['isAdmin'];
+                final profileData =
+                    profileResponse.data['user'] ?? profileResponse.data;
+                final profileAdmin =
+                    profileData['is_admin'] ?? profileData['isAdmin'];
                 if (profileAdmin != null) {
-                  _isAdmin = profileAdmin is bool ? profileAdmin : (profileAdmin == 1 || profileAdmin == true);
+                  _isAdmin = profileAdmin is bool
+                      ? profileAdmin
+                      : (profileAdmin == 1 || profileAdmin == true);
                   await _prefs.setBool('is_admin', _isAdmin);
                   print('Got is_admin from profile: $_isAdmin');
                 }
@@ -192,13 +215,13 @@ class AuthProvider with ChangeNotifier {
               print('Failed to fetch profile: $e');
             }
           }
-          
+
           // Set status AFTER we have the correct is_admin value
           _status = AuthStatus.authenticated;
-          
+
           // Sync FCM token to backend
           _syncFcmToken();
-          
+
           print('Login: About to notify - isAdmin=$_isAdmin, status=$_status');
           // CRITICAL: Only ONE notifyListeners call with all data ready
           notifyListeners();
@@ -248,7 +271,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   Future<void> register({
     required String name,
     required String email,
@@ -263,7 +286,7 @@ class AuthProvider with ChangeNotifier {
       final response = await _apiClient.dio.post(
         ApiConstants.register,
         data: {
-          'name': name, 
+          'name': name,
           'email': email,
           'password': password,
           'gender': gender,
@@ -273,9 +296,9 @@ class AuthProvider with ChangeNotifier {
       if (response.statusCode == 200 || response.statusCode == 201) {
         _pendingVerificationEmail = email;
         _verifyToken = response.data['verifyToken'];
-        
+
         // Lưu ý: Nếu hàm sendVerificationCode cũng trả về token mới, hãy cập nhật nó
-        // await sendVerificationCode(email); 
+        // await sendVerificationCode(email);
         _errorMessage = null;
       }
     } on DioException catch (e) {
@@ -294,15 +317,15 @@ class AuthProvider with ChangeNotifier {
   Future<void> sendVerificationCode(String email) async {
     try {
       final response = await _apiClient.dio.post(
-        ApiConstants.sendVerificationCode, 
-        data: {'email': email}
+        ApiConstants.sendVerificationCode,
+        data: {'email': email},
       );
-      
+
       // Nếu server trả về verifyToken mới khi resend:
       // Lấy key verificationToken (viết đầy đủ - theo đúng Backend sendVerificationCode)
       if (response.data['verificationToken'] != null) {
         _verifyToken = response.data['verificationToken'];
-      } 
+      }
       // Phòng hờ nếu sau này backend đổi lại, ta dùng toán tử ?? (nếu cái này null thì lấy cái kia)
       else if (response.data['verifyToken'] != null) {
         _verifyToken = response.data['verifyToken'];
@@ -313,31 +336,28 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-    Future<void> verifyEmail(String code) async {
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
+  Future<void> verifyEmail(String code) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
-      try {
-        final response = await _apiClient.dio.post(
-          ApiConstants.verifyEmail,
-          data: {
-            'code': code,           
-            'token': _verifyToken,  
-          },
-        );
-        if (response.statusCode == 200) {
-          _pendingVerificationEmail = null;
-          _verifyToken = null; 
-          notifyListeners();
-        }
-      } on DioException catch (e) {
-        print("Verify Error: ${e.response?.data}");
-        _errorMessage = 'Mã xác nhận không đúng hoặc token hết hạn';
-      } finally {
-        _isLoading = false;
+    try {
+      final response = await _apiClient.dio.post(
+        ApiConstants.verifyEmail,
+        data: {'code': code, 'token': _verifyToken},
+      );
+      if (response.statusCode == 200) {
+        _pendingVerificationEmail = null;
+        _verifyToken = null;
         notifyListeners();
       }
+    } on DioException catch (e) {
+      print("Verify Error: ${e.response?.data}");
+      _errorMessage = 'Mã xác nhận không đúng hoặc token hết hạn';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<bool> forgotPassword(String email) async {
@@ -350,7 +370,7 @@ class AuthProvider with ChangeNotifier {
         ApiConstants.forgotPassword,
         data: {'email': email},
       );
-      
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Lưu token để dùng cho bước reset
         _resetToken = response.data['token'] ?? response.data['resetToken'];
@@ -370,7 +390,11 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> resetPassword(String email, String code, String newPassword) async {
+  Future<bool> resetPassword(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -381,7 +405,8 @@ class AuthProvider with ChangeNotifier {
         data: {
           'email': email,
           'code': code,
-          'token': _resetToken, // Gửi kèm token nhận được từ bước forgotPassword
+          'token':
+              _resetToken, // Gửi kèm token nhận được từ bước forgotPassword
           'newPassword': newPassword, // Backend yêu cầu trường newPassword
         },
       );
@@ -392,7 +417,8 @@ class AuthProvider with ChangeNotifier {
       return false;
     } on DioException catch (e) {
       if (e.response?.data is Map) {
-        _errorMessage = e.response?.data['message'] ?? 'Đặt lại mật khẩu thất bại';
+        _errorMessage =
+            e.response?.data['message'] ?? 'Đặt lại mật khẩu thất bại';
       } else {
         _errorMessage = 'Lỗi kết nối server';
       }
@@ -409,10 +435,17 @@ class AuthProvider with ChangeNotifier {
       final fcmToken = token ?? await NotificationService().getToken();
       if (fcmToken != null) {
         print('Synchronizing FCM Token: $fcmToken');
-        // Sending to profile update endpoint
-        await _apiClient.dio.put(
-          ApiConstants.updateProfile,
-          data: {'fcm_token': fcmToken},
+
+        String platform = 'web';
+        if (!kIsWeb) {
+          if (Platform.isAndroid) platform = 'android';
+          if (Platform.isIOS) platform = 'ios';
+        }
+
+        // Sending to register device endpoint
+        await _apiClient.dio.post(
+          ApiConstants.registerDevice,
+          data: {'fcm_token': fcmToken, 'platform': platform},
         );
       }
     } catch (e) {

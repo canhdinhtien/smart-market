@@ -1,0 +1,54 @@
+const { DataTypes, Model } = require('sequelize');
+const sequelize = require('../config/database');
+
+
+class Food extends Model { }
+
+Food.init({
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+    allowNull: false
+  },
+  name: { type: DataTypes.STRING, allowNull: false },
+  category_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: { model: 'categories', key: 'id' }
+  },
+  unit_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: { model: 'units', key: 'id' }
+  },
+  image_url: DataTypes.STRING,
+  group_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: { model: 'groups', key: 'id' }
+  },
+  created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+  updated_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
+}, {
+  sequelize,
+  modelName: 'Food',
+  tableName: 'foods',
+  timestamps: true,
+  underscored: true,
+  paranoid: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at'
+});
+
+
+
+Food.associate = (models) => {
+  Food.belongsTo(models.Category, { foreignKey: 'category_id' });
+  Food.belongsTo(models.Unit, { foreignKey: 'unit_id' });
+  Food.belongsTo(models.Group, { foreignKey: 'group_id' });
+};
+
+module.exports = Food;
+
