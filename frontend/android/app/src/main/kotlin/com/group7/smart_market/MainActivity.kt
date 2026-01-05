@@ -1,4 +1,4 @@
-package com.example.frontend
+package com.group7.smart_market
 
 import io.flutter.embedding.android.FlutterActivity
 

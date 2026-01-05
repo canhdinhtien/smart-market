@@ -1,0 +1,43 @@
+BÁO CÁO: PHÁT TRIỂN CHỨC NĂNG QUẢN LÝ NHÓM GIA ĐÌNH (SMART MARKET)
+
+Báo cáo này chi tiết các giải pháp kỹ thuật xây dựng hệ thống quản lý nhóm (Family Group), nền tảng cho việc chia sẻ dữ liệu thực phẩm, thực đơn và mua sắm giữa các thành viên.
+
+1. Xây dựng bố cục (Layout Construction)
+
+Giao diện quản lý nhóm được thiết kế để xử lý linh hoạt giữa việc xem chi tiết thành viên và chuyển đổi giữa các nhóm khác nhau.
+
+Cấu trúc cây Widget / Component (Widget Tree Hierarchy)
+Màn hình GroupScreen sử dụng kiến trúc Sliver để tối ưu hóa không gian hiển thị:
+- SliverAppBar (Header thông minh): Banner lớn tiêu đề "GIA ĐÌNH". Status Box Neo-Glass chứa tổng số thành viên, vai trò, và chip chọn nhóm.
+- SliverList (Member Management): Danh sách thành viên qua các _buildMemberCard. Hỗ trợ trạng thái Loading và Error.
+- Floating Action Button (Admin-Only): Nút thêm thành viên chỉ dành cho Admin.
+- Add Member Sheet: Thanh tìm kiếm người dùng theo email hoặc tên và danh sách kết quả.
+
+2. Xây dựng Themes và Styles
+
+Chủ đề hướng tới sự tin cậy, ấm cúng và phân cấp quyền hạn rõ ràng.
+
+Bảng màu và Định dạng (Color & Formatting)
+- Role Differentiation: Admin màu hổ phách và icon khiên, Member tông màu xám xanh trung tính.
+- Avatar Styling: Kết hợp CircleAvatar với chữ cái đầu của tên, màu nền nhạt.
+- Shadows & Borders: Card có viền và bóng đổ đồng màu với vai trò.
+
+Hiệu ứng Glassmorphism
+- Áp dụng hiệu ứng kính mờ cho hộp thoại tạo nhóm và thanh trạng thái.
+
+3. Xử lý Dữ liệu và Cử chỉ (User Input & Gestures)
+
+Hệ thống yêu cầu xử lý tương tác phức tạp liên quan đến tìm kiếm và phân quyền.
+
+Xử lý User Input & Search
+- Real-time Search: Tìm kiếm thực hiện qua onChanged của CustomTextField.
+- Validation: Kiểm tra người dùng đã có trong nhóm chưa.
+- Naming Dialog: Thay đổi tên nhóm qua hộp thoại với TextEditingController.
+
+Xử lý Cử chỉ (Gestures) & Logic
+- Admin Actions: Cử chỉ chạm vào nút ... mở menu quản lý (Xóa khỏi nhóm) với logic bảo vệ.
+- Group Switching: Nhấn vào chip nhóm mở Bottom Sheet danh sách gia đình để đổi ngữ cảnh.
+- Navigation Feedback: Phản hồi qua SnackBar cho mọi thao tác quan trọng.
+
+---
+Toàn bộ logic hiển thị của màn hình được điều tiết bởi GroupProvider, đảm bảo khi người dùng đổi nhóm, dữ liệu sẽ được làm mới đồng bộ.

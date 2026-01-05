@@ -128,7 +128,7 @@ class _LogManagerScreenState extends State<LogManagerScreen> {
 
           if (adminProvider.isLoading && (adminProvider.logs?.isEmpty ?? true))
             const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
             )
           else if (filteredLogs.isEmpty)
             SliverFillRemaining(
@@ -155,7 +155,7 @@ class _LogManagerScreenState extends State<LogManagerScreen> {
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.all(16.0),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
               ),
             ),
           

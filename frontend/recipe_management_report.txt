@@ -1,0 +1,42 @@
+BÁO CÁO: PHÁT TRIỂN CHỨC NĂNG QUẢN LÝ CÔNG THỨC NẤU ĂN (SMART MARKET)
+
+Báo cáo này tập trung vào các giải pháp kỹ thuật xây dựng kho dữ liệu công thức nấu ăn (Recipe), với điểm nhấn là khả năng kiểm tra nguyên liệu tự động từ tủ lạnh.
+
+1. Xây dựng bố cục (Layout Construction)
+
+Hệ thống quản lý công thức được chia thành 3 lớp giao diện bổ trợ lẫn nhau.
+
+Cấu trúc cây Widget / Component (Widget Tree Hierarchy)
+1. RecipeListScreen (Danh sách): SliverAppBar banner gradient cam rực rỡ, tích hợp các con số thống kê. SliverList hiển thị các _RecipeCard.
+2. RecipeDetailScreen (Chi tiết): SliverAppBar (Image View) ảnh món ăn khổ lớn, hỗ trợ hiệu ứng co giãn. Content Section: Tên và Mô tả font lớn in đậm, Nguyên liệu (Ingredients) có chỉ báo "Sẵn có" hoặc "Cần chuẩn bị", Cách thực hiện (Instructions) trong Container màu nền dịu nhẹ.
+3. CreateRecipeScreen (Tạo mới): ListView chứa các trường nhập liệu và chọn ảnh.
+
+2. Xây dựng Themes và Styles
+
+Chủ đề công thức nấu ăn hướng tới sự ngon miệng và cảm hứng vào bếp.
+
+Bảng màu (Color Palette)
+- Contrast Highlighting: Màu cam (AppColors.primary) làm điểm nhấn cho icon nguyên liệu và nút hành động.
+- Success Tone: Màu xanh lá (Colors.green) cho trạng thái "Sẵn có trong tủ lạnh".
+- Backgrounds: Màu xám siêu nhạt (#F8F9FA) cho khối văn bản hướng dẫn.
+
+Hiệu ứng và Hình ảnh (Visuals)
+- Glassmorphism: Áp dụng cho các menu chọn nhóm quản lý.
+- FadeInSlide Animation: Mọi Card món ăn và nguyên liệu xuất hiện với hiệu ứng trượt nhẹ.
+- Network Image Loading: Sử dụng frameBuilder để tạo hiệu ứng AnimatedOpacity.
+
+3. Xử lý Dữ liệu và Cử chỉ (User Input & Gestures)
+
+Logic quan trọng nhất nằm ở việc kết nối giữa Công thức, Tủ lạnh và Mua sắm.
+
+Logic Kiểm tra Nguyên liệu (Fridge Cross-check)
+- Hệ thống tự động so sánh danh sách nguyên liệu với thực phẩm hiện có trong tủ lạnh gia đình (inFridge == true).
+- Nếu thiếu nguyên liệu, nút "Mua n nguyên liệu còn thiếu" sẽ tự động xuất hiện.
+
+Xử lý Cử chỉ (Gestures)
+- One-Click Shopping (Thành tựu chính): Khi nhấn nút "Mua...", hệ thống tự động Tạo hoặc tìm danh sách mua sắm, bóc tách nguyên liệu thiếu, và thêm chúng vào danh sách đi chợ.
+- Interactive List: Nhấn vào card để xem chi tiết, hoặc dùng icon edit/delete để quản lý nhanh.
+- Confirmation Dialogs: Thao tác xóa luôn yêu cầu xác nhận qua AlertDialog bo tròn.
+
+---
+Khả năng tự động lọc nguyên liệu thiếu và đẩy vào danh sách đi chợ giúp người dùng tiết kiệm trung bình 5-10 phút chuẩn bị cho mỗi bữa ăn.

@@ -1,0 +1,53 @@
+BÁO CÁO: PHÁT TRIỂN MÀN HÌNH QUẢN LÝ DANH SÁCH MUA SẮM (SMART MARKET)
+
+Báo cáo này chi tiết các phương pháp kỹ thuật được sử dụng để xây dựng các màn hình quản lý danh sách mua sắm (Shopping List) trong ứng dụng, tương tự như hệ thống quản lý thực đơn nhưng có những đặc thù riêng về theo dõi tiến độ.
+
+1. Xây dựng bố cục (Layout Construction)
+
+Hệ thống mua sắm tập trung vào việc hiển thị tiến độ và danh sách các mặt hàng cần mua một cách trực quan.
+
+Cấu trúc cây Widget / Component (Widget Tree Hierarchy)
+Màn hình ShoppingListScreen và ShoppingDetailScreen sử dụng cùng một triết lý thiết kế dựa trên CustomScrollView:
+- Scaffold: Chứa toàn bộ màn hình, cung cấp nền xám nhạt (AppColors.background) để làm nổi bật các Card trắng.
+- CustomScrollView: Tích hợp các thành phần Sliver.
+- SliverAppBar: Banner gradient rực rỡ từ cam sang cam đậm. Header Stats hiển thị tổng số danh sách và tổng số mặt hàng thông qua widget _buildHeaderStat.
+- SliverList (Shopping Lists): Sử dụng SliverChildBuilderDelegate để hiển thị danh sách các card mua sắm. Các card được bọc trong FadeInSlide để tạo hiệu ứng xuất hiện tuần tự.
+- ShoppingDetailScreen (Detail View): Hiển thị danh sách các "Task" (mặt hàng) bên trong một danh sách mua sắm cụ thể. Phân chia rõ ràng giữa các mặt hàng "Cần mua" và "Đã mua".
+
+Cấu trúc Component con:
+- _buildShoppingListCard: Card chứa thông tin tên, ngày, nhóm gia đình và đặc biệt là một thanh LinearProgressIndicator hiển thị tỷ lệ đã mua (ví dụ: 60%).
+- _buildTaskCard: Item trong màn hình chi tiết, cho phép đánh dấu hoàn thành nhanh qua Checkbox hoặc InkWell.
+
+2. Xây dựng Themes và Styles
+
+Hệ thống sử dụng các phong cách thiết kế hiện đại để tạo cảm giác "đi chợ" năng động.
+
+Bảng màu (Color Palette)
+- Primary Contrast: Sử dụng màu cam rực (#0xFFFF4500) làm chủ đạo cho các nút hành động quan trọng (CTA) như "Tạo danh sách" hoặc "Xác nhận".
+- Progress Colors: Đang tiến hành: Màu cam (AppColors.primary). Hoàn thành: Màu xanh lá (Colors.green) khi đạt 100%.
+- Info Tags: Các thẻ thông tin nhỏ (_buildInfoTag) sử dụng màu nền mờ (opacity 8%) kết hợp icon màu đậm để tạo sự phân cấp thông tin rõ ràng.
+
+Kiểu chữ (Typography)
+- Giữ vững tính nhất quán với Plus Jakarta Sans cho các con số thống kê và tiêu đề lớn để tạo cảm giác số liệu chính xác và uy tín.
+- Tên các mặt hàng sử dụng FontWeight.w900 trên nền trắng để đảm bảo khả năng đọc tốt ngay cả khi đang di chuyển (trong siêu thị).
+
+Hiệu ứng thị giác (Visual Effects)
+- Shadows: Các Card mua sắm có đổ bóng màu cam mờ (AppColors.primary.withOpacity(0.08)) tạo hiệu ứng "nổi" trên nền.
+- BackdropFilter: Áp dụng hiệu ứng mờ (Blur) cho thanh điều hướng gia đình, giúp giao diện trông không gian và chiều sâu hơn.
+
+3. Xử lý Dữ liệu và Cử chỉ (User Input & Gestures)
+
+Hệ thống được thiết kế để thao tác nhanh bằng một tay, phù hợp với ngữ cảnh người dùng đang đi sắm đồ.
+
+Xử lý User Input
+- Biểu mẫu thông minh (Add/Edit Sheet): Tích hợp showDatePicker để chọn ngày đi chợ một cách trực quan. Tự động điền dữ liệu (Pre-fill) khi ở chế độ chỉnh sửa. Kiểm tra điều kiện (Validation) như tên danh sách không được để trống.
+- Xử lý trạng thái (State Management): Sử dụng Provider để đồng bộ dữ liệu ngay lập tức giữa màn hình chi tiết và màn hình chính (khi đánh dấu đã mua, thanh tiến độ ở màn hình chính sẽ cập nhật theo).
+
+Xử lý Cử chỉ (Gestures)
+- Tap to Detail: Nhấn vào bất kỳ đâu trên card để chuyển sâu vào danh sách chi tiết.
+- Quick Action Menu: Sử dụng PopupMenuButton (_buildListMenu) để gom nhóm các hành động phụ như "Chỉnh sửa" hoặc "Xóa", giúp giao diện gọn gàng.
+- Checkbox Toggle: Cử chỉ nhấn vào mặt hàng để chuyển đổi trạng thái is_purchased được xử lý mượt mà với phản hồi hình ảnh tức thì.
+- Pull to Refresh: CustomScrollView với BouncingScrollPhysics mang lại cảm giác cuộn tự nhiên trên cả iOS và Android.
+
+---
+Việc sử dụng LinearProgressIndicator kết hợp với màu sắc thay đổi theo trạng thái hoàn thành là điểm nhấn quan trọng nhất giúp người dùng quản lý việc mua sắm hiệu quả hơn.

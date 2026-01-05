@@ -1,0 +1,45 @@
+BÁO CÁO: PHÁT TRIỂN KHỐI QUẢN TRỊ HỆ THỐNG (SYSTEM ADMIN - SMART MARKET)
+
+Báo cáo này mô tả kiến trúc và giải pháp giao diện cho trung tâm điều hành hệ thống, nơi dành riêng cho người quản trị viên (Admin) để kiểm soát dữ liệu nền tảng và bảo mật.
+
+1. Xây dựng bố cục (Layout Construction)
+
+Hệ thống quản trị được thiết kế theo mô hình phân cấp từ tổng quan đến chi tiết.
+
+Cấu trúc Dashboard (AdminScreen)
+- Premium Header: Banner gradient cam-vàng, tích hợp nhãn "SYSTEM ADMIN".
+- System Overview Section: 4 chỉ số cốt lõi dưới dạng lưới 2x2. Mỗi chỉ số có icon và màu sắc nhận diện riêng.
+- Tools Grid: Module quản lý chính (Danh mục, Đơn vị, Người dùng, Nhật ký) sắp xếp dạng Grid.
+
+Cấu trúc Quản lý Nhật ký (LogManagerScreen)
+- Activity Summary Chart: Biểu đồ phân bổ tỷ lệ Tạo/Sửa/Xóa. Tích hợp thẻ Metric chi tiết.
+- Filter & Search Bar: Thanh tìm kiếm kết hợp ChoiceChip lọc nhanh log.
+- Infinite scrolling List: Danh sách nhật ký hỗ trợ tải thêm dữ liệu khi cuộn.
+
+2. Xây dựng Themes và Styles
+
+Chủ đề quản trị mang phong cách "Enterprise-Professional" (Chuyên nghiệp & Tin cậy).
+
+Phân cấp Màu sắc (Action-based Coloring)
+- Green (Xanh lá): CREATE/ADD.
+- Blue (Xanh dương): UPDATE/EDIT.
+- Red (Đỏ): DELETE/REMOVE.
+- Orange (Cam): Sự kiện truy cập (LOGIN).
+
+Hiệu ứng Thẻ (Admin Cards)
+- Module đặt trong Card có shadow mịn và hiệu ứng FadeInSlide. Icon module đặt trong Container gradient nhạt.
+
+3. Xử lý Dữ liệu và Cử chỉ (User Input & Gestures)
+
+Khối quản trị xử lý lượng dữ liệu lớn và các thao tác nhạy cảm.
+
+Quản lý Người dùng (User Manager)
+- Role Control: Nhận diện Admin/Member qua hệ thống badge màu.
+- Secure Deletion: Thao tác xóa bảo vệ bởi hộp thoại xác nhận.
+
+Quản lý Nhật ký & Tìm kiếm (Logs & Search)
+- Multi-criteria Filtering: Lọc theo nội dung, người thực hiện, và loại hành động.
+- Pagination & Performance: Sử dụng ScrollController để tự động gọi API fetchLogs theo trang, đảm bảo hiệu suất.
+
+---
+Khối quản trị được bảo vệ bởi logic bảo mật mạnh. Nếu người dùng thường cố tình truy cập, hệ thống sẽ hiển thị "Truy cập bị từ chối".
