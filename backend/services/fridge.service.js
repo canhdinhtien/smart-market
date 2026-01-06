@@ -36,7 +36,7 @@ const createFridgeItem = async (data, requestingUserId) => {
   NotificationService.sendToGroup(
     group_id,
     'Fridge Update',
-    `${food ? food.name : 'Item'} added to fridge`,
+    `${food ? food.name : 'Item'} đã được thêm vào tủ lạnh`,
     { type: 'FRIDGE_ADD', itemId: newItem.id },
     requestingUserId
   );

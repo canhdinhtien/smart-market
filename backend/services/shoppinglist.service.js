@@ -366,14 +366,14 @@ const updateTask = async (taskId, data, requestingUserId) => {
   // Notify if task is completed or important update
   // For now, we notify on any update but we could filter
   if (data.is_purchased !== undefined) {
-    const status = data.is_purchased ? 'completed' : 'uncompleted';
+    const status = data.is_purchased ? 'đã hoàn thành' : 'chưa hoàn thành';
     // We should probably fetch the Task name again or use existing if not updated
     // But task object has old data before reload? 
     // Wait, update modifies the instance in place in Sequelize? Yes usually.
     NotificationService.sendToGroup(
       task.ShoppingList.group_id,
-      'Shopping Task Updated',
-      `Task "${task.name || 'Unknown'}" marked as ${status}`,
+      'Nhiệm vụ mua sắm được cập nhật',
+      `Nhiệm vụ mua sắm ${status}`,
       { type: 'SHOPPING_TASK_UPDATE', listId: task.shopping_list_id, groupId: task.ShoppingList.group_id },
       requestingUserId
     );
