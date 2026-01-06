@@ -15,7 +15,7 @@ const registerUser = async ({ email, password, name, gender }) => {
   try {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      const error = new Error('User already exists');
+      const error = new Error('Người dùng đã tồn tại');
       error.statusCode = 409;
       throw error;
     }
@@ -44,7 +44,7 @@ const registerUser = async ({ email, password, name, gender }) => {
 
     return { userJson, accessToken, refreshToken, verifyToken };
   } catch (err) {
-    throw new Error(err.message || 'Failed to register user');
+    throw new Error(err.message || 'Đăng ký người dùng thất bại');
   }
 };
 
@@ -56,20 +56,20 @@ const loginUser = async ({ identifier, password }) => {
       },
     });
     if (!user) {
-      const error = new Error('User not found!');
+      const error = new Error('Không tìm thấy người dùng!');
       error.statusCode = 401; // Avoid enumeration, treat as auth failure
       throw error;
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      const error = new Error('Invalid credentials!');
+      const error = new Error('Thông tin đăng nhập không hợp lệ!');
       error.statusCode = 401;
       throw error;
     }
 
     if (!user.is_verified) {
-      const error = new Error('User is not verified!');
+      const error = new Error('Người dùng chưa được xác minh!');
       error.statusCode = 401;
       throw error;
     }
@@ -82,7 +82,7 @@ const loginUser = async ({ identifier, password }) => {
 
     return { user: userJson, accessToken, refreshToken };
   } catch (err) {
-    throw new Error(err.message || 'Failed to login');
+    throw new Error(err.message || 'Đăng nhập thất bại');
   }
 };
 
@@ -92,7 +92,7 @@ const refreshToken = async (refreshToken) => {
     const accessToken = Jwt.generateAccessToken(decoded.id);
     return accessToken;
   } catch (err) {
-    const error = new Error(err.message || 'Failed to refresh token');
+    const error = new Error(err.message || 'Làm mới token thất bại');
     error.statusCode = 401;
     throw error;
   }
@@ -102,7 +102,7 @@ const sendVerificationCode = async (email) => {
   try {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser && existingUser.is_verified) {
-      const error = new Error('This email is already associated with a verified account.');
+      const error = new Error('Email này đã được liên kết với một tài khoản đã xác minh.');
       error.statusCode = 409;
       throw error;
     }
@@ -117,11 +117,11 @@ const sendVerificationCode = async (email) => {
     const verificationToken = Jwt.generateEmailVerificationToken(email);
 
     return {
-      message: 'Verification code sent successfully.',
+      message: 'Đã gửi mã xác minh thành công.',
       verificationToken,
     };
   } catch (err) {
-    throw new Error(err.message || 'Failed to send verification code');
+    throw new Error(err.message || 'Gửi mã xác minh thất bại');
   }
 };
 
@@ -132,7 +132,7 @@ const getUser = async (userId) => {
     });
 
     if (!user) {
-      const error = new Error('User not found');
+      const error = new Error('Không tìm thấy người dùng');
       error.statusCode = 404;
       throw error;
     }
@@ -142,7 +142,7 @@ const getUser = async (userId) => {
 
     return userJson;
   } catch (err) {
-    throw new Error(err.message || 'Failed to get user');
+    throw new Error(err.message || 'Lấy thông tin người dùng thất bại');
   }
 };
 
@@ -151,7 +151,7 @@ const deleteUser = async (userId) => {
     const user = await User.findByPk(userId);
 
     if (!user) {
-      const error = new Error('User not found');
+      const error = new Error('Không tìm thấy người dùng');
       error.statusCode = 404;
       throw error;
     }
@@ -165,9 +165,9 @@ const deleteUser = async (userId) => {
       await deleteImage(imageUrl);
     }
 
-    return { message: 'User deleted successfully' };
+    return { message: 'Đã xóa người dùng thành công' };
   } catch (err) {
-    throw new Error(err.message || 'Failed to delete user');
+    throw new Error(err.message || 'Xóa người dùng thất bại');
   }
 };
 
@@ -177,42 +177,42 @@ const verifyEmail = async (code, token) => {
     const email = decoded.email;
 
     if (!email) {
-      const error = new Error('Invalid token');
+      const error = new Error('Token không hợp lệ');
       error.statusCode = 400;
       throw error;
     }
 
     const storedCode = await redisClient.get(email);
     if (!storedCode) {
-      const error = new Error('Verification code expired or not found');
+      const error = new Error('Mã xác minh hết hạn hoặc không tìm thấy');
       error.statusCode = 400;
       throw error;
     }
 
     if (storedCode !== code) {
-      const error = new Error('Invalid verification code');
+      const error = new Error('Mã xác minh không hợp lệ');
       error.statusCode = 400;
       throw error;
     }
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      const error = new Error('User not found');
+      const error = new Error('Không tìm thấy người dùng');
       error.statusCode = 404;
       throw error;
     }
 
     if (user.is_verified) {
-      return { message: 'Email is already verified' };
+      return { message: 'Email đã được xác minh' };
     }
 
     user.is_verified = true;
     await user.save();
     await redisClient.del(email);
 
-    return { message: 'Email verified successfully' };
+    return { message: 'Email đã được xác minh thành công' };
   } catch (err) {
-    throw new Error(err.message || 'Email verification failed');
+    throw new Error(err.message || 'Xác minh email thất bại');
   }
 };
 
@@ -221,14 +221,14 @@ const changeUserPassword = async (userId, oldPassword, newPassword) => {
     const user = await User.findByPk(userId);
 
     if (!user) {
-      const error = new Error('User not found');
+      const error = new Error('Không tìm thấy người dùng');
       error.statusCode = 404;
       throw error;
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
     if (!isMatch) {
-      const error = new Error('Invalid password');
+      const error = new Error('Mật khẩu không hợp lệ');
       error.statusCode = 401;
       throw error;
     }
@@ -237,9 +237,9 @@ const changeUserPassword = async (userId, oldPassword, newPassword) => {
     user.password_hash = hashedPassword;
     await user.save();
 
-    return { message: 'Password changed successfully' };
+    return { message: 'Đổi mật khẩu thành công' };
   } catch (err) {
-    throw new Error(err.message || 'Failed to change password');
+    throw new Error(err.message || 'Đổi mật khẩu thất bại');
   }
 };
 
@@ -247,7 +247,7 @@ const updateUser = async (userId, data) => {
   try {
     const user = await User.findByPk(userId);
     if (!user) {
-      const error = new Error('User not found');
+      const error = new Error('Không tìm thấy người dùng');
       error.statusCode = 404;
       throw error;
     }
@@ -269,9 +269,9 @@ const updateUser = async (userId, data) => {
     const userJson = user.toJSON();
     delete userJson.password_hash;
 
-    return { message: 'User updated successfully', user: userJson };
+    return { message: 'Cập nhật người dùng thành công', user: userJson };
   } catch (err) {
-    throw new Error(err.message || 'Failed to update user');
+    throw new Error(err.message || 'Cập nhật người dùng thất bại');
   }
 };
 
@@ -279,7 +279,7 @@ const requestPasswordReset = async (email) => {
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return { message: 'If an account exists with this email, a reset code has been sent.' };
+      return { message: 'Nếu tài khoản tồn tại với email này, mã đặt lại đã được gửi.' };
     }
 
     const code = generateVerificationCode();
@@ -303,11 +303,11 @@ const requestPasswordReset = async (email) => {
     });
 
     return {
-      message: 'If an account exists with this email, a reset code has been sent.',
+      message: 'Nếu tài khoản tồn tại với email này, mã đặt lại đã được gửi.',
       resetToken,
     };
   } catch (err) {
-    throw new Error(err.message || 'Failed to request password reset');
+    throw new Error(err.message || 'Yêu cầu đặt lại mật khẩu thất bại');
   }
 };
 
@@ -317,27 +317,27 @@ const resetPassword = async (code, token, newPassword) => {
     const email = decoded.email;
 
     if (!email) {
-      const error = new Error('Invalid token');
+      const error = new Error('Token không hợp lệ');
       error.statusCode = 400;
       throw error;
     }
 
     const storedCode = await redisClient.get(`reset:${email}`);
     if (!storedCode) {
-      const error = new Error('Reset code expired or not found');
+      const error = new Error('Mã đặt lại đã hết hạn hoặc không tìm thấy');
       error.statusCode = 400;
       throw error;
     }
 
     if (storedCode !== code) {
-      const error = new Error('Invalid reset code');
+      const error = new Error('Mã đặt lại không hợp lệ');
       error.statusCode = 400;
       throw error;
     }
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      const error = new Error('User not found');
+      const error = new Error('Không tìm thấy người dùng');
       error.statusCode = 404;
       throw error;
     }
@@ -358,9 +358,9 @@ const resetPassword = async (code, token, newPassword) => {
       entityId: user.id
     });
 
-    return { message: 'Password reset successfully' };
+    return { message: 'Đặt lại mật khẩu thành công' };
   } catch (err) {
-    throw new Error(err.message || 'Password reset failed');
+    throw new Error(err.message || 'Đặt lại mật khẩu thất bại');
   }
 };
 
@@ -391,7 +391,7 @@ const searchUsers = async (query, page = 1, limit = 20) => {
       totalPages: Math.ceil(count / limit)
     };
   } catch (err) {
-    throw new Error(err.message || 'Failed to search users');
+    throw new Error(err.message || 'Tìm kiếm người dùng thất bại');
   }
 };
 

@@ -1,4 +1,3 @@
-const { UserDevice, GroupMember, User } = require("../models");
 const { sendFCM, sendMulticastFCM } = require("../utils/fcmUtils");
 const { Op } = require("sequelize");
 
@@ -11,6 +10,8 @@ const { Op } = require("sequelize");
  */
 const sendToUser = async (userId, title, body, data = {}) => {
     try {
+        const { UserDevice } = require("../models");
+
         if (!userId) {
             console.error("sendToUser called with missing userId");
             return;
@@ -71,6 +72,8 @@ const sendToUser = async (userId, title, body, data = {}) => {
  */
 const sendToGroup = async (groupId, title, body, data = {}, excludeUserId = null) => {
     try {
+        const { GroupMember, Group, UserDevice } = require("../models");
+
         // Find all members of the group
         const members = await GroupMember.findAll({
             where: {
@@ -80,7 +83,6 @@ const sendToGroup = async (groupId, title, body, data = {}, excludeUserId = null
             attributes: ['user_id']
         });
 
-        const Group = require('../models/Group');
         const group = await Group.findByPk(groupId);
         if (!group) return;
 
@@ -158,6 +160,8 @@ const sendToGroup = async (groupId, title, body, data = {}, excludeUserId = null
  * @param {string} deviceId 
  */
 const registerDevice = async (userId, token, platform, deviceId) => {
+    const { UserDevice } = require("../models");
+
     const [device] = await UserDevice.findOrCreate({
         where: { fcm_token: token },
         defaults: {
@@ -182,3 +186,4 @@ module.exports = {
     sendToGroup,
     registerDevice,
 };
+
