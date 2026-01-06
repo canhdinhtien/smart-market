@@ -116,8 +116,8 @@ const deleteMember = async (groupId, targetUserId, requestingUserId) => {
   // Notify the user (even though they are removed, they might still get the push if token is active)
   NotificationService.sendToUser(
     user.id,
-    'Removed from Group',
-    `You have been removed from the group "${group.name}"`,
+    'Được xóa khỏi nhóm',
+    `Bạn đã được xóa khỏi nhóm "${group.name}"`,
     { type: 'GROUP_REMOVE', groupId: String(group.id) }
   );
 
