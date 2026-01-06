@@ -1,6 +1,16 @@
 const { sendFCM, sendMulticastFCM } = require("../utils/fcmUtils");
 const { Op } = require("sequelize");
 
+// Helper to ensure all data values are strings
+const sanitizeData = (data) => {
+    if (!data) return {};
+    const sanitized = {};
+    for (const [key, value] of Object.entries(data)) {
+        sanitized[key] = String(value);
+    }
+    return sanitized;
+};
+
 /**
  * Send a notification to a specific user
  * @param {number} userId - The ID of the user to notify
@@ -27,11 +37,13 @@ const sendToUser = async (userId, title, body, data = {}) => {
         if (!devices.length) return;
 
         const tokens = devices.map(d => d.fcm_token);
+        const sanitizedData = sanitizeData(data);
+
         const response = await sendMulticastFCM({
             tokens,
             title,
             body,
-            data: data || {},
+            data: sanitizedData,
         });
 
         if (response.failureCount > 0) {
@@ -110,6 +122,7 @@ const sendToGroup = async (groupId, title, body, data = {}, excludeUserId = null
         if (!devices.length) return;
 
         const tokens = devices.map(d => d.fcm_token);
+        const sanitizedData = sanitizeData(data);
 
         // Firebase limit is 500 tokens per batch. 
         // Simple chunking implementation
@@ -121,7 +134,7 @@ const sendToGroup = async (groupId, title, body, data = {}, excludeUserId = null
                 tokens: batchTokens,
                 title,
                 body,
-                data: data || {},
+                data: sanitizedData,
             });
 
             if (response.failureCount > 0) {

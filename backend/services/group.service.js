@@ -71,9 +71,9 @@ const addMember = async (groupId, targetUserId, requestingUserId) => {
   // Notify the user
   NotificationService.sendToUser(
     user.id,
-    'Added to Group',
-    `You have been added to the group "${group.name}"`,
-    { type: 'GROUP_ADD', groupId: group.id }
+    'Được thêm vào nhóm',
+    `Bạn đã được thêm vào nhóm "${group.name}"`,
+    { type: 'GROUP_ADD', groupId: String(group.id) }
   );
 
   return { message: 'Member added successfully' };
@@ -118,7 +118,7 @@ const deleteMember = async (groupId, targetUserId, requestingUserId) => {
     user.id,
     'Removed from Group',
     `You have been removed from the group "${group.name}"`,
-    { type: 'GROUP_REMOVE', groupId: group.id }
+    { type: 'GROUP_REMOVE', groupId: String(group.id) }
   );
 
   return { message: 'Member removed successfully' };
